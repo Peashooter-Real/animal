@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     checkConn.close();
                     onRoomNotFound();
                 }
-            }, 6000);
+            }, 10000); // Increase to 10s for mobile networks
 
             checkConn.on('open', () => {
                 found = true;

@@ -743,13 +743,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Multiplayer Logic ---
     function initPeer(customId = null) {
-        console.log("Initializing PeerJS with ID:", customId || 'random');
+        console.log("Initializing PeerJS...");
+
+        // PeerJS default connects to a global broker server. 
+        // This is necessary for mobile devices on 4G/5G to find each other.
         if (peer && !peer.destroyed) return;
-        try {
-            peer = customId ? new Peer(customId) : new Peer();
-        } catch (e) {
-            if (gameStatusText) gameStatusText.textContent = "Error: Library not loaded.";
-            return;
+        if (customId) {
+            peer = new Peer(customId);
+        } else {
+            peer = new Peer();
         }
 
         peer.on('open', (id) => {
