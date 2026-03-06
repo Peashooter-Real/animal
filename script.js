@@ -447,8 +447,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         peer.on('connection', (connection) => {
-            console.log("Incoming connection...");
-            if (conn) conn.close();
+            console.log("Incoming connection from:", connection.peer);
+
+            // If we are already connected to someone, check if it's a new person or just another check
+            if (conn && conn.open) {
+                console.log("Already have an active connection. Ignoring or replacing...");
+                // Note: PeerJS handles multiple connections, but for this 1v1 game, 
+                // we might want to close old ones if they are actually dead.
+            }
+
             conn = connection;
             isHost = true;
             isFirstPlayer = true; // Host starts first

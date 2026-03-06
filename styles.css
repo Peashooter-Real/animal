@@ -731,6 +731,26 @@ body {
   font-weight: bold;
 }
 
+.join-status-msg {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  min-height: 1.2rem;
+  transition: all 0.3s;
+}
+
+.status-searching {
+  color: #00e5ff;
+}
+
+.status-not-found {
+  color: #ff2a6d;
+}
+
+.status-ready {
+  color: #05ffa1;
+  font-weight: bold;
+}
+
 .join-input-group {
   display: flex;
   gap: 0.5rem;

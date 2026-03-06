@@ -54,22 +54,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const joinStatus = document.getElementById('join-status');
+    let lobbyPeer = null;
+
+    function initLobbyPeer() {
+        if (!lobbyPeer) {
+            lobbyPeer = new Peer();
+            lobbyPeer.on('error', (err) => {
+                console.warn("Lobby Peer Error:", err.type);
+            });
+        }
+    }
+
     // Join Action
     joinGameBtn.addEventListener('click', () => {
         const friendId = joinPeerIdInput.value.trim().toUpperCase();
         if (!friendId) {
-            alert("Please enter a Friend's ID!");
+            joinStatus.textContent = "❌ Please enter a Friend's ID!";
+            joinStatus.className = "join-status-msg status-not-found";
             return;
         }
 
-        // Add a loading state to the button
-        joinGameBtn.textContent = "Connecting...";
+        initLobbyPeer();
+
         joinGameBtn.disabled = true;
+        joinGameBtn.textContent = "Checking Room...";
+        joinStatus.textContent = "🔍 Searching for room...";
+        joinStatus.className = "join-status-msg status-searching";
+
+        // Attempt connection to verify existence
+        const checkConn = lobbyPeer.connect(friendId);
+
+        const timeout = setTimeout(() => {
+            checkConn.close();
+            onRoomNotFound();
+        }, 5000);
+
+        checkConn.on('open', () => {
+            clearTimeout(timeout);
+            checkConn.close();
+            onRoomFound(friendId);
+        });
+
+        checkConn.on('error', (err) => {
+            clearTimeout(timeout);
+            onRoomNotFound();
+        });
+    });
+
+    function onRoomNotFound() {
+        joinGameBtn.disabled = false;
+        joinGameBtn.textContent = "Join Game";
+        joinStatus.textContent = "❌ Room not found. Make sure your friend is in the arena!";
+        joinStatus.className = "join-status-msg status-not-found";
+    }
+
+    function onRoomFound(id) {
+        joinStatus.textContent = "✅ Room found! Connecting...";
+        joinStatus.className = "join-status-msg status-ready";
 
         setTimeout(() => {
-            window.location.href = `index.html?role=guest&friendId=${friendId}&deck=${selectedDeck}`;
-        }, 500);
-    });
+            window.location.href = `index.html?role=guest&friendId=${id}&deck=${selectedDeck}`;
+        }, 800);
+    }
 
     // Sandbox Action
     startGameBtn.addEventListener('click', () => {
