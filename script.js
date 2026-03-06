@@ -234,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     pendingPowerIncrease = 0;
                     pendingCriticalIncrease = 0;
                     document.body.classList.remove('targeting-mode');
+                } else if (card.classList.contains('opponent-card')) {
+                    alert("You must select your own unit!");
                 }
                 return;
             }
@@ -344,6 +346,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             if (cardData.trigger) {
                 resolveTrigger(cardData, true);
+            } else {
+                // If no trigger, ensure we aren't stuck in targeting mode
+                pendingPowerIncrease = 0;
+                pendingCriticalIncrease = 0;
+                document.body.classList.remove('targeting-mode');
             }
         }, 500);
 
@@ -461,7 +468,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         pendingPowerIncrease += powerIncrease;
         document.body.classList.add('targeting-mode');
-        alert(`Select a unit to receive +${powerIncrease >= 100000 ? '100Million' : powerIncrease} Power${triggerType === 'Critical' ? ' and +1 Critical' : ''}!`);
+        // Mobile users might need an extra hint
+        let msg = `Trigger! Select a unit TO RECEIVE +${powerIncrease >= 100000 ? '100Million' : powerIncrease} Power`;
+        if (triggerType === 'Critical') msg += ' and +1 Critical';
+        alert(msg);
     }
 
     function performAttack(attacker, target) {
@@ -743,15 +753,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Multiplayer Logic ---
     function initPeer(customId = null) {
-        console.log("Initializing PeerJS...");
+        console.log("Initializing PeerJS with STUN/TURN...");
 
-        // PeerJS default connects to a global broker server. 
-        // This is necessary for mobile devices on 4G/5G to find each other.
+        const peerOptions = {
+            config: {
+                'iceServers': [
+                    { 'urls': 'stun:stun.l.google.com:19302' },
+                    { 'urls': 'stun:stun1.l.google.com:19302' },
+                    { 'urls': 'stun:stun2.l.google.com:19302' }
+                ]
+            }
+        };
+
         if (peer && !peer.destroyed) return;
         if (customId) {
-            peer = new Peer(customId);
+            peer = new Peer(customId, peerOptions);
         } else {
-            peer = new Peer();
+            peer = new Peer(peerOptions);
         }
 
         peer.on('open', (id) => {

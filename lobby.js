@@ -76,8 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        console.log("Initializing Lobby Peer for room check...");
-        lobbyPeer = new Peer();
+        console.log("Initializing Lobby Peer for room check with STUN...");
+        const lobbyPeerOptions = {
+            config: {
+                'iceServers': [
+                    { 'urls': 'stun:stun.l.google.com:19302' },
+                    { 'urls': 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        };
+        lobbyPeer = new Peer(lobbyPeerOptions);
 
         lobbyPeer.on('open', () => {
             console.log("Lobby Peer ID:", lobbyPeer.id);
