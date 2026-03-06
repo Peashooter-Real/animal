@@ -778,7 +778,6 @@ body {
   box-shadow: 0 0 10px #05ffa1;
 }
 
-/* Connection Badge in Header */
 .connection-badge {
   display: flex;
   align-items: center;
@@ -787,19 +786,7 @@ body {
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
   font-size: 0.7rem;
-  margin-right: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #555;
-}
-
-.dot.online {
-  background: #05ffa1;
 }
 
 .icon-btn {
@@ -971,8 +958,9 @@ body {
 /* Turn Lockout Visual */
 .side-disabled {
   pointer-events: none !important;
-  filter: grayscale(0.8) contrast(0.5);
+  filter: grayscale(0.5);
   transition: all 0.5s;
+  opacity: 0.7;
 }
 
 .side-disabled .card {
@@ -986,6 +974,61 @@ body {
 
 .side-disabled .hand-cards .card {
   cursor: grab;
-}. h i d d e n  
-   d i s p l a y :   n o n e   ! i m p o r t a n t ;    
- 
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* Button variants */
+.ready-btn {
+  background: linear-gradient(135deg, #05ffa1, #00e5ff) !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px rgba(5, 255, 161, 0.4);
+  border: none !important;
+  font-weight: 800 !important;
+}
+
+.ready-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 30px rgba(5, 255, 161, 0.6);
+}
+
+/* Opponent Side Enhancements */
+.opponent-card {
+  filter: hue-rotate(45deg) brightness(0.8);
+  cursor: default !important;
+}
+
+.opponent-card:hover {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: transform 0.2s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.2);
+}

@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let peer = null;
     let conn = null;
     let isHost = false;
+    let isMyTurn = false; // Track if it's currently my turn
 
     // --- Deck Definitions ---
     function generateMainDeck(unitPool, triggerPool) {
@@ -182,6 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
+            if (!isMyTurn && role !== 'sandbox') return; // Only interact if it's my turn or sandbox
+
             const currentPhase = phases[currentPhaseIndex];
             if (currentPhase === 'battle') {
                 if (!attackingCard) {
@@ -210,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendMoveData(card) {
         sendData({
             type: 'moveCard',
+            cardId: card.id,
             cardName: card.dataset.name,
             zone: card.parentElement.dataset.zone,
             isRest: card.classList.contains('rest'),
@@ -375,12 +379,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mySide = document.querySelector('.my-side');
         const oppSide = document.querySelector('.opponent-side');
-        if (isFirstPlayer) {
+
+        // Determine if it's my turn
+        isMyTurn = isFirstPlayer;
+
+        if (isMyTurn) {
             mySide.classList.remove('side-disabled');
             oppSide.classList.add('side-disabled');
+            turnIndicator.textContent = `Turn ${currentTurn} (Your Turn)`;
+            turnIndicator.classList.add('pulse');
         } else {
             mySide.classList.add('side-disabled');
             oppSide.classList.remove('side-disabled');
+            turnIndicator.textContent = `Turn ${currentTurn} (Opponent's Turn)`;
+            turnIndicator.classList.remove('pulse');
         }
 
         const currentPhaseName = phases[currentPhaseIndex];
@@ -412,11 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Multiplayer Logic ---
-    function initPeer() {
-        console.log("Initializing PeerJS...");
+    function initPeer(customId = null) {
+        console.log("Initializing PeerJS with ID:", customId || 'random');
         if (peer && !peer.destroyed) return;
         try {
-            peer = new Peer();
+            peer = customId ? new Peer(customId) : new Peer();
         } catch (e) {
             if (gameStatusText) gameStatusText.textContent = "Error: Library not loaded.";
             return;
@@ -439,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (conn) conn.close();
             conn = connection;
             isHost = true;
+            isFirstPlayer = true; // Host starts first
             setupConnection();
         });
 
@@ -514,16 +527,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`);
 
         if (targetZone) {
-            let cardId = `opp-${data.cardName.replace(/\s/g, '-')}`;
+            let cardId = `opp-${data.cardId}`;
             let card = document.getElementById(cardId);
             if (!card) {
                 card = createCardElement({ name: data.cardName, grade: data.grade, power: data.power, shield: data.shield });
                 card.id = cardId;
                 card.classList.add('opponent-card');
+                card.draggable = false; // Opponent cards shouldn't be draggable by me
             }
             if (data.zone === 'vc') targetZone.querySelectorAll('.card').forEach(c => c.remove());
             targetZone.appendChild(card);
             if (data.isRest) card.classList.add('rest'); else card.classList.remove('rest');
+
+            updateDropCount();
         }
     }
 
@@ -550,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const role = urlParams.get('role');
     const friendId = urlParams.get('friendId');
     const deckChoice = urlParams.get('deck');
+    const customId = urlParams.get('customId');
 
     if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
 
@@ -559,17 +576,20 @@ document.addEventListener('DOMContentLoaded', () => {
         networkInfo.textContent = 'Offline (Sandbox)';
         initGame();
     } else if (role === 'host') {
-        initPeer();
+        initPeer(customId);
     } else if (role === 'guest' && friendId) {
+        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Connecting to friend...`;
         initPeer();
         const checkReady = setInterval(() => {
             if (peer && peer.id) {
                 clearInterval(checkReady);
+                console.log("Connecting to peer:", friendId);
                 conn = peer.connect(friendId);
                 isHost = false;
+                isFirstPlayer = false; // Guest starts second
                 setupConnection();
             }
-        }, 200);
+        }, 500);
     }
 
     if (copyGameIdBtn) {
