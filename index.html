@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard overDress Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- LOBBY SCREEN -->
+        <!-- MATCHMAKING OVERLAY (Show until connected) -->
+        <div id="matchmaking-overlay" class="lobby-container">
+            <div class="lobby-content">
+                <h1 id="matchmaking-title" class="logo lobby-logo">Vanguard <span class="highlight">overDress</span>
+                </h1>
+                <p id="matchmaking-subtitle" class="lobby-subtitle">Initializing connection...</p>
+                <div id="id-display-box" class="id-display hidden">
+                    <span class="label">SHARE THIS ID WITH FRIEND:</span>
+                    <span id="game-peer-id" class="id-text">...</span>
+                    <button id="copy-game-id-btn" class="icon-btn">📋</button>
+                </div>
+                <div class="connection-status">
+                    <div class="status-info-row">
+                        <span class="status-dot"></span>
+                        <span id="game-status-text">Initializing...</span>
+                    </div>
+                </div>
+                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem;">Return
+                    to Lobby</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-container" class="game-container hidden">
+            <!-- Game Info / Settings -->
+            <header class="header">
+                <h1 class="logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
+
+                <!-- Phase Tracker -->
+                <div class="phase-tracker">
+                    <div class="phase-step" data-phase="stand">Stand</div>
+                    <div class="phase-step" data-phase="draw">Draw</div>
+                    <div class="phase-step" data-phase="ride">Ride</div>
+                    <div class="phase-step" data-phase="main">Main</div>
+                    <div class="phase-step" data-phase="battle">Battle</div>
+                    <div class="phase-step" data-phase="end">End</div>
+                </div>
+
+                <div class="game-info">
+                    <div id="connection-badge" class="connection-badge">
+                        <span class="dot online"></span>
+                        <span id="network-info">Online (Host)</span>
+                    </div>
+                    <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
+                    <button id="next-phase-btn" class="glass-btn highlight-btn"
+                        style="margin-left: 1rem; padding: 0.3rem 1rem; font-size: 0.8rem;">Next Phase</button>
+                    <button id="next-turn-btn" class="glass-btn"
+                        style="margin-left: 0.5rem; padding: 0.3rem 1rem; font-size: 0.8rem;">End Turn</button>
+                </div>
+            </header>
+
+            <!-- Main Board Area -->
+            <main class="board-area">
+
+                <!-- Opponent Side -->
+                <div class="player-side opponent-side side-disabled">
+                    <div class="side-overlay">Waiting for rival...</div>
+
+                    <!-- Left Column Zones (Opponent) -->
+                    <div class="col-zones left-col">
+                        <div class="zone damage-zone" data-zone="damage">
+                            <span class="zone-label">Damage</span>
+                        </div>
+                        <div class="zone order-zone" data-zone="order">
+                            <span class="zone-label">Order</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Column (Circles) (Opponent) -->
+                    <div class="col-circles">
+                        <!-- Back Row (Opponent's view top, our view furthest back) -->
+                        <div class="row back-row">
+                            <div class="circle rc" data-zone="rc_back_right">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_center">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_left">
+                                <div class="glow-ring"></div>
+                            </div>
+                        </div>
+                        <!-- Front Row (Opponent's view front, our view closer to divider) -->
+                        <div class="row front-row">
+                            <div class="circle rc" data-zone="rc_front_right">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle vc" data-zone="vc">
+                                <div class="glow-ring"></div>
+                                <div id="opp-soul-counter" class="soul-badge hidden">Soul: 0</div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_front_left">
+                                <div class="glow-ring"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Zones (Opponent) -->
+                    <div class="col-zones right-col">
+                        <div class="zone drop-zone" data-zone="drop">
+                            <span class="zone-label">Drop</span>
+                        </div>
+                        <div class="zone deck-zone" data-zone="deck">
+                            <span class="zone-label">Deck</span>
+                        </div>
+                        <div class="zone ride-deck-zone" data-zone="ride">
+                            <span class="zone-label">Ride Deck</span>
+                        </div>
+                    </div>
+
+                    <!-- Opponent Hand Info Overlay -->
+                    <div class="opp-hand-info">
+                        Hand: <span id="opp-hand-count">0</span>
+                    </div>
+                </div>
+
+                <div class="divider">
+                    <div class="guardian-circle" data-zone="gc_opponent">GC</div>
+                    <div class="battle-clash">VS</div>
+                    <div class="guardian-circle" data-zone="gc_player">GC</div>
+                </div>
+
+                <!-- Player Side -->
+                <div class="player-side my-side">
+                    <!-- Left Column Zones -->
+                    <div class="col-zones left-col">
+                        <div class="zone damage-zone" data-zone="damage">
+                            <span class="zone-label">Damage</span>
+                        </div>
+                        <div class="zone order-zone" data-zone="order">
+                            <span class="zone-label">Order</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Column (Circles) -->
+                    <div class="col-circles">
+                        <!-- Front Row -->
+                        <div class="row front-row">
+                            <div class="circle rc" data-zone="rc_front_left">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle vc" data-zone="vc">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">V</span>
+                                <div id="soul-counter" class="soul-badge hidden">Soul: 0</div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_front_right">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                        </div>
+                        <!-- Back Row -->
+                        <div class="row back-row">
+                            <div class="circle rc" data-zone="rc_back_left">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_center">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_right">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Zones -->
+                    <div class="col-zones right-col">
+                        <div class="zone drop-zone" data-zone="drop" id="drop-zone">
+                            <span class="zone-label">Drop (<span id="drop-count-num">0</span>)</span>
+                            <button id="view-drop-btn" class="view-zone-btn">View</button>
+                        </div>
+                        <div class="zone deck-zone" data-zone="deck" id="main-deck">
+                            <span class="zone-label">Deck (<span id="deck-count-num">46</span>)</span>
+                        </div>
+                        <div class="zone ride-deck-zone" data-zone="ride" id="ride-deck">
+                            <span class="zone-label">Ride Deck</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Player Hand -->
+            <div class="hand-area">
+                <div class="hand-controls">
+                    <div class="hand-count">Hand: <span id="hand-count-num">0</span></div>
+                </div>
+                <div class="hand-cards" id="player-hand" data-zone="hand">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone Viewer Modal -->
+    <div id="zone-viewer" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="viewer-title">Zone Content</h2>
+                <button id="close-viewer-btn" class="close-btn">&times;</button>
+            </div>
+            <div id="viewer-grid" class="viewer-grid">
+                <!-- Cards will be cloned here for viewing -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
