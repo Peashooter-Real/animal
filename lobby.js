@@ -148,11 +148,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 
-    // Sandbox Action
-    startGameBtn.addEventListener('click', () => {
-        startGameBtn.textContent = "Loading Arena...";
-        setTimeout(() => {
-            window.location.href = `index.html?role=sandbox&deck=${selectedDeck}`;
-        }, 500);
-    });
 });

@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPhaseIndex = 0;
     let hasRiddenThisTurn = false;
     let hasDiscardedThisTurn = false;
+    let hasDrawnThisTurn = false;
     let soulPool = [];
 
     // --- Multiplayer State ---
@@ -55,7 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 30; i++) {
             deck.push({ ...unitPool[i % unitPool.length], id: `unit-${i}` });
         }
-        return deck.sort(() => Math.random() - 0.5);
+        // Use a consistent shuffle if needed, but for now we just ensure it exists
+        return deck.sort(() => 0.5 - Math.random());
     }
 
     const bruceDeck = {
@@ -168,6 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
         card.title = cardData.name;
 
         card.addEventListener('dragstart', (e) => {
+            if (!isMyTurn) {
+                e.preventDefault();
+                return;
+            }
             if (card.parentElement.classList.contains('drop-zone')) {
                 e.preventDefault();
                 return;
@@ -185,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
-            if (!isMyTurn && role !== 'sandbox') return; // Only interact if it's my turn or sandbox
+            if (!isMyTurn) return; // Strict turn check
 
             const currentPhase = phases[currentPhaseIndex];
             if (currentPhase === 'battle') {
@@ -225,9 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function drawCard() {
+    function drawCard(isInitial = false) {
+        if (!isMyTurn && !isInitial) return;
         if (deckPool.length === 0) {
-            alert("Deck out! You lose.");
+            if (!isInitial) alert("Deck out! You lose.");
             return;
         }
         const cardData = deckPool.pop();
@@ -235,7 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
         playerHand.appendChild(newCard);
         updateHandSpacing();
         updateDeckCounter();
+
+        // Sync hand count AND the card itself if it's hand (optional: Vanguard usually hides hand)
+        // For this request, we'll sync the move so it appears in opponent's hand zone
         sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
+        sendMoveData(newCard);
     }
 
     function dealDamage() {
@@ -308,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         zone.addEventListener('drop', (e) => {
             e.preventDefault();
             zone.classList.remove('drag-over');
-            if (!draggedCard) return;
+            if (!draggedCard || !isMyTurn) return;
 
             const currentPhase = phases[currentPhaseIndex];
 
@@ -385,6 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Determine if it's my turn
         isMyTurn = isFirstPlayer;
 
+        // Update button interactivity
+        nextPhaseBtn.disabled = !isMyTurn;
+        nextTurnBtn.disabled = !isMyTurn;
+        nextPhaseBtn.style.opacity = isMyTurn ? "1" : "0.5";
+        nextTurnBtn.style.opacity = isMyTurn ? "1" : "0.5";
+
         if (isMyTurn) {
             mySide.classList.remove('side-disabled');
             oppSide.classList.add('side-disabled');
@@ -398,10 +415,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const currentPhaseName = phases[currentPhaseIndex];
-        if (currentPhaseName === 'stand') {
-            document.querySelectorAll('.my-side .circle .card.rest').forEach(c => c.classList.remove('rest'));
-        } else if (currentPhaseName === 'draw') {
-            if (isFirstPlayer) drawCard();
+
+        // Automatic Logic for My Turn
+        if (isMyTurn) {
+            if (currentPhaseName === 'stand') {
+                console.log("Auto Phase: Stand");
+                document.querySelectorAll('.my-side .circle .card.rest').forEach(c => c.classList.remove('rest'));
+                hasDrawnThisTurn = false;
+
+                // Auto advance to draw after 1 second
+                setTimeout(() => {
+                    if (currentPhaseIndex === 0) { // Still in stand
+                        currentPhaseIndex++;
+                        updatePhaseUI();
+                    }
+                }, 1000);
+            } else if (currentPhaseName === 'draw') {
+                console.log("Auto Phase: Draw");
+                if (!hasDrawnThisTurn) {
+                    drawCard();
+                    hasDrawnThisTurn = true;
+                }
+
+                // Auto advance to ride after 1 second
+                setTimeout(() => {
+                    if (currentPhaseIndex === 1) { // Still in draw
+                        currentPhaseIndex++;
+                        updatePhaseUI();
+                    }
+                }, 1000);
+            }
         }
 
         sendData({ type: 'phaseChange', phaseIndex: currentPhaseIndex, isFirstPlayer: isFirstPlayer });
@@ -544,29 +587,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function syncRemoteMove(data) {
         const oppSide = document.querySelector('.opponent-side');
-        // Simple mapping for mirroring
+        // Comprehensive mapping for mirroring
         const zoneMap = {
             'rc_front_left': 'rc_front_right',
             'rc_front_right': 'rc_front_left',
             'rc_back_left': 'rc_back_right',
             'rc_back_right': 'rc_back_left',
-            'vc': 'vc', 'drop': 'drop', 'damage': 'damage', 'hand': 'hand'
+            'vc': 'vc',
+            'drop-zone': 'drop-zone',
+            'damage-zone': 'damage-zone',
+            'hand': 'hand'
         };
         const mappedZone = zoneMap[data.zone] || data.zone;
-        const targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`);
+        const targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`) ||
+            oppSide.querySelector(`.circle.${mappedZone}`) ||
+            oppSide.querySelector(`.${mappedZone}`);
 
         if (targetZone) {
             let cardId = `opp-${data.cardId}`;
             let card = document.getElementById(cardId);
+
             if (!card) {
-                card = createCardElement({ name: data.cardName, grade: data.grade, power: data.power, shield: data.shield });
+                card = createCardElement({
+                    name: data.cardName,
+                    grade: data.grade,
+                    power: data.power,
+                    shield: data.shield
+                });
                 card.id = cardId;
                 card.classList.add('opponent-card');
-                card.draggable = false; // Opponent cards shouldn't be draggable by me
+                card.draggable = false;
             }
-            if (data.zone === 'vc') targetZone.querySelectorAll('.card').forEach(c => c.remove());
+
+            // Handle Vanguard replacement
+            if (data.zone === 'vc') {
+                targetZone.querySelectorAll('.card').forEach(c => c.remove());
+            }
+
             targetZone.appendChild(card);
-            if (data.isRest) card.classList.add('rest'); else card.classList.remove('rest');
+
+            // Handle visual orientation
+            if (data.isRest) card.classList.add('rest');
+            else card.classList.remove('rest');
 
             updateDropCount();
         }
@@ -586,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .sort((a, b) => b.grade - a.grade)
             .forEach(c => rideDeckZone.appendChild(createCardElement(c)));
 
-        for (let i = 0; i < 5; i++) drawCard();
+        for (let i = 0; i < 5; i++) drawCard(true);
         updatePhaseUI();
     }
 
@@ -599,12 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
 
-    if (role === 'sandbox') {
-        if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
-        gameContainer.classList.remove('hidden');
-        networkInfo.textContent = 'Offline (Sandbox)';
-        initGame();
-    } else if (role === 'host') {
+    if (role === 'host') {
         initPeer(customId);
     } else if (role === 'guest' && friendId) {
         if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Searching Arena: ${friendId}...`;
