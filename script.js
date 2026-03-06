@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMyTurn = false;
     let gameStarted = false; // Add flag to track if game has actually begun
     let isGuarding = false; // Add guard checking state
+    let pendingPowerIncrease = 0;
+    let pendingCriticalIncrease = 0;
     // Track if it's currently my turn
 
     // --- Deck Definitions ---
@@ -146,6 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
         card.id = `card-${cardIdCounter++}`;
         card.dataset.grade = cardData.grade;
         card.dataset.power = cardData.power;
+        card.dataset.basePower = cardData.power;
+        card.dataset.critical = cardData.critical || 1;
+        card.dataset.baseCritical = card.dataset.critical;
         card.dataset.shield = cardData.shield || 0;
         card.dataset.trigger = cardData.trigger || '';
         card.dataset.name = cardData.name;
@@ -154,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let triggerIcon = cardData.trigger ? `<div class="card-trigger bg-${cardData.trigger.toLowerCase()}">${cardData.trigger[0]}</div>` : '';
         let personaIcon = cardData.persona ? `<div class="card-persona">Persona</div>` : '';
         let displayPower = cardData.overPower ? '100M' : cardData.power;
+        let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
 
         card.innerHTML = `
             <div class="card-header">
@@ -163,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-art">${artText}</div>
             ${personaIcon}
             <div class="card-details">
-                <span class="card-power">⚔️${displayPower}</span>
+                <span class="card-power">⚔️${displayPower} ${displayCritical}</span>
                 <span class="card-shield">🛡️${cardData.shield || 0}</span>
             </div>
         `;
@@ -171,17 +177,24 @@ document.addEventListener('DOMContentLoaded', () => {
         card.title = cardData.name;
 
         card.addEventListener('dragstart', (e) => {
+            const inHand = card.parentElement.dataset.zone === 'hand';
+            const isGrade2FrontRow = card.dataset.grade == "2" && card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc_front_');
+            const isOnField = card.parentElement.classList.contains('circle');
+
             if (!isMyTurn) {
                 if (!isGuarding) {
                     e.preventDefault();
                     return;
                 } else {
-                    const inHand = card.parentElement.dataset.zone === 'hand';
-                    const isGrade2FrontRow = card.dataset.grade == "2" && card.parentElement.dataset.zone.startsWith('rc_front_');
                     if (!inHand && !isGrade2FrontRow) {
                         e.preventDefault();
                         return;
                     }
+                }
+            } else {
+                if (isOnField) {
+                    e.preventDefault();
+                    return;
                 }
             }
             if (card.parentElement.classList.contains('drop-zone')) {
@@ -201,6 +214,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
+            if (pendingPowerIncrease > 0) {
+                if (card.parentElement.classList.contains('circle') && !card.classList.contains('opponent-card')) {
+                    let currentPower = parseInt(card.dataset.power);
+                    let currentCrit = parseInt(card.dataset.critical);
+
+                    card.dataset.power = currentPower + pendingPowerIncrease;
+                    card.dataset.critical = currentCrit + pendingCriticalIncrease;
+
+                    const powerSpan = card.querySelector('.card-power');
+                    if (powerSpan) {
+                        let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
+                        powerSpan.innerHTML = `⚔️${card.dataset.power >= 100000 ? '100M' : card.dataset.power} ${displayCritical}`;
+                    }
+
+                    sendMoveData(card);
+                    alert(`Effects applied to ${card.dataset.name}!`);
+
+                    pendingPowerIncrease = 0;
+                    pendingCriticalIncrease = 0;
+                    document.body.classList.remove('targeting-mode');
+                }
+                return;
+            }
+
             if (!isMyTurn) return; // Strict turn check
 
             const currentPhase = phases[currentPhaseIndex];
@@ -208,6 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!attackingCard) {
                     if (card.parentElement.classList.contains('circle') && !card.classList.contains('rest')) {
                         if (card.classList.contains('opponent-card')) return;
+                        // Prevent backrow from attacking
+                        if (card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc_back_')) {
+                            alert("Backrow units cannot attack!");
+                            return;
+                        }
                         attackingCard = card;
                         card.classList.add('attacking-glow');
                     }
@@ -238,7 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
             isRest: card.classList.contains('rest'),
             grade: card.dataset.grade,
             power: card.dataset.power,
-            shield: card.dataset.shield
+            critical: card.dataset.critical,
+            shield: card.dataset.shield,
+            basePower: card.dataset.basePower,
+            baseCritical: card.dataset.baseCritical
         });
     }
 
@@ -263,26 +308,76 @@ document.addEventListener('DOMContentLoaded', () => {
         sendMoveData(newCard);
     }
 
-    function dealDamage() {
+    function dealDamage(checksLeft = 1) {
+        if (checksLeft <= 0) return;
+
         if (deckPool.length === 0) {
             alert("Deck out! You lose.");
             showGameOver('Lose');
             return;
         }
-        const damageZone = document.querySelector('.my-side .damage-zone');
+
         const cardData = deckPool.pop();
-        const cardDom = createCardElement(cardData);
-        damageZone.appendChild(cardDom);
         updateDeckCounter();
-        sendMoveData(cardDom);
+        const checkCard = createCardElement(cardData);
+        checkCard.style.position = 'absolute';
+        checkCard.style.top = '40%';
+        checkCard.style.left = '50%';
+        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        checkCard.style.zIndex = '9999';
+        checkCard.style.boxShadow = '0 0 50px rgba(255, 0, 0, 0.8)';
+        document.body.appendChild(checkCard);
+
+        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
+
+        setTimeout(() => {
+            if (cardData.trigger) {
+                resolveTrigger(cardData, true);
+            }
+        }, 500);
+
+        let waitInterval = setInterval(() => {
+            if (pendingPowerIncrease === 0) {
+                clearInterval(waitInterval);
+                finishDamageProcess();
+            }
+        }, 500);
+
+        function finishDamageProcess() {
+            checkCard.style.transform = 'none';
+            checkCard.style.position = 'relative';
+            checkCard.style.top = 'auto';
+            checkCard.style.left = 'auto';
+            checkCard.style.boxShadow = '';
+
+            const damageZone = document.querySelector('.my-side .damage-zone');
+            damageZone.appendChild(checkCard);
+            sendMoveData(checkCard);
+
+            const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
+            sendData({ type: 'syncDamageCount', count: damageCount });
+
+            if (damageCount >= 6) {
+                alert("6 Damage! You lose.");
+                showGameOver('Lose');
+                return;
+            }
+
+            if (checksLeft > 1) {
+                setTimeout(() => {
+                    dealDamage(checksLeft - 1);
+                }, 1000);
+            }
+        }
     }
 
-    function driveCheck() {
+    function driveCheck(checksLeft = 1) {
         if (deckPool.length === 0) {
             alert("Deck out! You lose.");
             showGameOver('Lose');
             return;
         }
+
         const cardData = deckPool.pop();
         updateDeckCounter();
         const checkCard = createCardElement(cardData);
@@ -294,6 +389,14 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.boxShadow = '0 0 50px rgba(255, 255, 255, 0.8)';
         document.body.appendChild(checkCard);
 
+        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
+
+        setTimeout(() => {
+            if (cardData.trigger) {
+                resolveTrigger(cardData);
+            }
+        }, 500);
+
         setTimeout(() => {
             checkCard.style.transform = 'none';
             checkCard.style.position = 'relative';
@@ -303,7 +406,52 @@ document.addEventListener('DOMContentLoaded', () => {
             playerHand.appendChild(checkCard);
             updateHandSpacing();
             sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
-        }, 1200);
+
+            if (checksLeft > 1) {
+                setTimeout(() => {
+                    driveCheck(checksLeft - 1);
+                }, 500);
+            }
+        }, 2000); // 2 second display
+    }
+
+    function resolveTrigger(cardData, isDamageCheck = false) {
+        let triggerType = cardData.trigger;
+        let powerIncrease = triggerType === 'Over' ? 100000000 : 10000;
+
+        alert(`Trigger! ${triggerType} effect activating...`);
+
+        if (triggerType === 'Draw') {
+            if (!isDamageCheck) drawCard(true); // Draw unconditionally only if it's drive check
+        } else if (triggerType === 'Heal') {
+            const myDamage = document.querySelectorAll('.my-side .damage-zone .card').length;
+            const oppDamage = parseInt(document.getElementById('opp-damage-count')?.textContent || "0");
+
+            if (myDamage > 0 && myDamage >= oppDamage) {
+                const damageZone = document.querySelector('.my-side .damage-zone');
+                const damageCards = damageZone.querySelectorAll('.card');
+                const cardToHeal = damageCards[0];
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                dropZone.appendChild(cardToHeal);
+                cardToHeal.classList.remove('rest');
+                cardToHeal.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                sendMoveData(cardToHeal);
+                updateDropCount();
+                alert("Heal successful!");
+            } else {
+                alert("Heal failed (your damage must be >= opponent's damage).");
+            }
+        } else if (triggerType === 'Over') {
+            if (!isDamageCheck) drawCard(true);
+        }
+
+        if (triggerType === 'Critical') {
+            pendingCriticalIncrease++;
+        }
+
+        pendingPowerIncrease += powerIncrease;
+        document.body.classList.add('targeting-mode');
+        alert(`Select a unit to receive +${powerIncrease >= 100000 ? '100Million' : powerIncrease} Power${triggerType === 'Critical' ? ' and +1 Critical' : ''}!`);
     }
 
     function performAttack(attacker, target) {
@@ -320,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let basePower = parseInt(attacker.dataset.power);
         let totalPower = basePower;
+        let totalCritical = parseInt(attacker.dataset.critical || 1);
         let attackerNameFull = attacker.dataset.name;
 
         // Check for Booster
@@ -357,10 +506,12 @@ document.addEventListener('DOMContentLoaded', () => {
             type: 'declareAttack',
             attackerName: attackerNameFull,
             totalPower: totalPower,
+            totalCritical: totalCritical,
             targetId: targetId,
             targetName: target.dataset.name,
             isVanguardAttacker: isVanguardAttacker,
-            isTargetVanguard: isTargetVanguard
+            isTargetVanguard: isTargetVanguard,
+            vanguardGrade: attacker.dataset.grade
         });
 
         const statusText = document.getElementById('game-status-text');
@@ -498,6 +649,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentPhaseName === 'stand') {
                 console.log("Auto Phase: Stand");
                 document.querySelectorAll('.my-side .circle .card.rest').forEach(c => c.classList.remove('rest'));
+
+                // Revert all power to base power for our side
+                document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
+                    let changed = false;
+                    if (c.dataset.basePower && c.dataset.power !== c.dataset.basePower) {
+                        c.dataset.power = c.dataset.basePower;
+                        changed = true;
+                    }
+                    if (c.dataset.baseCritical && c.dataset.critical !== c.dataset.baseCritical) {
+                        c.dataset.critical = c.dataset.baseCritical;
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        const powerSpan = c.querySelector('.card-power');
+                        if (powerSpan) {
+                            let displayCritical = parseInt(c.dataset.critical) > 1 ? `<span style="color:gold;">★${c.dataset.critical}</span>` : '';
+                            powerSpan.innerHTML = `⚔️${c.dataset.basePower} ${displayCritical}`;
+                        }
+                        sendMoveData(c);
+                    }
+                });
+
                 hasDrawnThisTurn = false;
 
                 // Auto advance to draw after 1 second
@@ -646,6 +820,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const oppHandCount = document.getElementById('opp-hand-count');
                 if (oppHandCount) oppHandCount.textContent = data.count;
                 break;
+            case 'syncDamageCount':
+                let oppDamageCount = document.getElementById('opp-damage-count');
+                if (!oppDamageCount) {
+                    oppDamageCount = document.createElement('span');
+                    oppDamageCount.id = 'opp-damage-count';
+                    oppDamageCount.style.display = 'none';
+                    document.body.appendChild(oppDamageCount);
+                }
+                oppDamageCount.textContent = data.count;
+                break;
             case 'moveCard':
                 syncRemoteMove(data);
                 break;
@@ -676,7 +860,29 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'resolveAttack':
                 resolveRemoteAttack(data);
                 break;
+            case 'revealDrive':
+                showOpponentDriveCheck(data);
+                break;
         }
+    }
+
+    function showOpponentDriveCheck(data) {
+        const cardData = data.cardData;
+        const checkCard = createCardElement(cardData);
+        checkCard.classList.add('opponent-card');
+        checkCard.style.position = 'absolute';
+        checkCard.style.top = '20%'; // Show it near the top of the screen
+        checkCard.style.left = '50%';
+        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        checkCard.style.zIndex = '9999';
+        checkCard.style.boxShadow = '0 0 50px rgba(255, 42, 109, 0.8)';
+        // Disable grabbing
+        checkCard.draggable = false;
+        document.body.appendChild(checkCard);
+
+        setTimeout(() => {
+            checkCard.remove();
+        }, 2000);
     }
 
     function showGuardDecision(attackData) {
@@ -701,7 +907,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         overlay.innerHTML = `
             <h2 style="color: white; font-size: 2rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; text-align: center; margin-bottom: 30px;">
-                Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) attacks your ${attackData.targetName}!
+                Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}, Critical: ${attackData.totalCritical}) attacks your ${attackData.targetName}!
             </h2>
             <div style="display: flex; gap: 20px;">
                 <button id="btn-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #60a5fa; cursor: pointer;">Guard</button>
@@ -740,16 +946,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.remove();
             sendData({ type: 'finishGuard', attackData: attackData });
 
-            // Return guards to drop zone after a short delay
-            setTimeout(() => {
-                document.querySelectorAll('.my-side .guardian-circle .card').forEach(c => {
-                    document.querySelector('.my-side .drop-zone').appendChild(c);
-                    c.classList.remove('rest');
-                    c.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-                    sendMoveData(c);
-                });
-                updateDropCount();
-            }, 1500);
+            // Return guards to drop zone immediately
+            document.querySelectorAll('.my-side .guardian-circle .card').forEach(c => {
+                document.querySelector('.my-side .drop-zone').appendChild(c);
+                c.classList.remove('rest');
+                c.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                sendMoveData(c);
+            });
+            updateDropCount();
         };
         document.body.appendChild(btn);
     }
@@ -763,10 +967,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (decision === 'no-guard') {
             alert("Opponent chose: NO GUARD!");
             if (attackData.isVanguardAttacker) {
-                driveCheck();
+                const grade = parseInt(attackData.vanguardGrade || "0");
+                const checks = grade >= 3 ? 2 : 1;
+                driveCheck(checks, attackData.totalCritical); // Pass critical to driveCheck
+
+                // Need to delay resolveAttack slightly more if double driving
+                const delayMs = checks > 1 ? 4500 : 2500;
                 setTimeout(() => {
                     sendData({ type: 'resolveAttack', attackData: attackData });
-                }, 1500);
+                }, delayMs);
             } else {
                 sendData({ type: 'resolveAttack', attackData: attackData });
             }
@@ -779,7 +988,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const attackData = data.attackData;
         alert("Opponent finished placing guards!");
         if (attackData.isVanguardAttacker) {
-            driveCheck();
+            const grade = parseInt(attackData.vanguardGrade || "0");
+            const checks = grade >= 3 ? 2 : 1;
+            driveCheck(checks, attackData.totalCritical); // Pass critical to driveCheck
         }
     }
 
@@ -789,14 +1000,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetCard = document.getElementById(targetId);
 
         if (attackData.isTargetVanguard) {
-            alert(`You took damage! (${attackData.attackerName} hit your Vanguard)`);
-            dealDamage();
-            // Just double check damage win/loss condition
-            const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
-            if (damageCount >= 6) {
-                alert("6 Damage! You lose.");
-                showGameOver('Lose');
-            }
+            let totalDmg = parseInt(attackData.totalCritical || "1");
+            alert(`You are taking ${totalDmg} damage! (${attackData.attackerName} hit your Vanguard)`);
+            dealDamage(totalDmg);
         } else {
             if (targetCard) {
                 alert(`Your ${attackData.targetName} was retired!`);
@@ -871,11 +1077,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: data.cardName,
                     grade: data.grade,
                     power: data.power,
-                    shield: data.shield
+                    shield: data.shield,
+                    critical: data.critical // Sync critical for new cards
                 });
                 card.id = cardId;
                 card.classList.add('opponent-card');
                 card.draggable = false;
+            } else {
+                // Check if power/crit needs updating (e.g. from triggers)
+                let changed = false;
+                if (card.dataset.power !== String(data.power)) {
+                    card.dataset.power = data.power;
+                    changed = true;
+                }
+                if (data.critical && card.dataset.critical !== String(data.critical)) {
+                    card.dataset.critical = data.critical;
+                    changed = true;
+                }
+
+                if (changed) {
+                    const powerSpan = card.querySelector('.card-power');
+                    if (powerSpan) {
+                        let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
+                        powerSpan.innerHTML = `⚔️${card.dataset.power >= 100000 ? '100M' : card.dataset.power} ${displayCritical}`;
+                    }
+                }
             }
 
             // Handle Vanguard replacement
