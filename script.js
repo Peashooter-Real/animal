@@ -308,8 +308,20 @@ document.addEventListener('DOMContentLoaded', () => {
         sendMoveData(newCard);
     }
 
+    function triggerShake() {
+        const board = document.querySelector('.board-area');
+        if (board) {
+            board.classList.remove('shake');
+            void board.offsetWidth; // Force reflow
+            board.classList.add('shake');
+            setTimeout(() => board.classList.remove('shake'), 500);
+        }
+    }
+
     function dealDamage(checksLeft = 1) {
         if (checksLeft <= 0) return;
+
+        triggerShake(); // Shake board whenever taking damage
 
         if (deckPool.length === 0) {
             alert("Deck out! You lose.");
@@ -323,9 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.position = 'absolute';
         checkCard.style.top = '40%';
         checkCard.style.left = '50%';
-        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
-        checkCard.style.boxShadow = '0 0 50px rgba(255, 0, 0, 0.8)';
+        checkCard.classList.add('effect-trigger'); // Apply trigger animation class
         document.body.appendChild(checkCard);
 
         sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
@@ -384,9 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.position = 'absolute';
         checkCard.style.top = '50%';
         checkCard.style.left = '50%';
-        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
-        checkCard.style.boxShadow = '0 0 50px rgba(255, 255, 255, 0.8)';
+        checkCard.classList.add('effect-trigger'); // Apply trigger animation class
         document.body.appendChild(checkCard);
 
         sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
@@ -592,6 +602,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             zone.appendChild(draggedCard);
             draggedCard.classList.remove('rest');
+
+            // Add drop impact animation
+            draggedCard.classList.add('effect-drop');
+            setTimeout(() => draggedCard.classList.remove('effect-drop'), 400);
+
             sendMoveData(draggedCard);
             updateHandCount();
             updateDropCount();
@@ -605,6 +620,11 @@ document.addEventListener('DOMContentLoaded', () => {
             playerHand.appendChild(draggedCard);
             draggedCard.classList.remove('rest');
             draggedCard.style.transform = 'none';
+
+            // Catch-all drop effect for hand
+            draggedCard.classList.add('effect-drop');
+            setTimeout(() => draggedCard.classList.remove('effect-drop'), 400);
+
             sendMoveData(draggedCard);
             updateHandCount();
         }
@@ -763,9 +783,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Real guest detected! Starting game.");
                     gameStarted = true;
                     conn.off('data', waitForJoin); // Remove this temporary listener
-                    setupConnection();
-                    // Sync deck info
-                    sendData({ type: 'hostAck', deck: currentDeck === magnoliaDeck ? 'magnolia' : 'bruce' });
+
+                    const lobbyContent = document.querySelector('.lobby-content');
+                    if (lobbyContent) lobbyContent.classList.add('effect-match-found');
+
+                    setTimeout(() => {
+                        setupConnection();
+                        // Sync deck info
+                        sendData({ type: 'hostAck', deck: currentDeck === magnoliaDeck ? 'magnolia' : 'bruce' });
+                    }, 1000); // 1s effect duration
                 }
             };
 
@@ -795,6 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
         gameContainer.classList.remove('hidden');
+        gameContainer.classList.add('page-enter'); // Add smooth page enter animation
 
         if (isHost) {
             networkInfo.textContent = 'Online (Host)';
@@ -873,11 +900,10 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.position = 'absolute';
         checkCard.style.top = '20%'; // Show it near the top of the screen
         checkCard.style.left = '50%';
-        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
-        checkCard.style.boxShadow = '0 0 50px rgba(255, 42, 109, 0.8)';
         // Disable grabbing
         checkCard.draggable = false;
+        checkCard.classList.add('effect-trigger'); // Apply trigger flash
         document.body.appendChild(checkCard);
 
         setTimeout(() => {
@@ -1006,11 +1032,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (targetCard) {
                 alert(`Your ${attackData.targetName} was retired!`);
-                const dropZone = document.querySelector('.my-side .drop-zone');
-                dropZone.appendChild(targetCard);
-                targetCard.classList.remove('rest');
-                targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-                sendMoveData(targetCard);
+                triggerShake();
+
+                // Retired animation before moving to drop
+                targetCard.classList.add('effect-retired');
+
+                setTimeout(() => {
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    dropZone.appendChild(targetCard);
+                    targetCard.classList.remove('effect-retired', 'rest');
+                    targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    sendMoveData(targetCard);
+                }, 500);
             }
         }
     }
@@ -1166,12 +1199,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Connected! Handshaking...");
                     if (gameStatusText) gameStatusText.textContent = 'Handshaking...';
 
-                    // Small delay to ensure host is ready for data
+                    const lobbyContent = document.querySelector('.lobby-content');
+                    if (lobbyContent) lobbyContent.classList.add('effect-match-found');
+
+                    // Small delay to ensure host is ready for data and play animation
                     setTimeout(() => {
                         sendData({ type: 'guestJoin' });
                         setupConnection();
                         initGame();
-                    }, 500);
+                    }, 1000);
                 });
 
                 conn.on('error', (err) => {
