@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let peer = null;
     let conn = null;
     let isHost = false;
-    let isMyTurn = false; // Track if it's currently my turn
+    let isMyTurn = false;
+    let gameStarted = false; // Add flag to track if game has actually begun
+    // Track if it's currently my turn
 
     // --- Deck Definitions ---
     function generateMainDeck(unitPool, triggerPool) {
@@ -449,17 +451,36 @@ document.addEventListener('DOMContentLoaded', () => {
         peer.on('connection', (connection) => {
             console.log("Incoming connection from:", connection.peer);
 
-            // If we are already connected to someone, check if it's a new person or just another check
-            if (conn && conn.open) {
-                console.log("Already have an active connection. Ignoring or replacing...");
-                // Note: PeerJS handles multiple connections, but for this 1v1 game, 
-                // we might want to close old ones if they are actually dead.
+            if (gameStarted) {
+                console.log("Game already in progress. Rejecting new connection.");
+                connection.close();
+                return;
             }
 
+            // Don't close old conn yet, just assign new one
             conn = connection;
             isHost = true;
-            isFirstPlayer = true; // Host starts first
-            setupConnection();
+            isFirstPlayer = true;
+
+            // Wait for data to confirm this isn't just a lobby check
+            conn.on('data', (data) => {
+                if (data.type === 'guestJoin') {
+                    console.log("Guest joined! Starting game.");
+                    gameStarted = true;
+                    setupConnection();
+                    // Send ACK back
+                    sendData({ type: 'hostAck', deck: currentDeck === magnoliaDeck ? 'magnolia' : 'bruce' });
+                } else {
+                    handleIncomingData(data);
+                }
+            });
+
+            conn.on('close', () => {
+                if (gameStarted) {
+                    alert('Lost connection to rival.');
+                    window.location.href = 'lobby.html';
+                }
+            });
         });
 
         peer.on('error', (err) => {
@@ -471,21 +492,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupConnection() {
-        conn.on('open', () => {
-            console.log("Connection established!");
-            if (gameStatusText) gameStatusText.textContent = 'Rival Connected! Starting...';
-            networkInfo.textContent = isHost ? 'Online (Host)' : 'Online (Guest)';
-            setTimeout(() => {
-                if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
-                gameContainer.classList.remove('hidden');
-                initGame();
-            }, 1000);
-        });
+        console.log("Setting up connection listeners...");
+        if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+
+        if (isHost) {
+            networkInfo.textContent = 'Online (Host)';
+            initGame();
+        } else {
+            networkInfo.textContent = 'Online (Guest)';
+            // Guest game start is usually triggered by initGame() call in its own flow
+        }
 
         conn.on('data', handleIncomingData);
         conn.on('close', () => {
-            alert('Lost connection to rival.');
-            window.location.href = 'lobby.html';
+            if (gameStarted) {
+                alert('Lost connection to rival.');
+                window.location.href = 'lobby.html';
+            }
         });
     }
 
@@ -585,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (role === 'host') {
         initPeer(customId);
     } else if (role === 'guest' && friendId) {
-        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Connecting to friend...`;
+        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Connecting to room ${friendId}...`;
         initPeer();
         const checkReady = setInterval(() => {
             if (peer && peer.id) {
@@ -593,8 +617,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Connecting to peer:", friendId);
                 conn = peer.connect(friendId);
                 isHost = false;
-                isFirstPlayer = false; // Guest starts second
-                setupConnection();
+                isFirstPlayer = false;
+
+                conn.on('open', () => {
+                    console.log("Connection to host opened!");
+                    gameStarted = true;
+                    // Send join message
+                    sendData({ type: 'guestJoin' });
+                    setupConnection();
+                    initGame();
+                });
             }
         }, 500);
     }

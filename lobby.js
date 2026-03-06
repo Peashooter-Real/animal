@@ -57,13 +57,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const joinStatus = document.getElementById('join-status');
     let lobbyPeer = null;
 
-    function initLobbyPeer() {
-        if (!lobbyPeer) {
-            lobbyPeer = new Peer();
-            lobbyPeer.on('error', (err) => {
-                console.warn("Lobby Peer Error:", err.type);
-            });
+    function initLobbyPeer(callback) {
+        if (lobbyPeer && lobbyPeer.open) {
+            callback();
+            return;
         }
+
+        console.log("Initializing Lobby Peer for room check...");
+        lobbyPeer = new Peer();
+
+        lobbyPeer.on('open', () => {
+            console.log("Lobby Peer ID:", lobbyPeer.id);
+            callback();
+        });
+
+        lobbyPeer.on('error', (err) => {
+            console.error("Lobby Peer Error:", err.type);
+            if (err.type === 'peer-unavailable') {
+                onRoomNotFound();
+            } else {
+                joinStatus.textContent = "⚠️ Connection Error. Please refresh.";
+            }
+        });
     }
 
     // Join Action
@@ -75,47 +90,62 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        initLobbyPeer();
-
         joinGameBtn.disabled = true;
-        joinGameBtn.textContent = "Checking Room...";
-        joinStatus.textContent = "🔍 Searching for room...";
+        joinGameBtn.textContent = "🔍 Searching...";
+        joinStatus.textContent = `🔍 Looking for room: ${friendId}...`;
         joinStatus.className = "join-status-msg status-searching";
 
-        // Attempt connection to verify existence
-        const checkConn = lobbyPeer.connect(friendId);
+        initLobbyPeer(() => {
+            console.log("Attempting to connect to:", friendId);
+            const checkConn = lobbyPeer.connect(friendId);
 
-        const timeout = setTimeout(() => {
-            checkConn.close();
-            onRoomNotFound();
-        }, 5000);
+            let found = false;
+            const timeout = setTimeout(() => {
+                if (!found) {
+                    checkConn.close();
+                    onRoomNotFound();
+                }
+            }, 6000);
 
-        checkConn.on('open', () => {
-            clearTimeout(timeout);
-            checkConn.close();
-            onRoomFound(friendId);
-        });
+            checkConn.on('open', () => {
+                found = true;
+                clearTimeout(timeout);
+                console.log("Room found!");
+                // Keep connection open for a split second to ensure data-transfer could happen if needed, then close and move
+                setTimeout(() => {
+                    checkConn.close();
+                    onRoomFound(friendId);
+                }, 500);
+            });
 
-        checkConn.on('error', (err) => {
-            clearTimeout(timeout);
-            onRoomNotFound();
+            checkConn.on('error', (err) => {
+                found = true;
+                clearTimeout(timeout);
+                onRoomNotFound();
+            });
         });
     });
 
     function onRoomNotFound() {
         joinGameBtn.disabled = false;
         joinGameBtn.textContent = "Join Game";
-        joinStatus.textContent = "❌ Room not found. Make sure your friend is in the arena!";
+        joinStatus.innerHTML = `❌ <strong>Room Not Found.</strong><br>Ask your friend to click "Enter Arena" first!`;
         joinStatus.className = "join-status-msg status-not-found";
+
+        // Reset Peer to clear errors
+        if (lobbyPeer) {
+            lobbyPeer.destroy();
+            lobbyPeer = null;
+        }
     }
 
     function onRoomFound(id) {
-        joinStatus.textContent = "✅ Room found! Connecting...";
+        joinStatus.textContent = "✅ Room active! Connecting to Arena...";
         joinStatus.className = "join-status-msg status-ready";
 
         setTimeout(() => {
             window.location.href = `index.html?role=guest&friendId=${id}&deck=${selectedDeck}`;
-        }, 800);
+        }, 500);
     }
 
     // Sandbox Action
