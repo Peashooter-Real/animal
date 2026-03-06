@@ -448,32 +448,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dot) dot.classList.add('online');
         });
 
-        peer.on('connection', (connection) => {
-            console.log("Incoming connection from:", connection.peer);
+        peer.on('connection', (newConn) => {
+            console.log("Incoming connection from:", newConn.peer);
 
             if (gameStarted) {
-                console.log("Game already in progress. Rejecting new connection.");
-                connection.close();
+                console.log("Game already in progress. Ignoring.");
+                newConn.close();
                 return;
             }
 
-            // Don't close old conn yet, just assign new one
-            conn = connection;
+            conn = newConn;
             isHost = true;
             isFirstPlayer = true;
 
-            // Wait for data to confirm this isn't just a lobby check
-            conn.on('data', (data) => {
+            // Temporary listener to wait for guestJoin
+            const waitForJoin = (data) => {
                 if (data.type === 'guestJoin') {
-                    console.log("Guest joined! Starting game.");
+                    console.log("Real guest detected! Starting game.");
                     gameStarted = true;
+                    conn.off('data', waitForJoin); // Remove this temporary listener
                     setupConnection();
-                    // Send ACK back
+                    // Sync deck info
                     sendData({ type: 'hostAck', deck: currentDeck === magnoliaDeck ? 'magnolia' : 'bruce' });
-                } else {
-                    handleIncomingData(data);
                 }
-            });
+            };
+
+            conn.on('data', waitForJoin);
 
             conn.on('close', () => {
                 if (gameStarted) {
@@ -481,6 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = 'lobby.html';
                 }
             });
+
+            if (gameStatusText) gameStatusText.textContent = 'Rival attempting to join...';
         });
 
         peer.on('error', (err) => {
@@ -492,7 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupConnection() {
-        console.log("Setting up connection listeners...");
+        console.log("Activating Game UI and listeners...");
+        gameStarted = true;
+
         if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
         gameContainer.classList.remove('hidden');
 
@@ -501,16 +505,10 @@ document.addEventListener('DOMContentLoaded', () => {
             initGame();
         } else {
             networkInfo.textContent = 'Online (Guest)';
-            // Guest game start is usually triggered by initGame() call in its own flow
         }
 
+        // Primary game data listener
         conn.on('data', handleIncomingData);
-        conn.on('close', () => {
-            if (gameStarted) {
-                alert('Lost connection to rival.');
-                window.location.href = 'lobby.html';
-            }
-        });
     }
 
     function sendData(data) {
@@ -609,26 +607,38 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (role === 'host') {
         initPeer(customId);
     } else if (role === 'guest' && friendId) {
-        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Connecting to room ${friendId}...`;
+        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Searching Arena: ${friendId}...`;
         initPeer();
+
         const checkReady = setInterval(() => {
             if (peer && peer.id) {
                 clearInterval(checkReady);
-                console.log("Connecting to peer:", friendId);
-                conn = peer.connect(friendId);
+                if (gameStatusText) gameStatusText.textContent = 'Connecting to Host...';
+
+                console.log("Guest connecting to:", friendId);
+                conn = peer.connect(friendId, { reliable: true });
                 isHost = false;
                 isFirstPlayer = false;
 
                 conn.on('open', () => {
-                    console.log("Connection to host opened!");
-                    gameStarted = true;
-                    // Send join message
-                    sendData({ type: 'guestJoin' });
-                    setupConnection();
-                    initGame();
+                    console.log("Connected! Handshaking...");
+                    if (gameStatusText) gameStatusText.textContent = 'Handshaking...';
+
+                    // Small delay to ensure host is ready for data
+                    setTimeout(() => {
+                        sendData({ type: 'guestJoin' });
+                        setupConnection();
+                        initGame();
+                    }, 500);
+                });
+
+                conn.on('error', (err) => {
+                    console.error("Connection error:", err);
+                    if (gameStatusText) gameStatusText.textContent = "Connection Failed. Retrying...";
+                    setTimeout(() => window.location.reload(), 2000);
                 });
             }
-        }, 500);
+        }, 800);
     }
 
     if (copyGameIdBtn) {
