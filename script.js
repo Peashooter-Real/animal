@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isHost = false;
     let isMyTurn = false;
     let gameStarted = false; // Add flag to track if game has actually begun
+    let isGuarding = false; // Add guard checking state
     // Track if it's currently my turn
 
     // --- Deck Definitions ---
@@ -171,8 +172,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.addEventListener('dragstart', (e) => {
             if (!isMyTurn) {
-                e.preventDefault();
-                return;
+                if (!isGuarding) {
+                    e.preventDefault();
+                    return;
+                } else {
+                    const inHand = card.parentElement.dataset.zone === 'hand';
+                    const isGrade2FrontRow = card.dataset.grade == "2" && card.parentElement.dataset.zone.startsWith('rc_front_');
+                    if (!inHand && !isGrade2FrontRow) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
             }
             if (card.parentElement.classList.contains('drop-zone')) {
                 e.preventDefault();
@@ -308,6 +318,35 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        let basePower = parseInt(attacker.dataset.power);
+        let totalPower = basePower;
+        let attackerNameFull = attacker.dataset.name;
+
+        // Check for Booster
+        const parentZone = attacker.parentElement.dataset.zone;
+        let backZoneName = null;
+        if (parentZone === 'rc_front_left') backZoneName = 'rc_back_left';
+        else if (parentZone === 'vc') backZoneName = 'rc_back_center';
+        else if (parentZone === 'rc_front_right') backZoneName = 'rc_back_right';
+
+        if (backZoneName) {
+            const backCircle = document.querySelector(`.my-side .circle[data-zone="${backZoneName}"]`);
+            if (backCircle) {
+                const card = backCircle.querySelector('.card:not(.opponent-card)');
+                if (card && !card.classList.contains('rest')) {
+                    const grade = parseInt(card.dataset.grade);
+                    if (grade === 0 || grade === 1) { // Grade 0 and 1 have Boost
+                        if (confirm(`Do you want to Boost with your backrow ${card.dataset.name}? (+${card.dataset.power} Power)`)) {
+                            card.classList.add('rest');
+                            sendMoveData(card);
+                            totalPower += parseInt(card.dataset.power);
+                            attackerNameFull = `${attacker.dataset.name} (Boosted by ${card.dataset.name})`;
+                        }
+                    }
+                }
+            }
+        }
+
         attacker.classList.add('rest');
         sendMoveData(attacker);
 
@@ -316,7 +355,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sendData({
             type: 'declareAttack',
-            attackerName: attacker.dataset.name,
+            attackerName: attackerNameFull,
+            totalPower: totalPower,
             targetId: targetId,
             targetName: target.dataset.name,
             isVanguardAttacker: isVanguardAttacker,
@@ -341,7 +381,22 @@ document.addEventListener('DOMContentLoaded', () => {
         zone.addEventListener('drop', (e) => {
             e.preventDefault();
             zone.classList.remove('drag-over');
-            if (!draggedCard || !isMyTurn) return;
+            if (!draggedCard) return;
+            if (!isMyTurn && !isGuarding) return;
+
+            if (isGuarding) {
+                if (zone.dataset.zone !== 'gc_player') {
+                    alert("During Guard Step, you can only drop cards onto your Guardian Circle (GC)!");
+                    return;
+                }
+                zone.appendChild(draggedCard);
+                draggedCard.classList.remove('rest');
+                draggedCard.style.transform = 'none';
+                sendMoveData(draggedCard);
+                updateHandCount();
+                updateDropCount();
+                return;
+            }
 
             const currentPhase = phases[currentPhaseIndex];
 
@@ -615,6 +670,9 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'guardDecision':
                 handleGuardDecision(data);
                 break;
+            case 'finishGuard':
+                handleFinishGuard(data);
+                break;
             case 'resolveAttack':
                 resolveRemoteAttack(data);
                 break;
@@ -643,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         overlay.innerHTML = `
             <h2 style="color: white; font-size: 2rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; text-align: center; margin-bottom: 30px;">
-                Opponent's ${attackData.attackerName} attacks your ${attackData.targetName}!
+                Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) attacks your ${attackData.targetName}!
             </h2>
             <div style="display: flex; gap: 20px;">
                 <button id="btn-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #60a5fa; cursor: pointer;">Guard</button>
@@ -653,7 +711,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('btn-guard').addEventListener('click', () => {
             overlay.style.display = 'none';
+            isGuarding = true;
             sendData({ type: 'guardDecision', decision: 'guard', attackData: attackData });
+            showEndGuardButton(attackData);
         });
 
         document.getElementById('btn-no-guard').addEventListener('click', () => {
@@ -662,6 +722,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         overlay.style.display = 'flex';
+    }
+
+    function showEndGuardButton(attackData) {
+        let btn = document.createElement('button');
+        btn.textContent = "Finish Guarding";
+        btn.className = "btn glass-btn highlight-btn";
+        btn.style.position = "fixed";
+        btn.style.bottom = "20px";
+        btn.style.right = "20px";
+        btn.style.zIndex = "1000";
+        btn.style.padding = "15px 30px";
+        btn.style.fontSize = "1.2rem";
+
+        btn.onclick = () => {
+            isGuarding = false;
+            btn.remove();
+            sendData({ type: 'finishGuard', attackData: attackData });
+
+            // Return guards to drop zone after a short delay
+            setTimeout(() => {
+                document.querySelectorAll('.my-side .guardian-circle .card').forEach(c => {
+                    document.querySelector('.my-side .drop-zone').appendChild(c);
+                    c.classList.remove('rest');
+                    c.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    sendMoveData(c);
+                });
+                updateDropCount();
+            }, 1500);
+        };
+        document.body.appendChild(btn);
     }
 
     function handleGuardDecision(data) {
@@ -681,10 +771,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendData({ type: 'resolveAttack', attackData: attackData });
             }
         } else if (decision === 'guard') {
-            alert("Opponent chose: GUARD! Place guards if defending, and attacker can manually Drive Check.");
-            if (attackData.isVanguardAttacker) {
-                driveCheck();
-            }
+            alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
+        }
+    }
+
+    function handleFinishGuard(data) {
+        const attackData = data.attackData;
+        alert("Opponent finished placing guards!");
+        if (attackData.isVanguardAttacker) {
+            driveCheck();
         }
     }
 

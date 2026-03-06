@@ -137,6 +137,11 @@ body {
   /* Disable interaction for now */
 }
 
+/* Allow clicking opponent cards specifically */
+.opponent-card {
+  pointer-events: auto;
+}
+
 .side-overlay {
   position: absolute;
   font-size: 1.5rem;
