@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentPhase === 'battle') {
                 if (!attackingCard) {
                     if (card.parentElement.classList.contains('circle') && !card.classList.contains('rest')) {
+                        if (card.classList.contains('opponent-card')) return;
                         attackingCard = card;
                         card.classList.add('attacking-glow');
                     }
@@ -234,7 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawCard(isInitial = false) {
         if (!isMyTurn && !isInitial) return;
         if (deckPool.length === 0) {
-            if (!isInitial) alert("Deck out! You lose.");
+            if (!isInitial) {
+                alert("Deck out! You lose.");
+                showGameOver('Lose');
+            }
             return;
         }
         const cardData = deckPool.pop();
@@ -250,7 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function dealDamage() {
-        if (deckPool.length === 0) return;
+        if (deckPool.length === 0) {
+            alert("Deck out! You lose.");
+            showGameOver('Lose');
+            return;
+        }
         const damageZone = document.querySelector('.my-side .damage-zone');
         const cardData = deckPool.pop();
         const cardDom = createCardElement(cardData);
@@ -260,7 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function driveCheck() {
-        if (deckPool.length === 0) return;
+        if (deckPool.length === 0) {
+            alert("Deck out! You lose.");
+            showGameOver('Lose');
+            return;
+        }
         const cardData = deckPool.pop();
         updateDeckCounter();
         const checkCard = createCardElement(cardData);
@@ -285,24 +297,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function performAttack(attacker, target) {
+        if (!target.classList.contains('opponent-card') && !confirm("Attack your own card?")) {
+            return;
+        }
+
+        let targetId = target.id;
+        if (targetId.startsWith('opp-')) targetId = targetId.substring(4);
+
+        if (!confirm(`Attack ${target.dataset.name} with ${attacker.dataset.name}?`)) {
+            return;
+        }
+
         attacker.classList.add('rest');
         sendMoveData(attacker);
 
-        if (attacker.parentElement.classList.contains('vc')) {
-            driveCheck();
-        }
+        const isVanguardAttacker = attacker.parentElement.classList.contains('vc');
+        const isTargetVanguard = target.parentElement.classList.contains('vc');
 
-        if (target.parentElement.classList.contains('vc')) {
-            alert(`${attacker.dataset.name} attacks Vanguard!`);
-            dealDamage();
-        } else if (target.parentElement.classList.contains('rc')) {
-            alert(`${attacker.dataset.name} retired ${target.dataset.name}!`);
-            const dropZone = document.querySelector('.my-side .drop-zone');
-            dropZone.appendChild(target);
-            target.classList.remove('rest');
-            target.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-            sendMoveData(target);
-        }
+        sendData({
+            type: 'declareAttack',
+            attackerName: attacker.dataset.name,
+            targetId: targetId,
+            targetName: target.dataset.name,
+            isVanguardAttacker: isVanguardAttacker,
+            isTargetVanguard: isTargetVanguard
+        });
+
+        const statusText = document.getElementById('game-status-text');
+        if (statusText) statusText.textContent = "Waiting for opponent to guard...";
     }
 
     // --- Interaction Setup ---
@@ -383,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Game Navigation ---
-    function updatePhaseUI() {
+    function updatePhaseUI(broadcast = true) {
         phaseSteps.forEach((step, index) => {
             step.classList.remove('active', 'passed');
             if (index < currentPhaseIndex) step.classList.add('passed');
@@ -427,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     if (currentPhaseIndex === 0) { // Still in stand
                         currentPhaseIndex++;
-                        updatePhaseUI();
+                        updatePhaseUI(true);
                     }
                 }, 1000);
             } else if (currentPhaseName === 'draw') {
@@ -441,19 +463,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     if (currentPhaseIndex === 1) { // Still in draw
                         currentPhaseIndex++;
-                        updatePhaseUI();
+                        updatePhaseUI(true);
                     }
                 }, 1000);
             }
         }
 
-        sendData({ type: 'phaseChange', phaseIndex: currentPhaseIndex, isFirstPlayer: isFirstPlayer });
+        if (broadcast) {
+            sendData({ type: 'phaseChange', phaseIndex: currentPhaseIndex, isFirstPlayer: isFirstPlayer });
+        }
     }
 
     nextPhaseBtn.addEventListener('click', () => {
         if (currentPhaseIndex < phases.length - 1) {
             currentPhaseIndex++;
-            updatePhaseUI();
+            updatePhaseUI(true);
         }
     });
 
@@ -464,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hasRiddenThisTurn = false;
         hasDiscardedThisTurn = false;
         turnIndicator.textContent = `Turn ${currentTurn} (${isFirstPlayer ? 'First Player' : 'Second Player'})`;
-        updatePhaseUI();
+        updatePhaseUI(false);
         sendData({ type: 'nextTurn', currentTurn: currentTurn, isFirstPlayer: isFirstPlayer });
     });
 
@@ -573,16 +597,156 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'phaseChange':
                 currentPhaseIndex = data.phaseIndex;
                 isFirstPlayer = !data.isFirstPlayer;
-                updatePhaseUI();
+                updatePhaseUI(false);
                 break;
             case 'nextTurn':
                 isFirstPlayer = !data.isFirstPlayer;
                 currentTurn = data.currentTurn;
                 currentPhaseIndex = 0;
                 turnIndicator.textContent = `Turn ${currentTurn} (${isFirstPlayer ? 'First' : 'Second'})`;
-                updatePhaseUI();
+                updatePhaseUI(false);
+                break;
+            case 'gameOver':
+                showGameOver('Win');
+                break;
+            case 'declareAttack':
+                showGuardDecision(data);
+                break;
+            case 'guardDecision':
+                handleGuardDecision(data);
+                break;
+            case 'resolveAttack':
+                resolveRemoteAttack(data);
                 break;
         }
+    }
+
+    function showGuardDecision(attackData) {
+        let overlay = document.getElementById('guard-decision-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'guard-decision-overlay';
+            overlay.className = 'overlay glass-panel';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.flexDirection = 'column';
+            overlay.style.zIndex = '10000';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <h2 style="color: white; font-size: 2rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; text-align: center; margin-bottom: 30px;">
+                Opponent's ${attackData.attackerName} attacks your ${attackData.targetName}!
+            </h2>
+            <div style="display: flex; gap: 20px;">
+                <button id="btn-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #60a5fa; cursor: pointer;">Guard</button>
+                <button id="btn-no-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #f87171; cursor: pointer;">No Guard (Take it)</button>
+            </div>
+        `;
+
+        document.getElementById('btn-guard').addEventListener('click', () => {
+            overlay.style.display = 'none';
+            sendData({ type: 'guardDecision', decision: 'guard', attackData: attackData });
+        });
+
+        document.getElementById('btn-no-guard').addEventListener('click', () => {
+            overlay.style.display = 'none';
+            sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
+        });
+
+        overlay.style.display = 'flex';
+    }
+
+    function handleGuardDecision(data) {
+        const decision = data.decision;
+        const attackData = data.attackData;
+        const statusText = document.getElementById('game-status-text');
+        if (statusText) statusText.textContent = "Network Ready";
+
+        if (decision === 'no-guard') {
+            alert("Opponent chose: NO GUARD!");
+            if (attackData.isVanguardAttacker) {
+                driveCheck();
+                setTimeout(() => {
+                    sendData({ type: 'resolveAttack', attackData: attackData });
+                }, 1500);
+            } else {
+                sendData({ type: 'resolveAttack', attackData: attackData });
+            }
+        } else if (decision === 'guard') {
+            alert("Opponent chose: GUARD! Place guards if defending, and attacker can manually Drive Check.");
+            if (attackData.isVanguardAttacker) {
+                driveCheck();
+            }
+        }
+    }
+
+    function resolveRemoteAttack(data) {
+        const attackData = data.attackData;
+        let targetId = attackData.targetId;
+        const targetCard = document.getElementById(targetId);
+
+        if (attackData.isTargetVanguard) {
+            alert(`You took damage! (${attackData.attackerName} hit your Vanguard)`);
+            dealDamage();
+            // Just double check damage win/loss condition
+            const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
+            if (damageCount >= 6) {
+                alert("6 Damage! You lose.");
+                showGameOver('Lose');
+            }
+        } else {
+            if (targetCard) {
+                alert(`Your ${attackData.targetName} was retired!`);
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                dropZone.appendChild(targetCard);
+                targetCard.classList.remove('rest');
+                targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                sendMoveData(targetCard);
+            }
+        }
+    }
+
+    function showGameOver(result) {
+        if (result === 'Lose') {
+            sendData({ type: 'gameOver' });
+        }
+
+        let overlay = document.getElementById('game-over-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'game-over-overlay';
+            overlay.className = 'overlay glass-panel';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.flexDirection = 'column';
+            overlay.style.zIndex = '10000';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <h1 style="font-size: 4rem; color: ${result === 'Win' ? '#4ade80' : '#f87171'}; text-shadow: 0 0 20px ${result === 'Win' ? '#4ade80' : '#f87171'}; font-family: 'Orbitron', sans-serif; text-transform: uppercase;">You ${result}!</h1>
+            <button id="return-lobby-btn" class="btn mt-4 glow-effect" style="margin-top: 30px; padding: 15px 40px; font-size: 1.5rem; font-family: 'Orbitron', sans-serif; cursor: pointer;">Return to Lobby</button>
+        `;
+
+        document.getElementById('return-lobby-btn').addEventListener('click', () => {
+            if (peer) peer.destroy();
+            window.location.href = 'lobby.html';
+        });
     }
 
     function syncRemoteMove(data) {
