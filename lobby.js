@@ -45,12 +45,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyBtn = document.getElementById('copy-my-id-btn');
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
-            const idText = document.getElementById('my-peer-id').textContent;
-            navigator.clipboard.writeText(idText);
+            const id = document.getElementById('my-peer-id').textContent;
+            const joinUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
 
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = "✅";
-            setTimeout(() => copyBtn.textContent = originalText, 2000);
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join my Vanguard Match!',
+                    text: `Enter my Arena with ID: ${id}`,
+                    url: joinUrl
+                }).then(() => {
+                    copyBtn.textContent = "✅";
+                    setTimeout(() => copyBtn.textContent = "📋", 2000);
+                }).catch(() => {
+                    navigator.clipboard.writeText(joinUrl);
+                    alert('ID Link Copied!');
+                });
+            } else {
+                navigator.clipboard.writeText(joinUrl);
+                alert('ID Link Copied!');
+            }
         });
     }
 
@@ -148,4 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 
+    // --- Mobile/URL Join Support ---
+    const urlJoinId = new URLSearchParams(window.location.search).get('id');
+    if (urlJoinId) {
+        joinPeerIdInput.value = urlJoinId.toUpperCase();
+        // Give UI a moment to settle then auto-join
+        setTimeout(() => joinGameBtn.click(), 800);
+    }
 });

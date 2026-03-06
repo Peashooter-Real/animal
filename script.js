@@ -1221,8 +1221,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (copyGameIdBtn) {
         copyGameIdBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(gamePeerIdDisplay.textContent);
-            alert('ID Copied!');
+            const id = gamePeerIdDisplay.textContent;
+            // Create a full URL for easier joining
+            const joinUrl = `${window.location.origin}${window.location.pathname.replace('index.html', 'lobby.html')}?id=${id}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join my Vanguard Match!',
+                    text: `Enter my Arena with ID: ${id}`,
+                    url: joinUrl
+                }).catch(err => {
+                    navigator.clipboard.writeText(joinUrl);
+                    alert('Match Link Copied!');
+                });
+            } else {
+                navigator.clipboard.writeText(joinUrl);
+                alert('Match Link Copied!');
+            }
         });
     }
 

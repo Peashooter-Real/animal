@@ -23,13 +23,14 @@
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: radial-gradient(circle at center, #0a0a1a 0%, #020205 100%);
+  background: radial-gradient(circle at center, #05050f 0%, #010103 100%);
   color: var(--text-main);
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   background-image:
-    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
