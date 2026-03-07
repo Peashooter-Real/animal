@@ -1523,24 +1523,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    viewDropBtn.addEventListener('click', () => {
-        const cards = document.querySelectorAll('.my-side .drop-zone .card');
-        openViewer(`Drop Zone (${cards.length})`, Array.from(cards));
-    });
+    document.querySelectorAll('.zone').forEach(zone => {
+        zone.addEventListener('click', () => {
+            const zoneType = zone.dataset.zone;
+            if (zoneType !== 'damage' && zoneType !== 'drop') return;
 
-    viewDamageBtn.addEventListener('click', () => {
-        const cards = document.querySelectorAll('.my-side .damage-zone .card');
-        openViewer(`Damage Zone (${cards.length})`, Array.from(cards));
-    });
+            const isOpponent = zone.closest('.opponent-side');
+            const sidePrefix = isOpponent ? 'Opponent ' : 'Your ';
+            const cards = zone.querySelectorAll('.card');
 
-    oppViewDropBtn.addEventListener('click', () => {
-        const cards = document.querySelectorAll('.opponent-side .drop-zone .card');
-        openViewer(`Opponent Drop Zone (${cards.length})`, Array.from(cards));
-    });
-
-    oppViewDamageBtn.addEventListener('click', () => {
-        const cards = document.querySelectorAll('.opponent-side .damage-zone .card');
-        openViewer(`Opponent Damage Zone (${cards.length})`, Array.from(cards));
+            openViewer(`${sidePrefix}${zoneType.charAt(0).toUpperCase() + zoneType.slice(1)} Zone (${cards.length})`, Array.from(cards));
+        });
     });
 
     closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));
