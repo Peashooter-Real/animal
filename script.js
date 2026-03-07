@@ -807,48 +807,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
 
                 if (isFromHand) {
-                    const isRideCost = currentPhase === 'ride' && !hasDiscardedThisTurn && !hasRiddenThisTurn;
-                    const isGuardCost = isGuarding;
+                    // Cost checking
+                    const isRidePhase = phases[currentPhaseIndex] === 'ride';
+                    const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
+                    const isDefending = isGuarding;
 
-                    if (!isRideCost && !isGuardCost) {
-                        alert("Invalid Discard! You can only discard from hand as part of a cost (Ride Phase or Guarding).");
+                    if (!canAutoRide && !isDefending) {
+                        alert("Movement Blocked: You can only discard from hand to pay for a Ride cost (during Ride Phase) or when Guarding.");
                         return;
                     }
-                }
 
-                if (currentPhase === 'ride' && !hasDiscardedThisTurn && !hasRiddenThisTurn && isFromHand) {
-                    const vanguard = document.querySelector('.my-side .circle.vc .card');
-                    const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
-                    const nextGrade = vanguardGrade + 1;
+                    // If it's the ride cost, trigger the logic
+                    if (canAutoRide) {
+                        const vanguard = document.querySelector('.my-side .circle.vc .card');
+                        const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
+                        const nextGrade = vanguardGrade + 1;
 
-                    const rideDeckZone = document.getElementById('ride-deck');
-                    const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
+                        const rideDeckZone = document.getElementById('ride-deck');
+                        const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
 
-                    if (nextRideCard) {
-                        console.log(`Auto-Ride Triggered: Grade ${nextGrade} found.`);
-                        hasDiscardedThisTurn = true;
-                        hasRiddenThisTurn = true; // Mark as ridden immediately to prevent dual-ride
+                        if (nextRideCard) {
+                            hasDiscardedThisTurn = true;
+                            hasRiddenThisTurn = true;
 
-                        setTimeout(() => {
-                            if (vanguard) {
-                                soulPool.push(vanguard);
-                                vanguard.remove();
-                                updateSoulUI();
-                            }
-                            const vcZone = document.querySelector('.my-side .circle.vc');
-                            vcZone.appendChild(nextRideCard);
-                            nextRideCard.classList.remove('rest', 'opponent-card');
-                            nextRideCard.style.transform = 'none';
-
-                            sendMoveData(nextRideCard);
-                            alert(`Auto-Ride: ${nextRideCard.dataset.name}! Entering Main Phase.`);
-
-                            // Auto Advance to Main Phase
-                            currentPhaseIndex = phases.indexOf('main');
-                            updatePhaseUI(true);
-                        }, 500);
-                    } else {
-                        console.log(`Auto-Ride skipped: No Grade ${nextGrade} in Ride Deck.`);
+                            setTimeout(() => {
+                                if (vanguard) {
+                                    soulPool.push(vanguard);
+                                    vanguard.remove();
+                                    updateSoulUI();
+                                }
+                                const vcZone = document.querySelector('.my-side .circle.vc');
+                                vcZone.appendChild(nextRideCard);
+                                nextRideCard.classList.remove('rest', 'opponent-card');
+                                nextRideCard.style.transform = 'none';
+                                sendMoveData(nextRideCard);
+                                alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
+                                currentPhaseIndex = phases.indexOf('main');
+                                updatePhaseUI(true);
+                            }, 500);
+                        }
                     }
                 }
                 draggedCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
@@ -1571,16 +1568,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.zone').forEach(zone => {
-        zone.addEventListener('click', () => {
-            const zoneType = zone.dataset.zone;
-            if (zoneType !== 'damage' && zoneType !== 'drop') return;
+    document.querySelectorAll('.zone, .circle.vc').forEach(el => {
+        el.addEventListener('click', (e) => {
+            // Target checks
+            const isBadge = e.target.classList.contains('soul-badge');
+            const isCard = e.target.classList.contains('card') || e.target.closest('.card');
+            const isCircleBody = e.target === el || e.target.classList.contains('glow-ring') || e.target.classList.contains('circle-label');
 
-            const isOpponent = zone.closest('.opponent-side');
-            const sidePrefix = isOpponent ? 'Opponent ' : 'Your ';
-            const cards = zone.querySelectorAll('.card');
+            // Soul viewing logic: Badge or VC background
+            if (isBadge || (el.classList.contains('vc') && isCircleBody && !isCard)) {
+                const isOpponentSide = el.closest('.opponent-side');
+                if (isOpponentSide) {
+                    alert(`Opponent's Soul count: ${el.querySelector('.soul-badge').textContent.split(': ')[1]}`);
+                    return;
+                }
+                openViewer("Soul Content", soulPool);
+                return;
+            }
 
-            openViewer(`${sidePrefix}${zoneType.charAt(0).toUpperCase() + zoneType.slice(1)} Zone (${cards.length})`, Array.from(cards));
+            // Damage/Drop viewing logic
+            const zoneType = el.dataset.zone;
+            if (zoneType === 'damage' || zoneType === 'drop') {
+                if (!isCard) {
+                    const isOpponentSide = el.closest('.opponent-side');
+                    const sidePrefix = isOpponentSide ? 'Opponent ' : 'Your ';
+                    const cards = el.querySelectorAll('.card');
+                    openViewer(`${sidePrefix}${zoneType.charAt(0).toUpperCase() + zoneType.slice(1)} Zone (${cards.length})`, Array.from(cards));
+                }
+            }
         });
     });
 
