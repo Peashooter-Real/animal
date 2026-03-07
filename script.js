@@ -1237,23 +1237,28 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.style.justifyContent = 'center';
             overlay.style.flexDirection = 'column';
             overlay.style.zIndex = '10000';
-            overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
+            overlay.style.backdropFilter = 'blur(15px)';
             document.body.appendChild(overlay);
         }
 
         overlay.innerHTML = `
-            <h2 style="color: white; font-size: 2rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; text-align: center; margin-bottom: 30px;">
-                Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}, Critical: ${attackData.totalCritical}) attacks your ${attackData.targetName}!
-            </h2>
-            <div style="display: flex; gap: 20px;">
-                <button id="btn-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #60a5fa; cursor: pointer;">Guard</button>
-                <button id="btn-no-guard" class="btn" style="padding: 15px 30px; font-size: 1.2rem; background: #f87171; cursor: pointer;">No Guard (Take it)</button>
+            <div class="mobile-guard-box" style="width: 90%; max-width: 500px; text-align: center; padding: 2rem; background: rgba(20,20,30,0.8); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.4);">
+                <h3 style="color: var(--accent-vanguard); font-family: 'Orbitron'; margin-bottom: 10px; font-size: 1.2rem;">INCOMING ATTACK!</h3>
+                <h2 style="color: white; font-size: 1.5rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; margin-bottom: 30px;">
+                    ${attackData.attackerName} (${attackData.totalPower}) → ${attackData.targetName}
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button id="btn-guard" class="glass-btn highlight-btn" style="padding: 1.2rem; font-size: 1.3rem; background: var(--accent-blue); color: #001020; border: none; width: 100%;">GUARD</button>
+                    <button id="btn-no-guard" class="glass-btn" style="padding: 1.2rem; font-size: 1.3rem; background: rgba(248, 113, 113, 0.2); color: #fecaca; border: 1px solid #f87171; width: 100%;">NO GUARD</button>
+                </div>
             </div>
         `;
 
         document.getElementById('btn-guard').addEventListener('click', () => {
             overlay.style.display = 'none';
             isGuarding = true;
+            document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.add('zone-highlight'));
             sendData({ type: 'guardDecision', decision: 'guard', attackData: attackData });
             showEndGuardButton(attackData);
         });
@@ -1268,17 +1273,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showEndGuardButton(attackData) {
         let btn = document.createElement('button');
-        btn.textContent = "Finish Guarding";
-        btn.className = "btn glass-btn highlight-btn";
+        btn.innerHTML = "CONFIRM GUARD <span style='font-size: 0.8rem; display: block; opacity: 0.7;'>TAP CARD THEN GC</span>";
+        btn.className = "btn glass-btn highlight-btn guard-confirm-btn";
         btn.style.position = "fixed";
-        btn.style.bottom = "20px";
-        btn.style.right = "20px";
-        btn.style.zIndex = "1000";
-        btn.style.padding = "15px 30px";
+        btn.style.bottom = "120px";
+        btn.style.left = "50%";
+        btn.style.transform = "translateX(-50%)";
+        btn.style.zIndex = "2000";
+        btn.style.padding = "1rem 2rem";
         btn.style.fontSize = "1.2rem";
+        btn.style.width = "80%";
+        btn.style.maxWidth = "300px";
+        btn.style.boxShadow = "0 0 20px var(--accent-blue)";
 
         btn.onclick = () => {
             isGuarding = false;
+            document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.remove('zone-highlight'));
 
             // Calculate Total Shield
             let totalShieldAdded = 0;
@@ -1607,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.zone, .circle.vc, .circle.rc').forEach(el => {
+    document.querySelectorAll('.zone, .circle.vc, .circle.rc, .guardian-circle').forEach(el => {
         el.addEventListener('click', (e) => {
             // TAP TO MOVE EXECUTION
             if (selectedCard) {
