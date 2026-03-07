@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPhaseBtn = document.getElementById('next-phase-btn');
     const nextTurnBtn = document.getElementById('next-turn-btn');
     const soulCounter = document.getElementById('soul-counter');
+    const handleSoulView = (e) => {
+        if (e) e.stopPropagation();
+        if (soulPool.length === 0) {
+            alert("Soul is empty.");
+            return;
+        }
+        openViewer("Soul Content", soulPool);
+    };
+    if (soulCounter) soulCounter.addEventListener('click', handleSoulView);
     const dropCountNum = document.getElementById('drop-count-num');
     const viewDropBtn = document.getElementById('view-drop-btn');
     const viewDamageBtn = document.getElementById('view-damage-btn');
@@ -24,6 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const oppDropCountNum = document.getElementById('opp-drop-count-num');
     const oppDamageCountNum = document.getElementById('opp-damage-count-num');
     const oppSoulBadge = document.getElementById('opp-soul-counter');
+    if (oppSoulBadge) {
+        oppSoulBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const countStr = oppSoulBadge.textContent.split(': ')[1] || "0";
+            alert(`Opponent's Soul count: ${countStr}`);
+        });
+    }
     const oppViewDropBtn = document.getElementById('opp-view-drop-btn');
     const oppViewDamageBtn = document.getElementById('opp-view-damage-btn');
 
@@ -1575,14 +1591,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const isCard = e.target.classList.contains('card') || e.target.closest('.card');
             const isCircleBody = e.target === el || e.target.classList.contains('glow-ring') || e.target.classList.contains('circle-label');
 
-            // Soul viewing logic: Badge or VC background
-            if (isBadge || (el.classList.contains('vc') && isCircleBody && !isCard)) {
+            if (el.classList.contains('vc') && !isCard) {
                 const isOpponentSide = el.closest('.opponent-side');
                 if (isOpponentSide) {
-                    alert(`Opponent's Soul count: ${el.querySelector('.soul-badge').textContent.split(': ')[1]}`);
-                    return;
+                    const badge = el.querySelector('.soul-badge');
+                    alert(`Opponent's Soul count: ${badge ? badge.textContent.split(': ')[1] : '0'}`);
+                } else {
+                    handleSoulView(e);
                 }
-                openViewer("Soul Content", soulPool);
                 return;
             }
 
