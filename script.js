@@ -696,7 +696,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (zone.classList.contains('drop-zone')) {
-                if (currentPhase === 'ride' && !hasDiscardedThisTurn) hasDiscardedThisTurn = true;
+                if (currentPhase === 'ride' && !hasDiscardedThisTurn) {
+                    hasDiscardedThisTurn = true;
+                    // Auto-Ride logic
+                    const vanguard = document.querySelector('.my-side .circle.vc .card');
+                    const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
+                    const nextGrade = vanguardGrade + 1;
+
+                    const rideDeckZone = document.getElementById('ride-deck');
+                    const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
+
+                    if (nextRideCard) {
+                        setTimeout(() => {
+                            if (vanguard) {
+                                soulPool.push(vanguard);
+                                vanguard.remove();
+                                updateSoulUI();
+                            }
+                            const vcZone = document.querySelector('.my-side .circle.vc');
+                            vcZone.appendChild(nextRideCard);
+                            nextRideCard.classList.remove('rest');
+                            nextRideCard.style.transform = 'none';
+                            hasRiddenThisTurn = true;
+                            sendMoveData(nextRideCard);
+                            alert(`Auto-Ride: ${nextRideCard.dataset.name}! Entering Main Phase.`);
+
+                            // Auto Advance to Main Phase
+                            currentPhaseIndex = phases.indexOf('main');
+                            updatePhaseUI(true);
+                        }, 500);
+                    }
+                }
                 draggedCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
             } else {
                 draggedCard.style.transform = 'none';
