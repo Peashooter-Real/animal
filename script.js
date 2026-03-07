@@ -955,14 +955,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextTurnBtn.addEventListener('click', () => {
-        isFirstPlayer = !isFirstPlayer;
-        if (isFirstPlayer) currentTurn++;
+        currentTurn++;
         currentPhaseIndex = 0;
         hasRiddenThisTurn = false;
         hasDiscardedThisTurn = false;
-        turnIndicator.textContent = `Turn ${currentTurn} (${isFirstPlayer ? 'First Player' : 'Second Player'})`;
         updatePhaseUI(false);
-        sendData({ type: 'nextTurn', currentTurn: currentTurn, isFirstPlayer: isFirstPlayer });
+        sendData({ type: 'nextTurn', currentTurn: currentTurn });
     });
 
     // --- Multiplayer Logic ---
@@ -1100,10 +1098,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatePhaseUI(false);
                 break;
             case 'nextTurn':
-                isFirstPlayer = !data.isFirstPlayer;
                 currentTurn = data.currentTurn;
                 currentPhaseIndex = 0;
-                turnIndicator.textContent = `Turn ${currentTurn} (${isFirstPlayer ? 'First' : 'Second'})`;
                 updatePhaseUI(false);
                 break;
             case 'gameOver':
@@ -1242,7 +1238,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const checks = grade >= 3 ? 2 : 1;
                 driveCheck(checks, attackData.totalCritical);
             } else {
-                sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: (attackData.totalPower >= 0) } }); // Rearguard attack usually hits if no guard
+                // Rearguard attack check vs base target power
+                const target = document.getElementById('opp-' + attackData.targetId);
+                let isHit = false;
+                if (target) {
+                    isHit = parseInt(attackData.totalPower) >= parseInt(target.dataset.power);
+                } else {
+                    isHit = true; // Fallback
+                }
+                sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
             }
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
