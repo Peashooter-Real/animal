@@ -365,14 +365,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingCriticalIncrease = 0;
                 document.body.classList.remove('targeting-mode');
             }
-        }, 500);
 
-        const waitLoop = setInterval(() => {
-            if (!document.body.classList.contains('targeting-mode')) {
-                clearInterval(waitLoop);
-                setTimeout(finishDamageProcess, 1500);
-            }
-        }, 200);
+            // Start waiting ONLY AFTER we've decided if there's a trigger
+            const waitLoop = setInterval(() => {
+                if (!document.body.classList.contains('targeting-mode')) {
+                    clearInterval(waitLoop);
+                    setTimeout(finishDamageProcess, 1500);
+                }
+            }, 200);
+        }, 500);
 
         function finishDamageProcess() {
             checkCard.remove();
@@ -426,33 +427,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingCriticalIncrease = 0;
                 document.body.classList.remove('targeting-mode');
             }
+
+            const finishThisCheck = () => {
+                checkCard.remove();
+                // Add NEW clean copy to hand to fix sizing bugs
+                const cardInHand = createCardElement(cardData);
+                playerHand.appendChild(cardInHand);
+                updateHandSpacing();
+                sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
+
+                if (checksLeft > 1) {
+                    setTimeout(() => driveCheck(checksLeft - 1, initialCritical), 800);
+                } else {
+                    // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
+                    setTimeout(() => {
+                        resolveFinalAttack(initialCritical);
+                    }, 500);
+                }
+            };
+
+            // How long to show the card? If targeting, wait for click. If not, auto-move.
+            const checkTargeting = setInterval(() => {
+                if (!document.body.classList.contains('targeting-mode')) {
+                    clearInterval(checkTargeting);
+                    setTimeout(finishThisCheck, 1500);
+                }
+            }, 200);
         }, 500);
-
-        const finishThisCheck = () => {
-            checkCard.remove();
-            // Add NEW clean copy to hand to fix sizing bugs
-            const cardInHand = createCardElement(cardData);
-            playerHand.appendChild(cardInHand);
-            updateHandSpacing();
-            sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
-
-            if (checksLeft > 1) {
-                setTimeout(() => driveCheck(checksLeft - 1, initialCritical), 800);
-            } else {
-                // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
-                setTimeout(() => {
-                    resolveFinalAttack(initialCritical);
-                }, 500);
-            }
-        };
-
-        // How long to show the card? If targeting, wait for click. If not, auto-move.
-        const checkTargeting = setInterval(() => {
-            if (!document.body.classList.contains('targeting-mode')) {
-                clearInterval(checkTargeting);
-                setTimeout(finishThisCheck, 1500);
-            }
-        }, 200);
     }
 
     function resolveFinalAttack(initialCritical) {
