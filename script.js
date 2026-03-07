@@ -703,6 +703,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Interaction Setup ---
     boardAreas.forEach(zone => {
         zone.addEventListener('dragover', (e) => {
+            if (draggedCard) {
+                const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
+                if (isFromHand) {
+                    const isMySide = zone.closest('.my-side');
+                    const isSharedGC = zone.id === 'shared-gc';
+                    const isVanguard = zone.classList.contains('vc');
+                    const isRearguard = zone.classList.contains('rc');
+                    const isDropZone = zone.classList.contains('drop-zone');
+                    const allowed = (isMySide && (isVanguard || isRearguard || isDropZone)) || isSharedGC;
+
+                    if (!allowed) {
+                        e.dataTransfer.dropEffect = 'none';
+                        return;
+                    }
+                }
+            }
             e.preventDefault();
             if (!zone.classList.contains('drag-over') && draggedCard) {
                 zone.classList.add('drag-over');
@@ -720,12 +736,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Restricted zones for hand cards: Damage, Deck, Order
             if (isFromHand) {
-                const isField = zone.classList.contains('circle');
-                const isDrop = zone.classList.contains('drop-zone');
-                const isGC = zone.dataset.zone === 'gc_player';
+                const isMySide = zone.closest('.my-side');
+                const isSharedGC = zone.id === 'shared-gc';
+                const isVanguard = zone.classList.contains('vc');
+                const isRearguard = zone.classList.contains('rc');
+                const isDropZone = zone.classList.contains('drop-zone');
 
-                if (!isField && !isDrop && !isGC) {
-                    alert("Cards from hand can only be dropped to Field (V/R), Drop Zone, or Guardian Circle!");
+                const allowed = (isMySide && (isVanguard || isRearguard || isDropZone)) || isSharedGC;
+
+                if (!allowed) {
+                    alert("Invalid Move! Hand cards can only be placed on YOUR Field, YOUR Drop Zone, or the Guardian Circle.");
                     return;
                 }
             }
