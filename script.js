@@ -146,6 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (damageCountNum) damageCountNum.textContent = count;
     }
 
+    function updateGCShield() {
+        const gc = document.querySelector('.guardian-circle');
+        const display = document.getElementById('gc-shield-display');
+        if (!gc || !display) return;
+
+        let total = 0;
+        gc.querySelectorAll('.card').forEach(c => {
+            total += parseInt(c.dataset.shield || "0");
+        });
+        display.textContent = `Shield: ${total}`;
+    }
+
     function updateDeckCounter() {
         if (deckCountNum) deckCountNum.textContent = deckPool.length;
 
@@ -658,6 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMoveData(draggedCard);
                 updateHandCount();
                 updateDropCount();
+                updateGCShield();
                 return;
             }
 
@@ -1131,7 +1144,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Calculate Total Shield
             let totalShieldAdded = 0;
-            const guardCards = document.querySelectorAll('.my-side .guardian-circle .card');
+            const gc = document.querySelector('.guardian-circle');
+            const guardCards = gc ? gc.querySelectorAll('.card') : [];
+
             guardCards.forEach(c => {
                 totalShieldAdded += parseInt(c.dataset.shield || "0");
 
@@ -1143,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMoveData(c);
             });
             updateDropCount();
+            updateGCShield();
 
             btn.remove();
             sendData({ type: 'finishGuard', attackData: attackData, totalShield: totalShieldAdded });

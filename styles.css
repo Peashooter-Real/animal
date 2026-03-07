@@ -160,31 +160,67 @@ body {
   letter-spacing: 2px;
 }
 
-/* Divider (Guardian Circle / Battle Area) */
+/* Divider (Battle Area Area) */
 .divider {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 3rem;
-  padding: 1rem 0;
-  margin: 1rem 0;
-  border-top: 2px dashed rgba(255, 255, 255, 0.1);
-  border-bottom: 2px dashed rgba(255, 255, 255, 0.1);
+  padding: 2rem 0;
+  margin: 1.5rem 0;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .guardian-circle {
-  width: var(--card-height);
-  /* Landscape for GC */
-  height: var(--card-width);
-  border: 2px dashed var(--border-color);
-  border-radius: 8px;
-  display: flex;
+  width: 550px;
+  height: 140px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex !important;
   justify-content: center;
   align-items: center;
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.2);
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  position: relative;
+  transition: all 0.3s;
+  overflow: visible;
+  padding: 10px;
+}
+
+.guardian-circle.drag-over {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+}
+
+.guardian-circle .card {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: scale(0.9) !important;
+  margin: 0 -15px !important;
+  /* Stack them slightly */
+  flex-shrink: 0;
   transition: all 0.2s;
+}
+
+.guardian-circle .card:hover {
+  transform: scale(1) translateY(-10px) !important;
+  z-index: 100 !important;
+}
+
+.clash-text {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.2);
+  font-weight: 800;
+  pointer-events: none;
 }
 
 .battle-clash {
