@@ -713,13 +713,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function resetMyUnits() {
-        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
+        console.log("Resetting unit power/critical for new turn...");
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             let changed = false;
-            if (c.dataset.basePower && c.dataset.power !== c.dataset.basePower) {
+            // Use loose inequality to handle string/number mismatches in dataset
+            if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
                 c.dataset.power = c.dataset.basePower;
                 changed = true;
             }
-            if (c.dataset.baseCritical && c.dataset.critical !== c.dataset.baseCritical) {
+            if (c.dataset.baseCritical && c.dataset.critical != c.dataset.baseCritical) {
                 c.dataset.critical = c.dataset.baseCritical;
                 changed = true;
             }
@@ -727,8 +729,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (changed) {
                 const powerSpan = c.querySelector('.card-power');
                 if (powerSpan) {
-                    let displayCritical = parseInt(c.dataset.critical) > 1 ? `<span style="color:gold;">★${c.dataset.critical}</span>` : '';
-                    powerSpan.innerHTML = `⚔️${c.dataset.basePower} ${displayCritical}`;
+                    const critVal = parseInt(c.dataset.critical || "1");
+                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                    powerSpan.innerHTML = `⚔️${c.dataset.power} ${displayCritical}`;
                 }
                 sendMoveData(c);
             }
@@ -752,6 +755,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset power/critical at the start of ANY turn's stand phase
         if (currentPhaseIndex === 0) { // Stand phase
             resetMyUnits();
+            pendingPowerIncrease = 0;
+            pendingCriticalIncrease = 0;
+            document.body.classList.remove('targeting-mode');
         }
 
         // Update button interactivity
