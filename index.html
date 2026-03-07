@@ -41,26 +41,11 @@
             <header class="header">
                 <h1 class="logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
 
-                <!-- Phase Tracker -->
-                <div class="phase-tracker">
-                    <div class="phase-step" data-phase="stand">Stand</div>
-                    <div class="phase-step" data-phase="draw">Draw</div>
-                    <div class="phase-step" data-phase="ride">Ride</div>
-                    <div class="phase-step" data-phase="main">Main</div>
-                    <div class="phase-step" data-phase="battle">Battle</div>
-                    <div class="phase-step" data-phase="end">End</div>
-                </div>
-
                 <div class="game-info">
-                    <div id="connection-badge" class="connection-badge">
+                    <div id="connection-badge" class="connection badge">
                         <span class="dot online"></span>
                         <span id="network-info">Online (Host)</span>
                     </div>
-                    <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
-                    <button id="next-phase-btn" class="glass-btn highlight-btn"
-                        style="margin-left: 1rem; padding: 0.3rem 1rem; font-size: 0.8rem;">Next Phase</button>
-                    <button id="next-turn-btn" class="glass-btn"
-                        style="margin-left: 0.5rem; padding: 0.3rem 1rem; font-size: 0.8rem;">End Turn</button>
                 </div>
             </header>
 
@@ -207,6 +192,25 @@
             <div class="hand-area">
                 <div class="hand-controls">
                     <div class="hand-count">Hand: <span id="hand-count-num">0</span></div>
+
+                    <!-- Phase Tracker (Moved from Header) -->
+                    <div class="phase-tracker">
+                        <div class="phase-step" data-phase="stand">Stand</div>
+                        <div class="phase-step" data-phase="draw">Draw</div>
+                        <div class="phase-step" data-phase="ride">Ride</div>
+                        <div class="phase-step" data-phase="main">Main</div>
+                        <div class="phase-step" data-phase="battle">Battle</div>
+                        <div class="phase-step" data-phase="end">End</div>
+                    </div>
+
+                    <!-- Turn Controls (Moved from Header) -->
+                    <div class="game-info">
+                        <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
+                        <button id="next-phase-btn" class="glass-btn highlight-btn"
+                            style="margin-left: 1rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">Next Phase</button>
+                        <button id="next-turn-btn" class="glass-btn"
+                            style="margin-left: 0.5rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">End Turn</button>
+                    </div>
                 </div>
                 <div class="hand-cards" id="player-hand" data-zone="hand">
                     <!-- Cards will be injected here -->
