@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const soulCounter = document.getElementById('soul-counter');
     const dropCountNum = document.getElementById('drop-count-num');
     const viewDropBtn = document.getElementById('view-drop-btn');
+    const viewDamageBtn = document.getElementById('view-damage-btn');
+    const damageCountNum = document.getElementById('damage-count-num');
+    const deckCountNum = document.getElementById('deck-count-num');
     const zoneViewer = document.getElementById('zone-viewer');
     const viewerTitle = document.getElementById('viewer-title');
     const viewerGrid = document.getElementById('viewer-grid');
@@ -138,15 +141,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dropCountNum) dropCountNum.textContent = count;
     }
 
-    function updateDeckCounter() {
-        const deckNum = document.getElementById('deck-count-num');
-        const count = deckPool.length;
-        if (deckNum) deckNum.textContent = count;
+    function updateDamageCount() {
+        const count = document.querySelectorAll('.player-side.my-side .damage-zone .card').length;
+        if (damageCountNum) damageCountNum.textContent = count;
+    }
 
-        // Visual thickness effect
+    function updateDeckCounter() {
+        if (deckCountNum) deckCountNum.textContent = deckPool.length;
+
         const deckZones = document.querySelectorAll('.deck-zone');
         deckZones.forEach(zone => {
-            const shadowSize = Math.ceil(count / 5); // 1px shadow per 5 cards
+            const count = (zone.dataset.zone === 'deck' && zone.id === 'main-deck') ? deckPool.length : 40;
+            const shadowSize = Math.ceil(count / 5);
             let shadowStr = "";
             for (let i = 1; i <= shadowSize; i++) {
                 shadowStr += `0 ${i * 2}px 0 ${i % 2 === 0 ? '#111' : '#222'}${i === shadowSize ? '' : ','}`;
@@ -195,6 +201,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const isGrade2FrontRow = card.dataset.grade == "2" && card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc_front_');
             const isOnField = card.parentElement.classList.contains('circle');
 
+            const parent = card.parentElement;
+            const isRestricted = parent.classList.contains('drop-zone') ||
+                parent.classList.contains('damage-zone') ||
+                parent.classList.contains('ride-deck-zone');
+
+            if (isRestricted) {
+                e.preventDefault();
+                return;
+            }
+
             if (!isMyTurn) {
                 if (!isGuarding) {
                     e.preventDefault();
@@ -210,10 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     return;
                 }
-            }
-            if (card.parentElement.classList.contains('drop-zone')) {
-                e.preventDefault();
-                return;
             }
             draggedCard = card;
             setTimeout(() => card.classList.add('dragging'), 0);
@@ -385,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
             sendData({ type: 'syncDamageCount', count: damageCount });
+            updateDamageCount();
 
             if (damageCount >= 6) {
                 alert("6 Damage! You lose.");
@@ -474,12 +487,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let finalCritical = parseInt(attacker.dataset.critical);
 
         // Find target power - it's on our locally synced version of opponent's card
-        let targetPower = parseInt(target.dataset.power);
+        const opponentShield = currentAttackData.opponentShield || 0;
+        let targetDefendingPower = parseInt(target.dataset.power) + opponentShield;
 
-        const isHit = finalPower >= targetPower;
+        const isHit = finalPower >= targetDefendingPower;
 
         if (!isHit) {
-            alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetPower} Power.`);
+            alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
         }
 
         sendData({
@@ -539,7 +553,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function performAttack(attacker, target) {
-        if (!target.classList.contains('opponent-card') && !confirm("Attack your own card?")) {
+        // Stricter Targeting: Only allow attacking opponent's units on field (circles)
+        const targetParent = target.parentElement;
+        const isTargetOnField = targetParent && targetParent.classList.contains('circle');
+        const isOpponentCard = target.classList.contains('opponent-card');
+
+        if (!isOpponentCard || !isTargetOnField) {
+            alert("Invalid Target! You can only attack opponent's units on the field.");
             return;
         }
 
@@ -1072,17 +1092,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btn.onclick = () => {
             isGuarding = false;
-            btn.remove();
-            sendData({ type: 'finishGuard', attackData: attackData });
 
-            // Return guards to drop zone immediately
-            document.querySelectorAll('.my-side .guardian-circle .card').forEach(c => {
-                document.querySelector('.my-side .drop-zone').appendChild(c);
+            // Calculate Total Shield
+            let totalShieldAdded = 0;
+            const guardCards = document.querySelectorAll('.my-side .guardian-circle .card');
+            guardCards.forEach(c => {
+                totalShieldAdded += parseInt(c.dataset.shield || "0");
+
+                // Return guards to drop zone immediately
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                dropZone.appendChild(c);
                 c.classList.remove('rest');
                 c.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
                 sendMoveData(c);
             });
             updateDropCount();
+
+            btn.remove();
+            sendData({ type: 'finishGuard', attackData: attackData, totalShield: totalShieldAdded });
         };
         document.body.appendChild(btn);
     }
@@ -1096,12 +1123,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (decision === 'no-guard') {
             alert("Opponent chose: NO GUARD!");
             if (attackData.isVanguardAttacker) {
-                currentAttackData = attackData; // Store to resolve after drive checks
+                currentAttackData = { ...attackData, opponentShield: 0 };
                 const grade = parseInt(attackData.vanguardGrade || "0");
                 const checks = grade >= 3 ? 2 : 1;
                 driveCheck(checks, attackData.totalCritical);
             } else {
-                sendData({ type: 'resolveAttack', attackData: attackData });
+                sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: (attackData.totalPower >= 0) } }); // Rearguard attack usually hits if no guard
             }
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
@@ -1110,12 +1137,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFinishGuard(data) {
         const attackData = data.attackData;
-        alert("Opponent finished placing guards!");
+        const totalShield = data.totalShield || 0;
+        alert(`Opponent finished placing guards! (+${totalShield} Shield)`);
+
+        currentAttackData = {
+            ...attackData,
+            opponentShield: totalShield
+        };
+
         if (attackData.isVanguardAttacker) {
-            currentAttackData = attackData;
             const grade = parseInt(attackData.vanguardGrade || "0");
             const checks = grade >= 3 ? 2 : 1;
             driveCheck(checks, attackData.totalCritical);
+        } else {
+            // Recalculate Rearguard attack hit immediately
+            const attacker = document.getElementById(attackData.attackerId);
+            const target = document.getElementById('opp-' + attackData.targetId);
+            if (attacker && target) {
+                let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
+                let targetDefPower = parseInt(target.dataset.power) + totalShield;
+                let isHit = finalPower >= targetDefPower;
+                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit } });
+            }
+            currentAttackData = null;
         }
     }
 
@@ -1348,7 +1392,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     viewDropBtn.addEventListener('click', () => {
         const cards = document.querySelectorAll('.my-side .drop-zone .card');
-        openViewer('Drop Zone', Array.from(cards));
+        openViewer(`Drop Zone (${cards.length})`, Array.from(cards));
     });
+
+    viewDamageBtn.addEventListener('click', () => {
+        const cards = document.querySelectorAll('.my-side .damage-zone .card');
+        openViewer(`Damage Zone (${cards.length})`, Array.from(cards));
+    });
+
     closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));
 });
