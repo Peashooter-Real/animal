@@ -352,10 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return;
             }
-            if (card.parentElement.classList.contains('circle')) {
-                card.classList.toggle('rest');
-                sendMoveData(card);
-            }
         });
 
         return card;

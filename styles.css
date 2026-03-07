@@ -249,9 +249,10 @@ body {
 
 .view-zone-btn {
   position: absolute;
-  top: 50%;
+  top: 5px;
+  /* Moved higher to avoid overlapping cards */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   padding: 0.2rem 0.6rem;
   font-size: 0.7rem;
   background: var(--accent-blue);
@@ -260,10 +261,9 @@ body {
   border-radius: 4px;
   opacity: 0.8;
   cursor: pointer;
-  z-index: 100;
-  /* Above cards */
+  z-index: 1500;
+  /* Ensure it stays above everything in the zone */
   display: none;
-  /* Show when cards are inside */
 }
 
 .zone:has(.card) .view-zone-btn {
@@ -496,7 +496,21 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0 !important;
-  /* Override hand spacing */
+}
+
+/* Stacking specific zones like damage and drop */
+.damage-zone .card,
+.drop-zone .card {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.circle .card {
+  width: 95%;
+  height: 95%;
+  object-fit: contain;
 }
 
 /* Damage zone grid/stacking logic */
