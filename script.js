@@ -137,8 +137,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateDeckCounter() {
-        const counter = document.getElementById('deck-count-num');
-        if (counter) counter.textContent = deckPool.length;
+        const deckNum = document.getElementById('deck-count-num');
+        const count = deckPool.length;
+        if (deckNum) deckNum.textContent = count;
+
+        // Visual thickness effect
+        const deckZones = document.querySelectorAll('.deck-zone');
+        deckZones.forEach(zone => {
+            const shadowSize = Math.ceil(count / 5); // 1px shadow per 5 cards
+            let shadowStr = "";
+            for (let i = 1; i <= shadowSize; i++) {
+                shadowStr += `0 ${i * 2}px 0 ${i % 2 === 0 ? '#111' : '#222'}${i === shadowSize ? '' : ','}`;
+            }
+            zone.style.boxShadow = shadowStr || 'none';
+        });
     }
 
     function createCardElement(cardData) {
