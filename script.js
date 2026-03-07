@@ -712,6 +712,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function resetMyUnits() {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
+            let changed = false;
+            if (c.dataset.basePower && c.dataset.power !== c.dataset.basePower) {
+                c.dataset.power = c.dataset.basePower;
+                changed = true;
+            }
+            if (c.dataset.baseCritical && c.dataset.critical !== c.dataset.baseCritical) {
+                c.dataset.critical = c.dataset.baseCritical;
+                changed = true;
+            }
+
+            if (changed) {
+                const powerSpan = c.querySelector('.card-power');
+                if (powerSpan) {
+                    let displayCritical = parseInt(c.dataset.critical) > 1 ? `<span style="color:gold;">★${c.dataset.critical}</span>` : '';
+                    powerSpan.innerHTML = `⚔️${c.dataset.basePower} ${displayCritical}`;
+                }
+                sendMoveData(c);
+            }
+        });
+    }
+
     // --- Game Navigation ---
     function updatePhaseUI(broadcast = true) {
         phaseSteps.forEach((step, index) => {
@@ -725,6 +748,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Determine if it's my turn
         isMyTurn = isFirstPlayer;
+
+        // Reset power/critical at the start of ANY turn's stand phase
+        if (currentPhaseIndex === 0) { // Stand phase
+            resetMyUnits();
+        }
 
         // Update button interactivity
         nextPhaseBtn.disabled = !isMyTurn;
@@ -751,29 +779,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentPhaseName === 'stand') {
                 console.log("Auto Phase: Stand");
                 document.querySelectorAll('.my-side .circle .card.rest').forEach(c => c.classList.remove('rest'));
-
-                // Revert all power to base power for our side
-                document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
-                    let changed = false;
-                    if (c.dataset.basePower && c.dataset.power !== c.dataset.basePower) {
-                        c.dataset.power = c.dataset.basePower;
-                        changed = true;
-                    }
-                    if (c.dataset.baseCritical && c.dataset.critical !== c.dataset.baseCritical) {
-                        c.dataset.critical = c.dataset.baseCritical;
-                        changed = true;
-                    }
-
-                    if (changed) {
-                        const powerSpan = c.querySelector('.card-power');
-                        if (powerSpan) {
-                            let displayCritical = parseInt(c.dataset.critical) > 1 ? `<span style="color:gold;">★${c.dataset.critical}</span>` : '';
-                            powerSpan.innerHTML = `⚔️${c.dataset.basePower} ${displayCritical}`;
-                        }
-                        sendMoveData(c);
-                    }
-                });
-
                 hasDrawnThisTurn = false;
 
                 // Auto advance to draw after 1 second
