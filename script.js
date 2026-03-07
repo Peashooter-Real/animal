@@ -79,9 +79,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let targetingType = null; // 'power' or 'critical' or 'both'
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
+    let selectedCard = null; // Track selected card for tap-to-move
     // Track if it's currently my turn
 
     // --- Deck Definitions ---
+    // --- Deck Definitions ---
+    const bruceDeck = {
+        rideDeck: [
+            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000 },
+            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000 },
+            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000 },
+            { name: 'Diabolos, "Violence" Bruce', grade: 3, power: 13000, persona: true }
+        ],
+        mainDeck: [
+            // G3 (6 cards total - excluding ride deck Bruce)
+            ...Array(3).fill({ name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true }),
+            ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000 }),
+
+            // G2 (15 cards total)
+            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true }), // PG typically has 0 shield but special effect
+
+            // G1 (13 cards total - PG moved to G1 list for user clarification)
+            ...Array(4).fill({ name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 10000 }),
+            ...Array(3).fill({ name: 'Diabolos Madonna, Mabel', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 10000 }),
+
+            // Triggers (16 cards total)
+            ...Array(8).fill({ name: 'Critical Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(2).fill({ name: 'Draw Trigger', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(1).fill({ name: 'Front Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
+            ...Array(4).fill({ name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Hades Dragon Deity, Gallmageveld', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random()) // Shuffle main deck
+    };
+
     function generateMainDeck(unitPool, triggerPool) {
         let deck = [];
         for (let i = 0; i < 16; i++) {
@@ -90,31 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 30; i++) {
             deck.push({ ...unitPool[i % unitPool.length], id: `unit-${i}` });
         }
-        // Use a consistent shuffle if needed, but for now we just ensure it exists
         return deck.sort(() => 0.5 - Math.random());
     }
-
-    const bruceDeck = {
-        rideDeck: [
-            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000 },
-            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000 },
-            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000 },
-            { name: 'Diabolos, "Violence" Bruce', grade: 3, power: 13000, persona: true }
-        ],
-        mainDeck: generateMainDeck(
-            [
-                { name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000 },
-                { name: 'Diabolos Madonna, Mabel', grade: 1, power: 8000, shield: 5000 },
-                { name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 10000 }
-            ],
-            [
-                { name: 'Hades Dragon Deity, Gallmageveld', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' },
-                { name: 'Critical Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' },
-                { name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' },
-                { name: 'Front Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }
-            ]
-        )
-    };
 
     const magnoliaDeck = {
         rideDeck: [
@@ -296,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('dragend', () => {
             if (draggedCard) draggedCard.classList.remove('dragging');
             draggedCard = null;
-            updateHandSpacing();
+            updateHandCount();
         });
 
         card.addEventListener('click', (e) => {
@@ -344,10 +355,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!isMyTurn) return; // Strict turn check
+            if (!isMyTurn && !isGuarding) return; // Strict turn check
 
             const currentPhase = phases[currentPhaseIndex];
-            if (currentPhase === 'battle') {
+
+            // TAP TO MOVE (Mobile Friendly)
+            const canSelect = (isMyTurn && currentPhase !== 'battle') || isGuarding;
+            if (canSelect && !card.classList.contains('opponent-card')) {
+                if (selectedCard) selectedCard.classList.remove('card-selected');
+
+                if (selectedCard === card) {
+                    selectedCard = null;
+                } else {
+                    selectedCard = card;
+                    card.classList.add('card-selected');
+                }
+                return;
+            }
+
+            if (currentPhase === 'battle' && isMyTurn) {
                 if (!attackingCard) {
                     if (card.parentElement.classList.contains('circle') && !card.classList.contains('rest')) {
                         if (card.classList.contains('opponent-card')) return;
@@ -522,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add NEW clean copy to hand to fix sizing bugs
                 const cardInHand = createCardElement(cardData);
                 playerHand.appendChild(cardInHand);
-                updateHandSpacing();
+                updateHandCount();
                 sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
 
                 if (checksLeft > 1) {
@@ -716,6 +742,135 @@ document.addEventListener('DOMContentLoaded', () => {
         if (statusText) statusText.textContent = "Waiting for opponent to guard...";
     }
 
+    function validateAndMoveCard(card, zone) {
+        if (!card || !zone) return false;
+
+        const isFromHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+
+        // 1. Basic Boundary Checks (Same as Drag/Drop restriction)
+        if (isFromHand) {
+            const isMySide = zone.closest('.my-side');
+            const isSharedGC = zone.id === 'shared-gc';
+            const isVanguard = zone.classList.contains('vc');
+            const isRearguard = zone.classList.contains('rc');
+            const isDropZone = zone.classList.contains('drop-zone');
+            const allowed = (isMySide && (isVanguard || isRearguard || isDropZone)) || isSharedGC;
+
+            if (!allowed) {
+                alert("Invalid Move! Hand cards can only be placed on YOUR Field, YOUR Drop Zone, or the Guardian Circle.");
+                return false;
+            }
+        }
+
+        // 2. Guarding Check
+        if (zone.dataset.zone === 'gc_player' || zone.id === 'shared-gc') {
+            if (!isGuarding) {
+                alert("You can only move cards to the Guard Circle when defending an attack!");
+                return false;
+            }
+            zone.appendChild(card);
+            card.classList.remove('rest');
+            card.style.transform = 'none';
+            sendMoveData(card);
+            updateHandCount();
+            updateDropCount();
+            updateGCShield();
+            return true;
+        }
+
+        // 3. Turn Check
+        if (!isMyTurn) return false;
+        const currentPhase = phases[currentPhaseIndex];
+
+        // 4. Circle Validation (Ride/Call)
+        if (zone.classList.contains('circle')) {
+            const cardGrade = parseInt(card.dataset.grade);
+            const vanguard = document.querySelector('.my-side .circle.vc .card');
+            const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
+
+            if (zone.classList.contains('vc')) {
+                if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return false; }
+                if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return false; }
+                if (cardGrade !== vanguardGrade + 1 && !(cardGrade === 3 && vanguardGrade === 3)) {
+                    alert(`Cannot Ride Grade ${cardGrade} over ${vanguardGrade}!`);
+                    return false;
+                }
+                if (card.parentElement.id === 'ride-deck' && !hasDiscardedThisTurn) {
+                    alert("Must discard 1 for Ride from Ride Deck!");
+                    return false;
+                }
+                if (vanguard) {
+                    soulPool.push(vanguard);
+                    vanguard.remove();
+                    updateSoulUI();
+                }
+                hasRiddenThisTurn = true;
+            } else if (zone.classList.contains('rc')) {
+                if (currentPhase !== 'main') { alert("Only Call during Main Phase!"); return false; }
+                if (cardGrade > vanguardGrade) {
+                    alert(`Cannot Call Grade ${cardGrade} (VG is G${vanguardGrade})!`);
+                    return false;
+                }
+            }
+        }
+
+        // 5. Drop Zone Validation (Discard)
+        if (zone.classList.contains('drop-zone')) {
+            if (isFromHand) {
+                const isRidePhase = currentPhase === 'ride';
+                const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
+                const isDefending = isGuarding;
+
+                if (!canAutoRide && !isDefending) {
+                    alert("Movement Blocked: You can only discard from hand to pay for a Ride cost or when Guarding.");
+                    return false;
+                }
+
+                if (canAutoRide) {
+                    const vanguard = document.querySelector('.my-side .circle.vc .card');
+                    const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
+                    const nextGrade = vanguardGrade + 1;
+                    const rideDeckZone = document.getElementById('ride-deck');
+                    const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
+
+                    if (nextRideCard) {
+                        hasDiscardedThisTurn = true;
+                        hasRiddenThisTurn = true;
+                        setTimeout(() => {
+                            if (vanguard) {
+                                soulPool.push(vanguard);
+                                vanguard.remove();
+                                updateSoulUI();
+                            }
+                            const vcZone = document.querySelector('.my-side .circle.vc');
+                            vcZone.appendChild(nextRideCard);
+                            nextRideCard.classList.remove('rest', 'opponent-card');
+                            nextRideCard.style.transform = 'none';
+                            sendMoveData(nextRideCard);
+                            alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
+                            currentPhaseIndex = phases.indexOf('main');
+                            updatePhaseUI(true);
+                        }, 500);
+                    }
+                }
+            }
+            card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+        } else {
+            card.style.transform = 'none';
+        }
+
+        // Execute Move
+        zone.appendChild(card);
+        card.classList.remove('rest');
+        card.classList.add('effect-drop');
+        setTimeout(() => card.classList.remove('effect-drop'), 400);
+
+        sendMoveData(card);
+        updateHandCount();
+        updateDropCount();
+        return true;
+    }
+
     // --- Interaction Setup ---
     boardAreas.forEach(zone => {
         zone.addEventListener('dragover', (e) => {
@@ -747,138 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             zone.classList.remove('drag-over');
             if (!draggedCard) return;
-
-            const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
-
-            // Restricted zones for hand cards: Damage, Deck, Order
-            if (isFromHand) {
-                const isMySide = zone.closest('.my-side');
-                const isSharedGC = zone.id === 'shared-gc';
-                const isVanguard = zone.classList.contains('vc');
-                const isRearguard = zone.classList.contains('rc');
-                const isDropZone = zone.classList.contains('drop-zone');
-
-                const allowed = (isMySide && (isVanguard || isRearguard || isDropZone)) || isSharedGC;
-
-                if (!allowed) {
-                    alert("Invalid Move! Hand cards can only be placed on YOUR Field, YOUR Drop Zone, or the Guardian Circle.");
-                    return;
-                }
-            }
-
-            // Restrict Guard Circle dropping: Only when specifically 'isGuarding' (defending)
-            if (zone.dataset.zone === 'gc_player') {
-                if (!isGuarding) {
-                    alert("You can only drop cards onto the Guard Circle when defending an attack!");
-                    return;
-                }
-                zone.appendChild(draggedCard);
-                draggedCard.classList.remove('rest');
-                draggedCard.style.transform = 'none';
-                sendMoveData(draggedCard);
-                updateHandCount();
-                updateDropCount();
-                updateGCShield();
-                return;
-            }
-
-            // Other zones require it to be your turn
-            if (!isMyTurn) return;
-
-            const currentPhase = phases[currentPhaseIndex];
-
-            // Validation Logic
-            if (zone.classList.contains('circle')) {
-                const cardGrade = parseInt(draggedCard.dataset.grade);
-                const vanguard = document.querySelector('.my-side .circle.vc .card');
-                const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
-
-                if (zone.classList.contains('vc')) {
-                    if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return; }
-                    if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return; }
-                    if (cardGrade !== vanguardGrade + 1 && !(cardGrade === 3 && vanguardGrade === 3)) {
-                        alert(`Cannot Ride Grade ${cardGrade} over ${vanguardGrade}!`);
-                        return;
-                    }
-                    if (draggedCard.parentElement.id === 'ride-deck' && !hasDiscardedThisTurn) {
-                        alert("Must discard 1 for Ride from Ride Deck!");
-                        return;
-                    }
-                    if (vanguard) {
-                        soulPool.push(vanguard);
-                        vanguard.remove();
-                        updateSoulUI();
-                    }
-                    hasRiddenThisTurn = true;
-                } else if (zone.classList.contains('rc')) {
-                    if (currentPhase !== 'main') { alert("Only Call during Main Phase!"); return; }
-                    if (cardGrade > vanguardGrade) {
-                        alert(`Cannot Call Grade ${cardGrade} (VG is G${vanguardGrade})!`);
-                        return;
-                    }
-                }
-            }
-
-            if (zone.classList.contains('drop-zone')) {
-                const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
-
-                if (isFromHand) {
-                    // Cost checking
-                    const isRidePhase = phases[currentPhaseIndex] === 'ride';
-                    const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
-                    const isDefending = isGuarding;
-
-                    if (!canAutoRide && !isDefending) {
-                        alert("Movement Blocked: You can only discard from hand to pay for a Ride cost (during Ride Phase) or when Guarding.");
-                        return;
-                    }
-
-                    // If it's the ride cost, trigger the logic
-                    if (canAutoRide) {
-                        const vanguard = document.querySelector('.my-side .circle.vc .card');
-                        const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
-                        const nextGrade = vanguardGrade + 1;
-
-                        const rideDeckZone = document.getElementById('ride-deck');
-                        const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
-
-                        if (nextRideCard) {
-                            hasDiscardedThisTurn = true;
-                            hasRiddenThisTurn = true;
-
-                            setTimeout(() => {
-                                if (vanguard) {
-                                    soulPool.push(vanguard);
-                                    vanguard.remove();
-                                    updateSoulUI();
-                                }
-                                const vcZone = document.querySelector('.my-side .circle.vc');
-                                vcZone.appendChild(nextRideCard);
-                                nextRideCard.classList.remove('rest', 'opponent-card');
-                                nextRideCard.style.transform = 'none';
-                                sendMoveData(nextRideCard);
-                                alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
-                                currentPhaseIndex = phases.indexOf('main');
-                                updatePhaseUI(true);
-                            }, 500);
-                        }
-                    }
-                }
-                draggedCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-            } else {
-                draggedCard.style.transform = 'none';
-            }
-
-            zone.appendChild(draggedCard);
-            draggedCard.classList.remove('rest');
-
-            // Add drop impact animation
-            draggedCard.classList.add('effect-drop');
-            setTimeout(() => draggedCard.classList.remove('effect-drop'), 400);
-
-            sendMoveData(draggedCard);
-            updateHandCount();
-            updateDropCount();
+            validateAndMoveCard(draggedCard, zone);
         });
     });
 
@@ -889,11 +913,10 @@ document.addEventListener('DOMContentLoaded', () => {
             playerHand.appendChild(draggedCard);
             draggedCard.classList.remove('rest');
             draggedCard.style.transform = 'none';
-
-            // Catch-all drop effect for hand
             draggedCard.classList.add('effect-drop');
             setTimeout(() => draggedCard.classList.remove('effect-drop'), 400);
 
+            updateHandCount();
             sendMoveData(draggedCard);
             updateHandCount();
         }
@@ -1584,8 +1607,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.zone, .circle.vc').forEach(el => {
+    document.querySelectorAll('.zone, .circle.vc, .circle.rc').forEach(el => {
         el.addEventListener('click', (e) => {
+            // TAP TO MOVE EXECUTION
+            if (selectedCard) {
+                const moved = validateAndMoveCard(selectedCard, el);
+                if (moved) {
+                    selectedCard.classList.remove('card-selected');
+                    selectedCard = null;
+                    return;
+                }
+            }
+
+            // PRE-EXISTING CLICK LOGIC (Viewers, etc)
             // Target checks
             const isBadge = e.target.classList.contains('soul-badge');
             const isCard = e.target.classList.contains('card') || e.target.closest('.card');

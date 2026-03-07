@@ -21,6 +21,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 body {
@@ -1382,4 +1384,131 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
 .effect-retired {
   animation: retiredAnim 0.5s ease-in forwards;
   pointer-events: none;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 1024px) {
+  :root {
+    --card-width: 75px;
+    --card-height: 108px;
+    --circle-size: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --card-width: 60px;
+    --card-height: 86px;
+    --circle-size: 72px;
+  }
+
+  .header {
+    height: 50px;
+    padding: 0 1rem;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .player-side,
+  .opponent-side {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .col-zones {
+    gap: 0.5rem;
+  }
+
+  .row {
+    gap: 0.5rem;
+  }
+
+  .guardian-circle {
+    width: 95vw;
+    height: 100px;
+    padding: 5px;
+  }
+
+  .divider {
+    padding: 0.5rem 0;
+    margin: 0.2rem 0;
+  }
+
+  .hand-area {
+    height: 180px;
+    padding: 0.5rem 1rem;
+  }
+
+  .hand-controls {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .phase-tracker {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    padding: 0.2rem;
+    gap: 2px;
+  }
+
+  .phase-step {
+    font-size: 0.55rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .glass-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .hand-cards {
+    gap: -20px;
+  }
+}
+
+/* Landscape Mobile Fix */
+@media (max-height: 600px) {
+  .header {
+    display: none;
+  }
+
+  .hand-area {
+    height: 140px;
+  }
+
+  .board-area {
+    padding: 0.2rem;
+  }
+}
+
+/* Zone Viewer Mobile */
+@media (max-width: 600px) {
+  .viewer-content {
+    width: 95vw;
+    max-height: 80vh;
+  }
+
+  .viewer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Selection Highlights for Mobile Tapping */
+.card-selected {
+  outline: 3px solid var(--accent-cyan) !important;
+  box-shadow: 0 0 20px var(--accent-cyan) !important;
+  transform: scale(1.1) translateY(-10px) !important;
+  z-index: 500 !important;
+}
+
+.zone-highlight {
+  border-color: var(--accent-cyan) !important;
+  background: rgba(5, 255, 161, 0.1) !important;
+  box-shadow: 0 0 15px var(--accent-cyan) !important;
 }
