@@ -458,23 +458,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 
-    function resolveFinalAttack(initialCritical) {
+    function resolveFinalAttack() {
         if (!currentAttackData) return;
 
-        let finalCritical = initialCritical + 0; // Use the value from the start of drive checks
-        // We calculate if the attack HITS now based on updated power vs target power
-        // But for Vanguard hit logic, usually it's power >= target power
-        // Since we need to know the target power, we check the global state or assume confirmed
+        const attacker = document.getElementById(currentAttackData.attackerId);
+        const target = document.getElementById('opp-' + currentAttackData.targetId);
 
-        // Final resolution to opponent
+        if (!attacker || !target) {
+            currentAttackData = null;
+            return;
+        }
+
+        // Recalculate based on current state (AFTER DRIVE TRIGGERS)
+        let finalPower = parseInt(attacker.dataset.power) + (currentAttackData.boostPower || 0);
+        let finalCritical = parseInt(attacker.dataset.critical);
+
+        // Find target power - it's on our locally synced version of opponent's card
+        let targetPower = parseInt(target.dataset.power);
+
+        const isHit = finalPower >= targetPower;
+
+        if (!isHit) {
+            alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetPower} Power.`);
+        }
+
         sendData({
             type: 'resolveAttack',
             attackData: {
                 ...currentAttackData,
-                totalCritical: finalCritical // Use updated critical
+                totalPower: finalPower,
+                totalCritical: finalCritical,
+                isHit: isHit
             }
         });
+
         currentAttackData = null;
+        pendingCriticalIncrease = 0;
     }
 
     function resolveTrigger(cardData, isDamageCheck = false) {
@@ -543,6 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (parentZone === 'vc') backZoneName = 'rc_back_center';
         else if (parentZone === 'rc_front_right') backZoneName = 'rc_back_right';
 
+        let boosterPower = 0;
         if (backZoneName) {
             const backCircle = document.querySelector(`.my-side .circle[data-zone="${backZoneName}"]`);
             if (backCircle) {
@@ -553,7 +573,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (confirm(`Do you want to Boost with your backrow ${card.dataset.name}? (+${card.dataset.power} Power)`)) {
                             card.classList.add('rest');
                             sendMoveData(card);
-                            totalPower += parseInt(card.dataset.power);
+                            boosterPower = parseInt(card.dataset.power);
+                            totalPower += boosterPower;
                             attackerNameFull = `${attacker.dataset.name} (Boosted by ${card.dataset.name})`;
                         }
                     }
@@ -567,9 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isVanguardAttacker = attacker.parentElement.classList.contains('vc');
         const isTargetVanguard = target.parentElement.classList.contains('vc');
 
-        sendData({
-            type: 'declareAttack',
+        const attackData = {
+            attackerId: attacker.id,
             attackerName: attackerNameFull,
+            boostPower: boosterPower,
             totalPower: totalPower,
             totalCritical: totalCritical,
             targetId: targetId,
@@ -577,6 +599,11 @@ document.addEventListener('DOMContentLoaded', () => {
             isVanguardAttacker: isVanguardAttacker,
             isTargetVanguard: isTargetVanguard,
             vanguardGrade: attacker.dataset.grade
+        };
+
+        sendData({
+            type: 'declareAttack',
+            ...attackData
         });
 
         const statusText = document.getElementById('game-status-text');
@@ -1083,6 +1110,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resolveRemoteAttack(data) {
         const attackData = data.attackData;
+
+        if (attackData.isHit === false) {
+            alert(`Attack failed! Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not reach your ${attackData.targetName}'s power.`);
+            return;
+        }
+
         let targetId = attackData.targetId;
         const targetCard = document.getElementById(targetId);
 
