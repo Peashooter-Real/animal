@@ -696,9 +696,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (zone.classList.contains('drop-zone')) {
-                if (currentPhase === 'ride' && !hasDiscardedThisTurn) {
-                    hasDiscardedThisTurn = true;
-                    // Auto-Ride logic
+                const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
+
+                if (currentPhase === 'ride' && !hasDiscardedThisTurn && !hasRiddenThisTurn && isFromHand) {
                     const vanguard = document.querySelector('.my-side .circle.vc .card');
                     const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
                     const nextGrade = vanguardGrade + 1;
@@ -707,6 +707,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
 
                     if (nextRideCard) {
+                        console.log(`Auto-Ride Triggered: Grade ${nextGrade} found.`);
+                        hasDiscardedThisTurn = true;
+                        hasRiddenThisTurn = true; // Mark as ridden immediately to prevent dual-ride
+
                         setTimeout(() => {
                             if (vanguard) {
                                 soulPool.push(vanguard);
@@ -715,9 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             const vcZone = document.querySelector('.my-side .circle.vc');
                             vcZone.appendChild(nextRideCard);
-                            nextRideCard.classList.remove('rest');
+                            nextRideCard.classList.remove('rest', 'opponent-card');
                             nextRideCard.style.transform = 'none';
-                            hasRiddenThisTurn = true;
+
                             sendMoveData(nextRideCard);
                             alert(`Auto-Ride: ${nextRideCard.dataset.name}! Entering Main Phase.`);
 
@@ -725,6 +729,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             currentPhaseIndex = phases.indexOf('main');
                             updatePhaseUI(true);
                         }, 500);
+                    } else {
+                        console.log(`Auto-Ride skipped: No Grade ${nextGrade} in Ride Deck.`);
                     }
                 }
                 draggedCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
