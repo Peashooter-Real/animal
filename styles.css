@@ -1045,14 +1045,13 @@ body {
 /* Opponent Side Layout - Now identical to player but at the top */
 .opponent-side {
   display: flex;
-  flex-direction: column;
-  /* Match player layout */
+  flex-direction: row;
+  /* Horizontal like player side */
 }
 
 .opponent-side .col-circles {
   display: flex;
   flex-direction: column;
-  /* Match player layout order */
 }
 
 .opp-hand-info {
