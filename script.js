@@ -352,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.left = '50%';
         checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
+        checkCard.style.pointerEvents = 'none'; // Prevent blocking unit clicks
         checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
 
@@ -414,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.left = '50%';
         checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
+        checkCard.style.pointerEvents = 'none';
         checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
 

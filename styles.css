@@ -1052,6 +1052,13 @@ body {
   opacity: 0.6;
 }
 
+/* Allow interaction during targeting mode (e.g. Damage Check trigger) */
+body.targeting-mode .side-disabled {
+  pointer-events: auto !important;
+  filter: none;
+  opacity: 1;
+}
+
 .side-disabled::after {
   content: "OPPONENT'S TURN";
   position: absolute;
