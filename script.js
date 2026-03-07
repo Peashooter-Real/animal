@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGuarding = false; // Add guard checking state
     let pendingPowerIncrease = 0;
     let pendingCriticalIncrease = 0;
+    let pendingDamageChecks = 0; // Queue damage until drive checks finish
+    let currentAttackData = null; // Store for recalculation after buffs
     // Track if it's currently my turn
 
     // --- Deck Definitions ---
@@ -334,8 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function dealDamage(checksLeft = 1) {
         if (checksLeft <= 0) return;
-
-        triggerShake(); // Shake board whenever taking damage
+        triggerShake();
 
         if (deckPool.length === 0) {
             alert("Deck out! You lose.");
@@ -346,11 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardData = deckPool.pop();
         updateDeckCounter();
         const checkCard = createCardElement(cardData);
-        checkCard.style.position = 'absolute';
-        checkCard.style.top = '40%';
+        checkCard.style.position = 'fixed';
+        checkCard.style.top = '50%';
         checkCard.style.left = '50%';
+        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
-        checkCard.classList.add('effect-trigger'); // Apply trigger animation class
+        checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
 
         sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
@@ -359,30 +361,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardData.trigger) {
                 resolveTrigger(cardData, true);
             } else {
-                // If no trigger, ensure we aren't stuck in targeting mode
                 pendingPowerIncrease = 0;
                 pendingCriticalIncrease = 0;
                 document.body.classList.remove('targeting-mode');
             }
         }, 500);
 
-        let waitInterval = setInterval(() => {
-            if (pendingPowerIncrease === 0) {
-                clearInterval(waitInterval);
-                finishDamageProcess();
+        const waitLoop = setInterval(() => {
+            if (!document.body.classList.contains('targeting-mode')) {
+                clearInterval(waitLoop);
+                setTimeout(finishDamageProcess, 1500);
             }
-        }, 500);
+        }, 200);
 
         function finishDamageProcess() {
-            checkCard.style.transform = 'none';
-            checkCard.style.position = 'relative';
-            checkCard.style.top = 'auto';
-            checkCard.style.left = 'auto';
-            checkCard.style.boxShadow = '';
-
+            checkCard.remove();
+            const damageCard = createCardElement(cardData);
             const damageZone = document.querySelector('.my-side .damage-zone');
-            damageZone.appendChild(checkCard);
-            sendMoveData(checkCard);
+            damageZone.appendChild(damageCard);
+            sendMoveData(damageCard);
 
             const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
             sendData({ type: 'syncDamageCount', count: damageCount });
@@ -394,14 +391,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (checksLeft > 1) {
-                setTimeout(() => {
-                    dealDamage(checksLeft - 1);
-                }, 1000);
+                setTimeout(() => dealDamage(checksLeft - 1), 800);
             }
         }
     }
 
-    function driveCheck(checksLeft = 1) {
+    function driveCheck(checksLeft = 1, initialCritical = 1) {
         if (deckPool.length === 0) {
             alert("Deck out! You lose.");
             showGameOver('Lose');
@@ -410,12 +405,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cardData = deckPool.pop();
         updateDeckCounter();
+
+        // Show the card as a floating "check" element
         const checkCard = createCardElement(cardData);
-        checkCard.style.position = 'absolute';
+        checkCard.style.position = 'fixed';
         checkCard.style.top = '50%';
         checkCard.style.left = '50%';
+        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
         checkCard.style.zIndex = '9999';
-        checkCard.classList.add('effect-trigger'); // Apply trigger animation class
+        checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
 
         sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
@@ -423,25 +421,57 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             if (cardData.trigger) {
                 resolveTrigger(cardData);
+            } else {
+                pendingPowerIncrease = 0;
+                pendingCriticalIncrease = 0;
+                document.body.classList.remove('targeting-mode');
             }
         }, 500);
 
-        setTimeout(() => {
-            checkCard.style.transform = 'none';
-            checkCard.style.position = 'relative';
-            checkCard.style.top = 'auto';
-            checkCard.style.left = 'auto';
-            checkCard.style.boxShadow = '';
-            playerHand.appendChild(checkCard);
+        const finishThisCheck = () => {
+            checkCard.remove();
+            // Add NEW clean copy to hand to fix sizing bugs
+            const cardInHand = createCardElement(cardData);
+            playerHand.appendChild(cardInHand);
             updateHandSpacing();
             sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
 
             if (checksLeft > 1) {
+                setTimeout(() => driveCheck(checksLeft - 1, initialCritical), 800);
+            } else {
+                // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
                 setTimeout(() => {
-                    driveCheck(checksLeft - 1);
+                    resolveFinalAttack(initialCritical);
                 }, 500);
             }
-        }, 2000); // 2 second display
+        };
+
+        // How long to show the card? If targeting, wait for click. If not, auto-move.
+        const checkTargeting = setInterval(() => {
+            if (!document.body.classList.contains('targeting-mode')) {
+                clearInterval(checkTargeting);
+                setTimeout(finishThisCheck, 1500);
+            }
+        }, 200);
+    }
+
+    function resolveFinalAttack(initialCritical) {
+        if (!currentAttackData) return;
+
+        let finalCritical = initialCritical + 0; // Use the value from the start of drive checks
+        // We calculate if the attack HITS now based on updated power vs target power
+        // But for Vanguard hit logic, usually it's power >= target power
+        // Since we need to know the target power, we check the global state or assume confirmed
+
+        // Final resolution to opponent
+        sendData({
+            type: 'resolveAttack',
+            attackData: {
+                ...currentAttackData,
+                totalCritical: finalCritical // Use updated critical
+            }
+        });
+        currentAttackData = null;
     }
 
     function resolveTrigger(cardData, isDamageCheck = false) {
@@ -1025,15 +1055,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (decision === 'no-guard') {
             alert("Opponent chose: NO GUARD!");
             if (attackData.isVanguardAttacker) {
+                currentAttackData = attackData; // Store to resolve after drive checks
                 const grade = parseInt(attackData.vanguardGrade || "0");
                 const checks = grade >= 3 ? 2 : 1;
-                driveCheck(checks, attackData.totalCritical); // Pass critical to driveCheck
-
-                // Need to delay resolveAttack slightly more if double driving
-                const delayMs = checks > 1 ? 4500 : 2500;
-                setTimeout(() => {
-                    sendData({ type: 'resolveAttack', attackData: attackData });
-                }, delayMs);
+                driveCheck(checks, attackData.totalCritical);
             } else {
                 sendData({ type: 'resolveAttack', attackData: attackData });
             }
@@ -1046,9 +1071,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const attackData = data.attackData;
         alert("Opponent finished placing guards!");
         if (attackData.isVanguardAttacker) {
+            currentAttackData = attackData;
             const grade = parseInt(attackData.vanguardGrade || "0");
             const checks = grade >= 3 ? 2 : 1;
-            driveCheck(checks, attackData.totalCritical); // Pass critical to driveCheck
+            driveCheck(checks, attackData.totalCritical);
         }
     }
 
