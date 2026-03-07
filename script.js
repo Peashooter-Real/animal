@@ -716,6 +716,20 @@ document.addEventListener('DOMContentLoaded', () => {
             zone.classList.remove('drag-over');
             if (!draggedCard) return;
 
+            const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
+
+            // Restricted zones for hand cards: Damage, Deck, Order
+            if (isFromHand) {
+                const isField = zone.classList.contains('circle');
+                const isDrop = zone.classList.contains('drop-zone');
+                const isGC = zone.dataset.zone === 'gc_player';
+
+                if (!isField && !isDrop && !isGC) {
+                    alert("Cards from hand can only be dropped to Field (V/R), Drop Zone, or Guardian Circle!");
+                    return;
+                }
+            }
+
             // Restrict Guard Circle dropping: Only when specifically 'isGuarding' (defending)
             if (zone.dataset.zone === 'gc_player') {
                 if (!isGuarding) {
