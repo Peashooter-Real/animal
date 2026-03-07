@@ -140,11 +140,6 @@ body {
   position: relative;
 }
 
-.opponent-side {
-  transform: rotate(180deg);
-  /* Remove global opacity and pointer-events so field looks normal */
-}
-
 /* Allow clicking opponent cards specifically */
 .opponent-card {
   pointer-events: auto;
@@ -1047,17 +1042,17 @@ body {
   font-size: 1rem;
 }
 
-/* Opponent Side Mirrored Layout */
+/* Opponent Side Layout - Now identical to player but at the top */
 .opponent-side {
   display: flex;
-  flex-direction: column-reverse;
-  /* Flip vertical layout */
+  flex-direction: column;
+  /* Match player layout */
 }
 
 .opponent-side .col-circles {
   display: flex;
-  flex-direction: column-reverse;
-  /* Flip Front/Back row positions */
+  flex-direction: column;
+  /* Match player layout order */
 }
 
 .opp-hand-info {
@@ -1104,18 +1099,8 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
 }
 
 .side-disabled::after {
-  content: "OPPONENT'S TURN";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.2);
-  letter-spacing: 5px;
-  z-index: 100;
-  pointer-events: none;
-  white-space: nowrap;
+  content: "";
+  display: none;
 }
 
 .side-disabled .card {
