@@ -1053,10 +1053,18 @@ body {
 }
 
 /* Allow interaction during targeting mode (e.g. Damage Check trigger) */
-body.targeting-mode .side-disabled {
+body.targeting-mode .side-disabled,
+body.targeting-mode .circle,
+body.targeting-mode .card {
   pointer-events: auto !important;
-  filter: none;
-  opacity: 1;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+body.targeting-mode .my-side .circle:not(.opponent-card) {
+  outline: 3px solid var(--accent-cyan);
+  outline-offset: 4px;
+  cursor: cell !important;
 }
 
 .side-disabled::after {
