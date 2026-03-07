@@ -657,11 +657,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             zone.classList.remove('drag-over');
             if (!draggedCard) return;
-            if (!isMyTurn && !isGuarding) return;
 
-            if (isGuarding) {
-                if (zone.dataset.zone !== 'gc_player') {
-                    alert("During Guard Step, you can only drop cards onto your Guardian Circle (GC)!");
+            // Restrict Guard Circle dropping: Only when specifically 'isGuarding' (defending)
+            if (zone.dataset.zone === 'gc_player') {
+                if (!isGuarding) {
+                    alert("You can only drop cards onto the Guard Circle when defending an attack!");
                     return;
                 }
                 zone.appendChild(draggedCard);
@@ -673,6 +673,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateGCShield();
                 return;
             }
+
+            // Other zones require it to be your turn
+            if (!isMyTurn) return;
 
             const currentPhase = phases[currentPhaseIndex];
 
@@ -819,7 +822,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         // Determine if it's my turn
-        isMyTurn = isFirstPlayer;
+        // Determine if it's my turn: Host starts (Odd turns), Guest follows (Even turns)
+        isMyTurn = (currentTurn % 2 !== 0 && isHost) || (currentTurn % 2 === 0 && !isHost);
 
         // Reset power/critical at the start of ANY turn's stand phase
         if (currentPhaseIndex === 0) { // Stand phase
@@ -1418,6 +1422,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }, 800);
+    }
+
+    function openViewer(title, cards) {
+        if (!zoneViewer || !viewerTitle || !viewerGrid) return;
+        viewerTitle.textContent = title;
+        viewerGrid.innerHTML = '';
+
+        cards.forEach(originalCard => {
+            const clone = originalCard.cloneNode(true);
+            clone.classList.remove('dragging', 'rest', 'opponent-card');
+            clone.style.position = 'relative';
+            clone.style.transform = 'none';
+            clone.style.top = 'auto';
+            clone.style.left = 'auto';
+            clone.style.margin = '0';
+            viewerGrid.appendChild(clone);
+        });
+
+        zoneViewer.classList.remove('hidden');
     }
 
     if (copyGameIdBtn) {

@@ -141,10 +141,8 @@ body {
 }
 
 .opponent-side {
-  opacity: 0.5;
   transform: rotate(180deg);
-  pointer-events: none;
-  /* Disable interaction for now */
+  /* Remove global opacity and pointer-events so field looks normal */
 }
 
 /* Allow clicking opponent cards specifically */
@@ -1080,12 +1078,14 @@ body {
   display: none;
 }
 
-/* Turn Lockout Visual */
 .side-disabled {
-  pointer-events: none !important;
-  filter: grayscale(0.7) blur(1px);
   transition: all 0.5s ease;
-  opacity: 0.6;
+  /* Removed brightness so field is fully visible regardless of turn */
+}
+
+/* Allow interaction for viewing cards even if disabled */
+.side-disabled .card {
+  pointer-events: auto !important;
 }
 
 /* Allow interaction during targeting mode (e.g. Damage Check trigger) */
