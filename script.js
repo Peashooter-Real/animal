@@ -806,6 +806,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (zone.classList.contains('drop-zone')) {
                 const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
 
+                if (isFromHand) {
+                    const isRideCost = currentPhase === 'ride' && !hasDiscardedThisTurn && !hasRiddenThisTurn;
+                    const isGuardCost = isGuarding;
+
+                    if (!isRideCost && !isGuardCost) {
+                        alert("Invalid Discard! You can only discard from hand as part of a cost (Ride Phase or Guarding).");
+                        return;
+                    }
+                }
+
                 if (currentPhase === 'ride' && !hasDiscardedThisTurn && !hasRiddenThisTurn && isFromHand) {
                     const vanguard = document.querySelector('.my-side .circle.vc .card');
                     const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
