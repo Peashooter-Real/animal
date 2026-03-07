@@ -18,6 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewerGrid = document.getElementById('viewer-grid');
     const closeViewerBtn = document.getElementById('close-viewer-btn');
 
+    // Opponent info
+    const oppHandCountNum = document.getElementById('opp-hand-count');
+    const oppDeckCountNum = document.getElementById('opp-deck-count-num');
+    const oppDropCountNum = document.getElementById('opp-drop-count-num');
+    const oppDamageCountNum = document.getElementById('opp-damage-count-num');
+    const oppSoulBadge = document.getElementById('opp-soul-counter');
+    const oppViewDropBtn = document.getElementById('opp-view-drop-btn');
+    const oppViewDamageBtn = document.getElementById('opp-view-damage-btn');
+
     // Matchmaking / Overlay Elements
     const matchmakingOverlay = document.getElementById('matchmaking-overlay');
     const matchmakingSubtitle = document.getElementById('matchmaking-subtitle');
@@ -51,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGuarding = false; // Add guard checking state
     let pendingPowerIncrease = 0;
     let pendingCriticalIncrease = 0;
+    let targetingType = null; // 'power' or 'critical' or 'both'
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
     // Track if it's currently my turn
@@ -134,16 +144,37 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             soulCounter.classList.add('hidden');
         }
+        syncCounts();
+    }
+
+    function syncCounts() {
+        if (!conn) return;
+        const myDamage = document.querySelectorAll('.my-side .damage-zone .card').length;
+        const myDrop = document.querySelectorAll('.my-side .drop-zone .card').length;
+        const myHand = playerHand.querySelectorAll('.card').length;
+        const mySoul = soulPool.length;
+        const myDeck = deckPool.length;
+
+        sendData({
+            type: 'syncCounts',
+            damage: myDamage,
+            drop: myDrop,
+            hand: myHand,
+            soul: mySoul,
+            deck: myDeck
+        });
     }
 
     function updateDropCount() {
         const count = document.querySelectorAll('.player-side.my-side .drop-zone .card').length;
         if (dropCountNum) dropCountNum.textContent = count;
+        syncCounts();
     }
 
     function updateDamageCount() {
         const count = document.querySelectorAll('.player-side.my-side .damage-zone .card').length;
         if (damageCountNum) damageCountNum.textContent = count;
+        syncCounts();
     }
 
     function updateGCShield() {
@@ -171,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             zone.style.boxShadow = shadowStr || 'none';
         });
+        syncCounts();
     }
 
     function createCardElement(cardData) {
@@ -252,13 +284,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
-            if (pendingPowerIncrease > 0) {
+            if (document.body.classList.contains('targeting-mode')) {
                 if (card.parentElement.classList.contains('circle') && !card.classList.contains('opponent-card')) {
-                    let currentPower = parseInt(card.dataset.power);
-                    let currentCrit = parseInt(card.dataset.critical);
+                    if (targetingType === 'critical') {
+                        let currentCrit = parseInt(card.dataset.critical || 1);
+                        card.dataset.critical = currentCrit + pendingCriticalIncrease;
+                        pendingCriticalIncrease = 0;
+                        alert(`+1 Critical applied to ${card.dataset.name}!`);
 
-                    card.dataset.power = currentPower + pendingPowerIncrease;
-                    card.dataset.critical = currentCrit + pendingCriticalIncrease;
+                        if (pendingPowerIncrease > 0) {
+                            targetingType = 'power';
+                            alert(`Step 2: Select a unit to receive +${pendingPowerIncrease >= 1000000 ? '100M' : pendingPowerIncrease} Power.`);
+                        } else {
+                            targetingType = null;
+                            document.body.classList.remove('targeting-mode');
+                        }
+                    } else if (targetingType === 'power' || targetingType === 'both') {
+                        let currentPower = parseInt(card.dataset.power);
+                        card.dataset.power = currentPower + pendingPowerIncrease;
+
+                        if (targetingType === 'both') {
+                            let currentCrit = parseInt(card.dataset.critical || 1);
+                            card.dataset.critical = currentCrit + pendingCriticalIncrease;
+                            pendingCriticalIncrease = 0;
+                        }
+
+                        pendingPowerIncrease = 0;
+                        targetingType = null;
+                        document.body.classList.remove('targeting-mode');
+                        alert(`Power applied to ${card.dataset.name}!`);
+                    }
 
                     const powerSpan = card.querySelector('.card-power');
                     if (powerSpan) {
@@ -267,11 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     sendMoveData(card);
-                    alert(`Effects applied to ${card.dataset.name}!`);
-
-                    pendingPowerIncrease = 0;
-                    pendingCriticalIncrease = 0;
-                    document.body.classList.remove('targeting-mode');
                 } else if (card.classList.contains('opponent-card')) {
                     alert("You must select your own unit!");
                 }
@@ -532,9 +582,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDamageCheck) drawCard(true); // Draw unconditionally only if it's drive check
         } else if (triggerType === 'Heal') {
             const myDamage = document.querySelectorAll('.my-side .damage-zone .card').length;
-            const oppDamage = parseInt(document.getElementById('opp-damage-count')?.textContent || "0");
+            const oppDamageCardCount = parseInt(oppDamageCountNum?.textContent || "0");
 
-            if (myDamage > 0 && myDamage >= oppDamage) {
+            if (myDamage > 0 && myDamage >= oppDamageCardCount) {
                 const damageZone = document.querySelector('.my-side .damage-zone');
                 const damageCards = damageZone.querySelectorAll('.card');
                 const cardToHeal = damageCards[0];
@@ -552,16 +602,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDamageCheck) drawCard(true);
         }
 
-        if (triggerType === 'Critical') {
-            pendingCriticalIncrease++;
-        }
-
-        pendingPowerIncrease += powerIncrease;
+        pendingPowerIncrease = powerIncrease;
         document.body.classList.add('targeting-mode');
-        // Mobile users might need an extra hint
-        let msg = `Trigger! Select a unit TO RECEIVE +${powerIncrease >= 100000 ? '100Million' : powerIncrease} Power`;
-        if (triggerType === 'Critical') msg += ' and +1 Critical';
-        alert(msg);
+
+        if (triggerType === 'Critical') {
+            pendingCriticalIncrease = 1;
+            targetingType = 'critical';
+            alert(`Step 1: Select a unit to receive +1 Critical.`);
+        } else {
+            targetingType = 'power';
+            alert(`Select a unit to receive +${powerIncrease >= 100000 ? '100M' : powerIncrease} Power.`);
+        }
     }
 
     function performAttack(attacker, target) {
@@ -575,10 +626,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Restrict to FRONT ROW ONLY
+        const zone = targetParent.dataset.zone || '';
+        if (zone.includes('back')) {
+            alert("Invalid Target! You can only attack front-row units.");
+            attacker.classList.remove('attacking-glow');
+            attackingCard = null;
+            return;
+        }
+
         let targetId = target.id;
         if (targetId.startsWith('opp-')) targetId = targetId.substring(4);
 
         if (!confirm(`Attack ${target.dataset.name} with ${attacker.dataset.name}?`)) {
+            attacker.classList.remove('attacking-glow');
+            attackingCard = null;
             return;
         }
 
@@ -1019,19 +1081,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         switch (data.type) {
-            case 'syncHandCount':
-                const oppHandCount = document.getElementById('opp-hand-count');
-                if (oppHandCount) oppHandCount.textContent = data.count;
-                break;
-            case 'syncDamageCount':
-                let oppDamageCount = document.getElementById('opp-damage-count');
-                if (!oppDamageCount) {
-                    oppDamageCount = document.createElement('span');
-                    oppDamageCount.id = 'opp-damage-count';
-                    oppDamageCount.style.display = 'none';
-                    document.body.appendChild(oppDamageCount);
+            case 'syncCounts':
+                if (oppHandCountNum) oppHandCountNum.textContent = data.hand;
+                if (oppDeckCountNum) oppDeckCountNum.textContent = data.deck;
+                if (oppDropCountNum) oppDropCountNum.textContent = data.drop;
+                if (oppDamageCountNum) oppDamageCountNum.textContent = data.damage;
+                if (oppSoulBadge) {
+                    if (data.soul > 0) {
+                        oppSoulBadge.classList.remove('hidden');
+                        oppSoulBadge.textContent = `Soul: ${data.soul}`;
+                    } else {
+                        oppSoulBadge.classList.add('hidden');
+                    }
                 }
-                oppDamageCount.textContent = data.count;
                 break;
             case 'moveCard':
                 syncRemoteMove(data);
@@ -1473,6 +1535,16 @@ document.addEventListener('DOMContentLoaded', () => {
     viewDamageBtn.addEventListener('click', () => {
         const cards = document.querySelectorAll('.my-side .damage-zone .card');
         openViewer(`Damage Zone (${cards.length})`, Array.from(cards));
+    });
+
+    oppViewDropBtn.addEventListener('click', () => {
+        const cards = document.querySelectorAll('.opponent-side .drop-zone .card');
+        openViewer(`Opponent Drop Zone (${cards.length})`, Array.from(cards));
+    });
+
+    oppViewDamageBtn.addEventListener('click', () => {
+        const cards = document.querySelectorAll('.opponent-side .damage-zone .card');
+        openViewer(`Opponent Damage Zone (${cards.length})`, Array.from(cards));
     });
 
     closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));

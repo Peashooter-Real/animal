@@ -74,7 +74,8 @@
                     <!-- Left Column Zones (Opponent) -->
                     <div class="col-zones left-col">
                         <div class="zone damage-zone" data-zone="damage">
-                            <span class="zone-label">Damage</span>
+                            <span class="zone-label">Damage (<span id="opp-damage-count-num">0</span>)</span>
+                            <button id="opp-view-damage-btn" class="view-zone-btn">View</button>
                         </div>
                         <div class="zone order-zone" data-zone="order">
                             <span class="zone-label">Order</span>
@@ -113,10 +114,11 @@
                     <!-- Right Column Zones (Opponent) -->
                     <div class="col-zones right-col">
                         <div class="zone drop-zone" data-zone="drop">
-                            <span class="zone-label">Drop</span>
+                            <span class="zone-label">Drop (<span id="opp-drop-count-num">0</span>)</span>
+                            <button id="opp-view-drop-btn" class="view-zone-btn">View</button>
                         </div>
                         <div class="zone deck-zone" data-zone="deck">
-                            <span class="zone-label">Deck</span>
+                            <span class="zone-label">Deck (<span id="opp-deck-count-num">50</span>)</span>
                         </div>
                         <div class="zone ride-deck-zone" data-zone="ride">
                             <span class="zone-label">Ride Deck</span>
