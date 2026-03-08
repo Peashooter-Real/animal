@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Bad" Steve': 'picture/grade1_bruce.jpg',
         'Diabolos, "Anger" Richard': 'picture/grade2_bruce.jpg',
         'Diabolos, "Viamance" Bruce': 'picture/grade3_bruce.jpg',
-        'Diabolos Diver, Julian': 'picture/145378.jpg',
+        'Diabolos Diver, Julian': 'picture/julian.jpg',
         'Diabolos Madonna, Megan': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_057.png',
         'Diabolos Boys, Eden': 'picture/eden.jpg',
         'Diabolos Buckler, Jamil': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_056.png',
