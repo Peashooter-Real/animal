@@ -146,9 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Deck Definitions ---
     const bruceDeck = {
         rideDeck: [
-            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Bad\" Steve" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น จั่วการ์ด 1 ใบ' },
-            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Anger\" Richard" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
-            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Viamance\" Bruce" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
+            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้วางบน (VC) เลือกการ์ด 1 ใบจากโซลของคุณ คอลลงช่อง (RC) แถวหลังตรงกลาง และ [Soul-Charge 1]\n[CONT](RC): ถ้าอยู่ในสถานะ "Final Rush" ยูนิทนี้ได้รับพลัง +5000' },
+            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้วางบน (VC) [คอสต์][นำเรียร์การ์ด 1 ใบเข้าสู่โซล] จั่วการ์ด 1 ใบ\n[CONT](RC): ถ้าอยู่ในสถานะ "Final Rush" ยูนิทนี้ได้รับพลัง +5000' },
             { name: "Diabolos, \"Viamance\" Bruce", grade: 3, power: 13000, persona: true, skill: "[AUTO](V): เมื่อเริ่มแบทเทิลเฟสของคุณ ถ้ายูนิททั้งหมดของคุณมีคำว่า \"เดียโบลอส\" คุณจะเข้าสู่สถานะ \"พลังบุกชั่วอึดใจ\" จนจบเทิร์นถัดไปของคู่แข่ง และถ้าแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า จะเข้าสู่สถานะ \"พลังระเบิกเฮือกสุดท้าย\"\n[AUTO](V): เมื่อยูนิทนี้โจมตี ในสถานะพลังระเบิดเฮือกสุดท้าย [CB1] เลือกแถวแนวตั้ง 1 แถว Stand เรียร์การ์ดเดียโบลอสทั้งหมดในแถวนั้น และได้รับพลัง +5000" }
         ],
         mainDeck: [
@@ -478,45 +478,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Bruce Ride Line Specifics (Ridden Over Logic)
-        // G0 Matt ridden by G1 Steve
-        if (oldName.includes('matt') && newName.includes('steve')) {
+        // 2. Bruce Ride Line Specifics (When Placed on VC)
+        // G1 Steve
+        if (newName.includes('steve')) {
             queue.push({
-                name: 'Matt (G0)',
-                description: "Soul Charge + Draw 1",
+                name: 'Bad Steve (G1)',
+                description: "Call from Soul + SC 1",
                 resolve: (done) => {
-                    if (confirm("Matt Skill: Put into soul to draw 1 card?")) {
-                        drawCard(true);
-                        alert("Matt: Moved to soul and drew 1 card.");
-                    }
-                    if (done) done();
-                }
-            });
-        }
-
-        // G1 Steve ridden by G2 Richard
-        if (oldName.includes('steve') && newName.includes('richard')) {
-            queue.push({
-                name: 'Steve (G1)',
-                description: "Cost: Put into soul to Call 1 from Soul",
-                resolve: (done) => {
-                    if (confirm("Steve Skill: Put into soul and Call 1 from Soul?")) {
-                        promptSoulCall('rc_back_center', done, false);
-                    } else {
+                    alert("Steve Skill: เลือกการ์ด 1 ใบจากโซล คอลลงแถวหลังตรงกลาง และ Soul Charge 1");
+                    promptSoulCall('rc_back_center', () => {
+                        soulCharge(1);
                         if (done) done();
-                    }
+                    }, false); // Mandatory
                 }
             });
         }
 
-        // G2 Richard ridden by G3 Bruce
-        if (oldName.includes('richard') && newName.includes('bruce')) {
+        // G2 Richard
+        if (newName.includes('richard')) {
             queue.push({
-                name: 'Richard (G2)',
-                description: "Cost: Put into soul to Call 1 from Soul",
+                name: 'Anger Richard (G2)',
+                description: "Cost: Put RG into Soul to Draw 1",
                 resolve: (done) => {
-                    if (confirm("Richard Skill: Put into soul and Call 1 from Soul?")) {
-                        promptSoulCall('rc_front_left', done, false);
+                    if (confirm("Richard Skill: [Cost: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ?")) {
+                        promptRichardVC(done); // This puts RG into soul then draws
                     } else {
                         if (done) done();
                     }
@@ -526,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Magnolia Ride Line
         if (oldName.includes('lotte') && newName.includes('charis')) {
-             queue.push({
+            queue.push({
                 name: 'Lotte (G0)',
                 description: "Ability: Put into soul to Call 1 from Soul",
                 resolve: (done) => {
@@ -545,9 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve: (done) => {
                     if (confirm("Charis Skill: SB1 to Call G2 or lower from top 5?")) {
                         if (paySoulBlast(1)) {
-                             // This is a simplified version, just drawing for now or using a generic top-call
-                             alert("Charis: Skill activated! (Placeholder for top-deck call)");
-                             drawCard(true);
+                            // This is a simplified version, just drawing for now or using a generic top-call
+                            alert("Charis: Skill activated! (Placeholder for top-deck call)");
+                            drawCard(true);
                         }
                     }
                     if (done) done();
@@ -1540,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Final Rush Static Bonus
         if (isFinalRush) {
             let bonus = 0;
-            if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
+            if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) bonus = 5000;
             else if (name.includes('Ivanka')) bonus = 2000;
 
             if (bonus > 0 && card.dataset.frBonusApplied !== "true") {
@@ -1656,10 +1641,11 @@ document.addEventListener('DOMContentLoaded', () => {
         viewerGrid.addEventListener('click', selectionHandler);
     }
 
-    function promptRichardVC() {
+    function promptRichardVC(onComplete) {
         const rgs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
         if (rgs.length === 0) {
             alert("No Rear-guards to pay the cost! Ability failed.");
+            if (onComplete) onComplete();
             return;
         }
 
@@ -1679,6 +1665,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert("Cost paid! Draw 1 card.");
                 drawCard(true);
+                if (onComplete) onComplete();
             }
         };
         document.addEventListener('click', selectionHandler, true);
