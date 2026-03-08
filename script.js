@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardImages = {
         // Bruce Deck
         'Diabolos, "Innocent" Matt': 'picture/grade0_bruce.jpg',
-        'Diabolos, "Bad" Steve': '',
+        'Diabolos, "Bad" Steve': 'picture/grade1_bruce.jpg',
         'Diabolos, "Anger" Richard': '',
         'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
@@ -766,14 +766,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Recalculate based on current state (AFTER DRIVE TRIGGERS)
-        let finalPower = parseInt(attacker.dataset.power) + (currentAttackData.boostPower || 0);
-        let finalCritical = parseInt(attacker.dataset.critical);
+        const attackerPower = parseInt(attacker.dataset.power || "0");
+        const boostPower = parseInt(currentAttackData.boostPower || "0");
+        let finalPower = attackerPower + boostPower;
+        let finalCritical = parseInt(attacker.dataset.critical || "1");
 
         // Find target power - it's on our locally synced version of opponent's card
-        const opponentShield = currentAttackData.opponentShield || 0;
-        let targetDefendingPower = parseInt(target.dataset.power) + opponentShield;
+        const opponentShield = parseInt(currentAttackData.opponentShield || "0");
+        const targetBasePower = parseInt(target.dataset.power || "0");
+        let targetDefendingPower = targetBasePower + opponentShield;
 
         const isHit = finalPower >= targetDefendingPower;
+        console.log(`Attack Resolution Check: Attacker ${finalPower} vs Target ${targetDefendingPower}. isHit: ${isHit}`);
 
         // Check for Perfect Guard (PG) on target side if we were the attacker
         // In local logic, if opponent used PG, we handle it during their finishGuard callback which sets opponentShield
@@ -789,12 +793,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...currentAttackData,
                     totalPower: finalPower,
                     totalCritical: finalCritical,
-                    isHit: false, // Forces miss
+                    isHit: false,
                     isPG: true
                 }
             });
         } else {
-            if (!isHit) {
+            if (isHit) {
+                alert(`Attack hit! ${finalPower} Power vs ${targetDefendingPower} Def. Resolving damage...`);
+            } else {
                 alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
             }
 
@@ -1762,15 +1768,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const grade = parseInt(attackData.vanguardGrade || "0");
                 const checks = grade >= 3 ? 2 : 1;
                 driveCheck(checks, attackData.totalCritical);
-            } else {
                 // Rearguard attack check vs base target power
                 const target = document.getElementById('opp-' + attackData.targetId);
                 let isHit = false;
+                const attackerPower = parseInt(attackData.totalPower || "0");
                 if (target) {
-                    isHit = parseInt(attackData.totalPower) >= parseInt(target.dataset.power);
+                    const targetPower = parseInt(target.dataset.power || "0");
+                    isHit = attackerPower >= targetPower;
                 } else {
                     isHit = true; // Fallback
                 }
+
+                if (isHit) {
+                    alert("Rearguard attack hit! Resolving damage/retire...");
+                } else {
+                    alert("Rearguard attack missed.");
+                }
+
                 sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
             }
         } else if (decision === 'guard') {
@@ -1814,10 +1828,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resolveRemoteAttack(data) {
         const attackData = data.attackData;
+        console.log("Receiving Remote Attack Settlement:", attackData);
 
         if (attackData.isPG === true || attackData.isHit === false) {
             const reason = attackData.isPG ? "Perfect Guard" : "Power check";
-            alert(`Attack failed! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
+            alert(`Attack blocked! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
             return;
         }
 
