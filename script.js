@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const gc = document.querySelector('.guardian-circle');
         const hasPG = gc && Array.from(gc.querySelectorAll('.card')).some(c => c.dataset.name.includes('Perfect Guard') || c.dataset.isPG === "true");
 
-        if (hasPG) {
+        if (hasPG || data.isPG) {
             alert("Perfect Guard activated! Attack is nullified.");
             sendData({
                 type: 'resolveAttack',
@@ -900,10 +900,10 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`Trigger! ${triggerType} effect activating...`);
 
         if (triggerType === 'Front') {
-            // AUTO-APPLY: Give +10,000 to all front row units immediately
+            // AUTO-APPLY: Give power increase to all front row units immediately
             document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
                 let currentPower = parseInt(unit.dataset.power);
-                unit.dataset.power = currentPower + 10000;
+                unit.dataset.power = currentPower + powerIncrease;
 
                 const powerSpan = unit.querySelector('.card-power');
                 if (powerSpan) {
@@ -1055,6 +1055,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const oldParent = card.parentElement;
         const isFromHand = oldParent && oldParent.dataset.zone === 'hand';
         const isFromField = oldParent && oldParent.classList.contains('circle');
+        const isFromVC = oldParent && oldParent.classList.contains('vc');
+
+        // 0. Vanguard Movement Restriction
+        if (isFromVC && (zone.classList.contains('rc') || zone.dataset.zone === 'hand')) {
+            alert("Vanguard cannot be moved to Rear-guard circle or Hand!");
+            return false;
+        }
 
         // 1. Basic Boundary Checks
         if (isFromHand) {
@@ -1199,8 +1206,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (personaRideActive) {
                     let p = parseInt(card.dataset.power);
                     card.dataset.power = p + 10000;
-                    // Note: We'll need to update visuals after zone.appendChild if we were doing it right, 
-                    // but validateAndMoveCard does zone.appendChild(card) at the very end.
+
+                    // Immediately update UI for the called card
+                    const powerSpan = card.querySelector('.card-power');
+                    if (powerSpan) {
+                        const critVal = parseInt(card.dataset.critical || "1");
+                        let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                        powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
+                    }
                 }
             }
 
@@ -1802,8 +1815,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function resolveRemoteAttack(data) {
         const attackData = data.attackData;
 
-        if (attackData.isHit === false) {
-            alert(`Attack failed! Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not reach your ${attackData.targetName}'s power.`);
+        if (attackData.isPG === true || attackData.isHit === false) {
+            const reason = attackData.isPG ? "Perfect Guard" : "Power check";
+            alert(`Attack failed! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
             return;
         }
 
