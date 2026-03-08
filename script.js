@@ -265,6 +265,126 @@ document.addEventListener('DOMContentLoaded', () => {
         syncCounts();
     }
 
+    function soulCharge(count = 1) {
+        for (let i = 0; i < count; i++) {
+            if (deckPool.length > 0) {
+                const cardData = deckPool.pop();
+                const card = createCardElement(cardData);
+                soulPool.push(card);
+            }
+        }
+        updateSoulUI();
+        updateDeckCounter();
+    }
+
+    function promptSoulCall(targetZoneName) {
+        if (soulPool.length === 0) {
+            alert("Soul is empty, cannot call.");
+            return;
+        }
+
+        viewerTitle.textContent = "Choose a card to Call from Soul";
+        viewerGrid.innerHTML = '';
+        zoneViewer.classList.remove('hidden');
+
+        soulPool.forEach((soulCard, index) => {
+            const clone = soulCard.cloneNode(true);
+            clone.classList.remove('dragging', 'rest', 'opponent-card');
+            clone.style.position = 'relative';
+            clone.style.cursor = 'pointer';
+
+            clone.onclick = () => {
+                const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetZoneName}"]`);
+                if (targetCircle) {
+                    // Remove actual card from soulPool
+                    const actualCard = soulPool.splice(index, 1)[0];
+
+                    // Retire existing unit if any
+                    const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                    if (existing) {
+                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        dropZone.appendChild(existing);
+                        existing.classList.remove('rest');
+                        sendMoveData(existing);
+                    }
+
+                    targetCircle.appendChild(actualCard);
+                    actualCard.classList.remove('rest');
+                    actualCard.style.transform = 'none';
+                    sendMoveData(actualCard);
+                    updateSoulUI();
+                    updateDropCount();
+                }
+                zoneViewer.classList.add('hidden');
+            };
+            viewerGrid.appendChild(clone);
+        });
+    }
+
+    function promptRetireToSoulForDraw() {
+        const rearGuards = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        if (rearGuards.length === 0) {
+            alert("No Rear-guards to pay for Richard's ability!");
+            return;
+        }
+
+        if (confirm("Use Richard's ability? Cost: Put 1 Rear-guard into Soul to draw 1 card.")) {
+            alert("Select a Rear-guard to put into Soul.");
+            document.body.classList.add('targeting-mode');
+
+            const costListener = (e) => {
+                const card = e.target.closest('.card');
+                if (card && card.parentElement && card.parentElement.classList.contains('rc') && !card.classList.contains('opponent-card')) {
+                    e.stopPropagation();
+                    const parentZone = card.parentElement;
+
+                    // Move to Soul
+                    soulPool.push(card);
+                    card.remove();
+                    updateSoulUI();
+
+                    // Draw
+                    drawCard(true);
+
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', costListener, true);
+                    alert("Richard: Cost paid! Drew 1 card.");
+                    sendData({ type: 'syncCounts', soul: soulPool.length, hand: playerHand.childElementCount });
+                } else if (e.target.closest('.circle') || e.target.closest('.zone')) {
+                    alert("Invalid selection! Please select a Rear-guard.");
+                }
+            };
+
+            document.addEventListener('click', costListener, true);
+        }
+    }
+
+    function checkRideAbilities(oldVanguard, newCard) {
+        // G0 Matt: When ridden over, if second, draw 1
+        if (oldVanguard && (oldVanguard.dataset.name === 'Diabolos, "Innocent" Matt')) {
+            if (!isFirstPlayer) {
+                alert(`Ability: "Innocent" Matt - Draw 1 because you went second!`);
+                drawCard(true);
+            }
+        }
+
+        // G1 Steve: On V, SC1 and call from soul to back-row center
+        if (newCard.dataset.name === 'Diabolos, "Bad" Steve') {
+            alert(`Ability: "Bad" Steve - Soul Charge 1 and Call from Soul!`);
+            soulCharge(1);
+            setTimeout(() => {
+                promptSoulCall('rc_back_center');
+            }, 600);
+        }
+
+        // G2 Richard: On V, Retire RG to Soul to Draw 1
+        if (newCard.dataset.name === 'Diabolos, "Anger" Richard') {
+            setTimeout(() => {
+                promptRetireToSoulForDraw();
+            }, 600);
+        }
+    }
+
     function createCardElement(cardData) {
         const card = document.createElement('div');
         card.className = 'card';
@@ -873,9 +993,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
                 if (vanguard) {
+                    const oldV = vanguard.cloneNode(true);
+                    // Copy dataset manually as cloneNode might miss some properties in some environments
+                    Object.assign(oldV.dataset, vanguard.dataset);
+
                     soulPool.push(vanguard);
                     vanguard.remove();
                     updateSoulUI();
+
+                    checkRideAbilities(oldV, card);
                 }
                 hasRiddenThisTurn = true;
             } else if (zone.classList.contains('rc')) {
@@ -930,9 +1056,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         hasRiddenThisTurn = true;
                         setTimeout(() => {
                             if (vanguard) {
+                                const oldV = vanguard.cloneNode(true);
+                                Object.assign(oldV.dataset, vanguard.dataset);
+
                                 soulPool.push(vanguard);
                                 vanguard.remove();
                                 updateSoulUI();
+                                checkRideAbilities(oldV, nextRideCard);
                             }
                             const vcZone = document.querySelector('.my-side .circle.vc');
                             vcZone.appendChild(nextRideCard);
