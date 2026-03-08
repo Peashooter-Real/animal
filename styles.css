@@ -1064,7 +1064,7 @@ body {
   transform: none !important;
   top: auto !important;
   left: auto !important;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .viewer-grid .card-art {

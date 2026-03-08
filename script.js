@@ -277,15 +277,35 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDeckCounter();
     }
 
-    function promptSoulCall(targetZoneName) {
+    function promptSoulCall(targetZoneName, onComplete, isOptional = true) {
         if (soulPool.length === 0) {
-            alert("Soul is empty, cannot call.");
+            alert("Soul is empty, skipping Call.");
+            if (onComplete) onComplete();
             return;
         }
 
-        viewerTitle.textContent = "Choose a card to Call from Soul";
+        viewerTitle.textContent = isOptional ? "Choose a card to Call (Optional)" : "Choose a card to Call (Mandatory)";
         viewerGrid.innerHTML = '';
         zoneViewer.classList.remove('hidden');
+
+        // Only show "Skip" if the source effect is optional
+        if (isOptional) {
+            const skipCard = document.createElement('div');
+            skipCard.className = 'card';
+            skipCard.style.cursor = 'pointer';
+            skipCard.style.display = 'flex';
+            skipCard.style.flexDirection = 'column';
+            skipCard.style.justifyContent = 'center';
+            skipCard.style.alignItems = 'center';
+            skipCard.style.background = 'rgba(255,255,255,0.05)';
+            skipCard.style.border = '1px dashed #666';
+            skipCard.innerHTML = `<div style="font-size: 0.8rem; text-align: center; color: #888;">SKIP<br>CALL</div>`;
+            skipCard.onclick = () => {
+                zoneViewer.classList.add('hidden');
+                if (onComplete) onComplete();
+            };
+            viewerGrid.appendChild(skipCard);
+        }
 
         soulPool.forEach((soulCard, index) => {
             const clone = soulCard.cloneNode(true);
@@ -296,10 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clone.onclick = () => {
                 const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetZoneName}"]`);
                 if (targetCircle) {
-                    // Remove actual card from soulPool
                     const actualCard = soulPool.splice(index, 1)[0];
-
-                    // Retire existing unit if any
                     const existing = targetCircle.querySelector('.card:not(.opponent-card)');
                     if (existing) {
                         const dropZone = document.querySelector('.my-side .drop-zone');
@@ -307,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         existing.classList.remove('rest');
                         sendMoveData(existing);
                     }
-
                     targetCircle.appendChild(actualCard);
                     actualCard.classList.remove('rest');
                     actualCard.style.transform = 'none';
@@ -316,15 +332,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateDropCount();
                 }
                 zoneViewer.classList.add('hidden');
+                if (onComplete) onComplete();
             };
             viewerGrid.appendChild(clone);
         });
     }
 
-    function promptRetireToSoulForDraw() {
+    function promptRetireToSoulForDraw(onComplete) {
         const rearGuards = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
         if (rearGuards.length === 0) {
             alert("No Rear-guards to pay for Richard's ability!");
+            if (onComplete) onComplete();
             return;
         }
 
@@ -336,53 +354,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = e.target.closest('.card');
                 if (card && card.parentElement && card.parentElement.classList.contains('rc') && !card.classList.contains('opponent-card')) {
                     e.stopPropagation();
-                    const parentZone = card.parentElement;
-
-                    // Move to Soul
                     soulPool.push(card);
                     card.remove();
                     updateSoulUI();
-
-                    // Draw
                     drawCard(true);
-
                     document.body.classList.remove('targeting-mode');
                     document.removeEventListener('click', costListener, true);
                     alert("Richard: Cost paid! Drew 1 card.");
                     sendData({ type: 'syncCounts', soul: soulPool.length, hand: playerHand.childElementCount });
-                } else if (e.target.closest('.circle') || e.target.closest('.zone')) {
-                    alert("Invalid selection! Please select a Rear-guard.");
+                    if (onComplete) onComplete();
                 }
             };
-
             document.addEventListener('click', costListener, true);
+        } else {
+            if (onComplete) onComplete();
         }
     }
 
+    function resolveAbilityQueue(queue) {
+        if (!queue || queue.length === 0) return;
+
+        if (queue.length === 1) {
+            queue[0].resolve(() => { });
+            return;
+        }
+
+        viewerTitle.textContent = "Select ability resolution order";
+        viewerGrid.innerHTML = '';
+        zoneViewer.classList.remove('hidden');
+
+        queue.forEach((ability, index) => {
+            const tile = document.createElement('div');
+            tile.className = 'card';
+            tile.style.position = 'relative';
+            tile.style.cursor = 'pointer';
+            tile.style.display = 'flex';
+            tile.style.flexDirection = 'column';
+            tile.style.justifyContent = 'center';
+            tile.style.alignItems = 'center';
+            tile.style.textAlign = 'center';
+            tile.style.padding = '10px';
+            tile.style.background = 'rgba(255, 42, 109, 0.1)';
+            tile.style.border = '2px solid var(--accent-vanguard)';
+
+            tile.innerHTML = `
+                <div style="font-weight:bold; color:white; margin-bottom:5px; font-size:0.9rem;">${ability.name}</div>
+                <div style="font-size:0.65rem; color:#aaa;">${ability.description}</div>
+            `;
+
+            tile.onclick = () => {
+                zoneViewer.classList.add('hidden');
+                ability.resolve(() => {
+                    const nextQueue = queue.filter((_, i) => i !== index);
+                    setTimeout(() => resolveAbilityQueue(nextQueue), 300);
+                });
+            };
+            viewerGrid.appendChild(tile);
+        });
+    }
+
     function checkRideAbilities(oldVanguard, newCard) {
-        // G0 Matt: When ridden over, if second, draw 1
+        const queue = [];
+
+        // G0 Matt: When ridden over, if second, draw 1 (Mandatory)
         if (oldVanguard && (oldVanguard.dataset.name === 'Diabolos, "Innocent" Matt')) {
             if (!isFirstPlayer) {
-                alert(`Ability: "Innocent" Matt - Draw 1 because you went second!`);
-                drawCard(true);
+                queue.push({
+                    name: 'Matt (G0)',
+                    description: "Draw 1 (Go Second Effect)",
+                    resolve: (done) => {
+                        alert(`Ability: "Innocent" Matt - Draw 1!`);
+                        drawCard(true);
+                        if (done) done();
+                    }
+                });
             }
         }
 
-        // G1 Steve: On V, SC1 and call from soul to back-row center
+        // G1 Steve: On V, Call from Soul and then SC1 (Mandatory if soul exists)
         if (newCard.dataset.name === 'Diabolos, "Bad" Steve') {
-            alert(`Ability: "Bad" Steve - Soul Charge 1 and Call from Soul!`);
-            soulCharge(1);
-            setTimeout(() => {
-                promptSoulCall('rc_back_center');
-            }, 600);
+            queue.push({
+                name: 'Steve (G1)',
+                description: "Call from Soul then Soul Charge 1",
+                resolve: (done) => {
+                    alert(`Ability: "Bad" Steve - Call from Soul then Soul Charge 1!`);
+                    promptSoulCall('rc_back_center', () => {
+                        soulCharge(1);
+                        if (done) done();
+                    }, false); // Mandatory sourcing
+                }
+            });
         }
 
-        // G2 Richard: On V, Retire RG to Soul to Draw 1
+        // G2 Richard: On V, Retire RG to Soul to Draw 1 (Optional - Cost)
         if (newCard.dataset.name === 'Diabolos, "Anger" Richard') {
-            setTimeout(() => {
-                promptRetireToSoulForDraw();
-            }, 600);
+            queue.push({
+                name: 'Richard (G2)',
+                description: "Cost: Put RG to Soul to Draw 1",
+                resolve: (done) => {
+                    promptRetireToSoulForDraw(done);
+                }
+            });
         }
+
+        resolveAbilityQueue(queue);
     }
 
     function createCardElement(cardData) {
