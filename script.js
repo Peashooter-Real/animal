@@ -376,6 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (card && card.parentElement && card.parentElement.classList.contains('rc') && !card.classList.contains('opponent-card')) {
                     e.stopPropagation();
                     soulPool.push(card);
+                    // Send move data to notify opponent card is entering soul
+                    sendData({ type: 'moveCard', cardId: card.id, zone: 'soul', cardName: card.dataset.name });
                     card.remove();
                     updateSoulUI();
                     drawCard(true);
@@ -709,8 +711,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let isDealingDamage = false;
     function dealDamage(checksLeft = 1) {
-        if (checksLeft <= 0) return;
+        if (checksLeft <= 0 || isDealingDamage) return;
+        isDealingDamage = true;
         triggerShake();
 
         if (deckPool.length === 0) {
@@ -769,7 +773,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (checksLeft > 1) {
+                isDealingDamage = false; // Reset to allow next damage check in sequence
                 setTimeout(() => dealDamage(checksLeft - 1), 800);
+            } else {
+                isDealingDamage = false;
             }
         }
     }
@@ -857,6 +864,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 attackHitCheck(crit, isOpponentPG);
             }
+            // Reset resolve lock
+            setTimeout(() => { currentAttackResolving = false; }, 2000);
             return;
         }
 
@@ -1233,12 +1242,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (zone.classList.contains('rc')) {
                 if (currentPhase !== 'main') { alert("Only Call or Move during Main Phase!"); return false; }
 
-                // Only enforce grade limit if calling from hand
-                if (isFromHand && cardGrade > vanguardGrade) {
-                    alert(`Cannot Call Grade ${cardGrade} (VG is G${vanguardGrade})!`);
-                    return false;
-                }
-
                 // Column check for Rear-guard movement (Horizontal restriction)
                 if (isFromField) {
                     const oldZone = oldParent.dataset.zone || '';
@@ -1251,30 +1254,31 @@ document.addEventListener('DOMContentLoaded', () => {
                         return false;
                     }
                 }
+            }
 
-                // Persona Ride Passive Power: If we call or move a unit while Persona Ride node is active
-                const isFrontRow = zone.parentElement.classList.contains('front-row');
+            // Persona Ride Passive Power: If we call or move a unit while Persona Ride node is active
+            // This applies to both VC and RC (Front Row)
+            const isFrontRow = zone.parentElement.classList.contains('front-row');
 
-                if (personaRideActive) {
-                    if (isFrontRow && !card.dataset.personaBuffed) {
-                        // Gaining buff
-                        let p = parseInt(card.dataset.power);
-                        card.dataset.power = p + 10000;
-                        card.dataset.personaBuffed = "true";
-                    } else if (!isFrontRow && card.dataset.personaBuffed) {
-                        // Losing buff
-                        let p = parseInt(card.dataset.power);
-                        card.dataset.power = p - 10000;
-                        delete card.dataset.personaBuffed;
-                    }
+            if (personaRideActive) {
+                if (isFrontRow && !card.dataset.personaBuffed) {
+                    // Gaining buff
+                    let p = parseInt(card.dataset.power);
+                    card.dataset.power = p + 10000;
+                    card.dataset.personaBuffed = "true";
+                } else if (!isFrontRow && card.dataset.personaBuffed) {
+                    // Losing buff
+                    let p = parseInt(card.dataset.power);
+                    card.dataset.power = p - 10000;
+                    delete card.dataset.personaBuffed;
+                }
 
-                    // Update UI
-                    const powerSpan = card.querySelector('.card-power');
-                    if (powerSpan) {
-                        const critVal = parseInt(card.dataset.critical || "1");
-                        let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
-                    }
+                // Update UI for the moving card
+                const powerSpan = card.querySelector('.card-power');
+                if (powerSpan) {
+                    const critVal = parseInt(card.dataset.critical || "1");
+                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                    powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
                 }
             }
 
@@ -1324,6 +1328,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Object.assign(oldV.dataset, vanguard.dataset);
 
                                 soulPool.push(vanguard);
+                                // Notify opponent old vanguard is now in soul (alternatively, they handle it in VC replacement)
+                                sendData({ type: 'moveCard', cardId: vanguard.id, zone: 'soul', cardName: vanguard.dataset.name });
                                 vanguard.remove();
                                 updateSoulUI();
                                 checkRideAbilities(oldV, nextRideCard);
@@ -1812,13 +1818,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(btn);
     }
 
+    let currentAttackResolving = false; // Guard against double resolve
+
     function handleGuardDecision(data) {
+        if (currentAttackResolving) return;
+
         const decision = data.decision;
         const attackData = data.attackData;
         const statusText = document.getElementById('game-status-text');
         if (statusText) statusText.textContent = "Network Ready";
 
         if (decision === 'no-guard') {
+            currentAttackResolving = true;
             alert("Opponent chose: NO GUARD!");
             if (attackData.isVanguardAttacker) {
                 currentAttackData = { ...attackData, opponentShield: 0 };
@@ -1845,6 +1856,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
             }
+            setTimeout(() => { currentAttackResolving = false; }, 2000);
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
         }
@@ -1963,12 +1975,25 @@ document.addEventListener('DOMContentLoaded', () => {
             'rc_front_right': 'rc_front_left',
             'rc_back_left': 'rc_back_right',
             'rc_back_right': 'rc_back_left',
+            'rc_back_center': 'rc_back_center',
             'vc': 'vc',
             'drop-zone': 'drop-zone',
             'damage-zone': 'damage-zone',
+            'soul': 'soul',
             'hand': 'hand'
         };
         const mappedZone = zoneMap[data.zone] || data.zone;
+
+        // Handle Soul move - just remove from field
+        if (mappedZone === 'soul') {
+            const card = document.getElementById(`opp-${data.cardId}`);
+            if (card) {
+                card.classList.add('effect-retired');
+                setTimeout(() => card.remove(), 500);
+            }
+            return;
+        }
+
         const targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`) ||
             oppSide.querySelector(`.circle.${mappedZone}`) ||
             oppSide.querySelector(`.${mappedZone}`);
@@ -2032,7 +2057,11 @@ document.addEventListener('DOMContentLoaded', () => {
         rideDeckZone.innerHTML = '<span class="zone-label">Ride Deck</span>';
 
         const starter = currentDeck.rideDeck.find(c => c.grade === 0);
-        if (starter) vanguardCircle.appendChild(createCardElement(starter));
+        if (starter) {
+            const starterCard = createCardElement(starter);
+            vanguardCircle.appendChild(starterCard);
+            sendMoveData(starterCard); // Sync starter to opponent
+        }
 
         currentDeck.rideDeck.filter(c => c.grade > 0)
             .sort((a, b) => b.grade - a.grade)
