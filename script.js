@@ -80,7 +80,39 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
     let selectedCard = null; // Track selected card for tap-to-move
-    // Track if it's currently my turn
+
+    // --- Card Image Database ---
+    const cardImages = {
+        // Bruce Deck
+        'Diabolos, "Innocent" Matt': '',
+        'Diabolos, "Bad" Steve': '',
+        'Diabolos, "Anger" Richard': '',
+        'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
+        'Diabolos Diver, Julian': '',
+        'Diabolos Madonna, Megan': '',
+
+        // Magnolia Deck
+        'Sylvan Horned Beast, Lotte': '',
+        'Sylvan Horned Beast, Charis': '',
+        'Sylvan Horned Beast, Lattice': '',
+        'Sylvan Horned Beast King, Magnolia': 'https://s3-ap-northeast-1.amazonaws.com/cf-img-mono-vanguard-card-front/201201_3879_1_c.jpg', // Example link
+        'Sylvan Horned Beast, Giunosla': '',
+        'Sylvan Horned Beast, Enpix': '',
+
+        // Triggers - Dark States (Bruce)
+        'Critical Trigger (Dark States)': '',
+        'Draw Trigger (Dark States)': '',
+        'Front Trigger (Dark States)': '',
+        'Heal Trigger (Dark States)': '',
+        'Hades Dragon Deity, Gallmageveld': '',
+
+        // Triggers - Stoicheia (Magnolia)
+        'Critical Trigger (Stoicheia)': '',
+        'Draw Trigger (Stoicheia)': '',
+        'Front Trigger (Stoicheia)': '',
+        'Heal Trigger (Stoicheia)': '',
+        'Source Dragon Deity, Blessfavor': ''
+    };
 
     // --- Deck Definitions ---
     // --- Deck Definitions ---
@@ -89,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000 },
             { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000 },
             { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000 },
-            { name: 'Diabolos, "Violence" Bruce', grade: 3, power: 13000, persona: true }
+            { name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true }
         ],
         mainDeck: [
             // G3 (6 cards total - excluding ride deck Bruce)
@@ -108,10 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 10000 }),
 
             // Triggers (16 cards total)
-            ...Array(8).fill({ name: 'Critical Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
-            ...Array(2).fill({ name: 'Draw Trigger', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
-            ...Array(1).fill({ name: 'Front Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
-            ...Array(4).fill({ name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            ...Array(8).fill({ name: 'Critical Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(2).fill({ name: 'Draw Trigger (Dark States)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(1).fill({ name: 'Front Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
             { name: 'Hades Dragon Deity, Gallmageveld', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random()) // Shuffle main deck
     };
@@ -141,10 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ],
             [
                 { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' },
-                { name: 'Critical Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' },
-                { name: 'Draw Trigger', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' },
-                { name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' },
-                { name: 'Front Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }
+                { name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' },
+                { name: 'Draw Trigger (Stoicheia)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' },
+                { name: 'Heal Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' },
+                { name: 'Front Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }
             ]
         )
     };
@@ -253,12 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayPower = cardData.overPower ? '100M' : cardData.power;
         let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
 
+        const artUrl = cardData.imageUrl || cardImages[cardData.name] || '';
+        const artStyle = artUrl ? `style="background-image: url('${artUrl}'); background-size: cover; background-position: center;"` : '';
+        const artDisplay = artUrl ? '' : artText;
+
         card.innerHTML = `
             <div class="card-header">
                 <span class="card-grade">G${cardData.grade}</span>
                 ${triggerIcon}
             </div>
-            <div class="card-art">${artText}</div>
+            <div class="card-art" ${artStyle}>${artDisplay}</div>
             ${personaIcon}
             <div class="card-details">
                 <span class="card-power">⚔️${displayPower} ${displayCritical}</span>
