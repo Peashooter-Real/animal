@@ -462,7 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Universal Grade 0 "Go Second" Skill
         if (oldVanguard && parseInt(oldVanguard.dataset.grade) === 0) {
-            if (!isFirstPlayer) {
+            console.log("Starter Bonus Check: isFirstPlayer =", isFirstPlayer);
+            if (isFirstPlayer === false) {
                 queue.push({
                     name: 'Starter Bonus',
                     description: "Draw 1 card for going second",
@@ -1396,7 +1397,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // IF CALLING FROM HAND
-                if (currentPhase !== 'main' && currentPhase !== 'ride') { alert("Call units during Ride or Main phase!"); return false; }
+                if (currentPhase !== 'main') {
+                    alert("You can only call units from hand during the Main Phase!");
+                    return false;
+                }
                 if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
                 zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
@@ -1483,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.personaBuffed = "true";
             }
         } else if (!personaRideActive || (zone && zone.startsWith('rc_back_'))) {
-            // Remove persona buff if moved to back row or turn ended (already handled in স্ট্যান্ড)
+            // Remove persona buff if moved to back row or turn ended (already handled in STAND)
             if (card.dataset.personaBuffed === "true") {
                 card.dataset.power = parseInt(card.dataset.power) - 10000;
                 card.dataset.personaBuffed = "false";
@@ -1522,13 +1526,23 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
             const zone = unit.parentElement ? unit.parentElement.dataset.zone : "";
             if ((zone && zone.startsWith('rc_front_')) || (unit.parentElement && unit.parentElement.classList.contains('vc'))) {
-                unit.dataset.power = parseInt(unit.dataset.power) + 10000;
-                syncPowerDisplay(unit);
+                // Check if already buffed to avoid double application (especially on the new V)
+                if (unit.dataset.personaBuffed !== "true") {
+                    unit.dataset.power = parseInt(unit.dataset.power) + 10000;
+                    unit.dataset.personaBuffed = "true";
+                    syncPowerDisplay(unit);
+                }
             }
         });
 
         // 3. Draw 1 card
         setTimeout(() => drawCard(true), 500);
+
+        // 4. Skip to Main Phase immediately
+        setTimeout(() => {
+            currentPhaseIndex = phases.indexOf('main');
+            updatePhaseUI(true);
+        }, 1200);
     }
 
     function handleRideAbilities(newVanguard) {
@@ -2476,6 +2490,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.isPG) {
                     alert("Perfect Guard nullified the Rear-guard attack!");
                     isHit = false;
+                }
+
+                if (isHit) {
+                    // Eden On-Hit Retirement
+                    if (attackData.attackerName.includes('Eden') && isFinalRush) {
+                        setTimeout(() => {
+                            if (confirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
+                                if (payCounterBlast(1)) {
+                                    sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
+                                    alert("Eden: Opponent is choosing a Rear-guard to retire.");
+                                }
+                            }
+                        }, 500);
+                    }
                 }
 
                 sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
