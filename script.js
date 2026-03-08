@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Bad" Steve': '',
         'Diabolos, "Anger" Richard': '',
         'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
-        'Diabolos Diver, Julian': '',
+        'Diabolos Diver, Julian': 'picture/145378.jpg',
         'Diabolos Madonna, Megan': '',
 
         // Magnolia Deck
