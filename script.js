@@ -154,12 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         mainDeck: [
             // G3 (6 cards total - excluding ride deck Bruce)
             ...Array(3).fill({ name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true, skill: 'Persona Ride: Front row +10000\n[AUTO](V): เมื่อเริ่มแบทเทิลเฟส... (เหมือนตัว Ride Deck)' }),
-            ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +5000 และได้รับ "Intercept" แม้อยู่แถวหลัง' }),
+            ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000, skill: '[AUTO](RC)[1/turn]: เมื่อยูนิทนี้โจมตีแวนการ์ด, [คอสต์][Counter-Blast 1], ยูนิทนี้ได้รับพลัง+2000 จนจบเทิร์น ต่อการ์ดทุกๆ 1 ใบในดาเมจโซนของคุณ หากคุณมีแวนการ์ดที่มีชื่อ "Bruce", และทำการ [Soul-Charge 1] ต่อดาเมจทุกๆ 2 ใบ เลือกการ์ดในโซลของคุณสูงสุดตามจำนวนที่ [Soul-Charge] ด้วยผลนี้ คอลลง (RC) ที่ว่างอยู่' }),
 
             // G2 (15 cards total)
-            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +10000 จนจบเทิร์น' }),
+            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง+10000 จนจบเทิร์น' }),
             ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ถ้าอยู่ในสถานะพลังบุกชั่วอึดใจ ได้รับพลัง +5000\n[CONT](R): ถ้าเคย Stand ด้วยความสามารถในเทิร์นนี้ ได้รับ Critical +1\n[AUTO](R): เมื่อโจมตีฮิต [CB1] รีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ' }),
-            ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับ Shield +5000' }),
+            ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000, skill: '[CONT](RC)/(GC): หากอยู่ในสถานะ "Final Burst" ยูนิทนี้ได้รับ พลัง+10000/โล่+5000 (ทำงานในเทิร์นคู่แข่งด้วย)\n[AUTO]: เมื่อวางบนช่อง (RC) หากแวนการ์ดคือ "Diabolos, \"Viamance\" Bruce", [คอสต์][Counter-Blast 1], [Soul-Charge 1], เลือกการ์ดนอร์มอลยูนิทที่มีชื่อ "Diabolos" เกรด 3 หรือต่ำกว่า 1 ใบจากโซล คอลลง (RC) ที่ว่างอยู่' }),
             ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
 
             // G1 (13 cards total)
@@ -616,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.critical = cardData.critical || 1;
         card.dataset.baseCritical = card.dataset.critical;
         card.dataset.shield = cardData.shield || 0;
+        card.dataset.baseShield = card.dataset.shield;
         card.dataset.trigger = cardData.trigger || '';
         card.dataset.name = cardData.name;
         card.dataset.skill = cardData.skill || 'No skill description available.';
@@ -1002,6 +1003,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     isHit: isHit
                 }
             });
+
+            // --- Eden [AUTO](RC): On Hit Retire ---
+            if (isMyTurn && isHit && attacker.dataset.name.includes('Eden')) {
+                if (confirm("Eden: [AUTO] เมื่อโจมตีฮิต! [CB1] เพื่อรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
+                    if (payCounterBlast(1)) {
+                        promptOpponentRetireRG('Eden');
+                    }
+                }
+            }
         }
 
         currentAttackData = null;
@@ -1238,12 +1248,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Eden Critical check [CONT]
             if (isFinalRush && attacker.dataset.name.includes('Eden')) {
-                // Power +5000 is already static in dataset.power if handled by updateFinalRushStaticBonuses
                 if (attacker.dataset.stoodByEffect === "true") {
                     totalCritical += 1;
-                    // Note: We don't permanently modify dataset.critical here because totalCritical 
-                    // is what's used for damage calculation, and it resets per attack.
-                    // Wait, if it's [CONT], it should show on card.
                     if (!attacker.dataset.edenCritApplied) {
                         attacker.dataset.critical = parseInt(attacker.dataset.critical) + 1;
                         attacker.dataset.edenCritApplied = "true";
@@ -1252,48 +1258,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 sendMoveData(attacker);
             }
-        }
 
-        attacker.classList.add('rest');
-        sendMoveData(attacker);
+            // --- Julian [AUTO](RC)[1/turn] ---
+            if (isMyTurn && attacker.dataset.name.includes('Julian') && targetParent.classList.contains('vc')) {
+                if (attacker.dataset.julianUsed !== "true") {
+                    if (confirm("Julian: [AUTO] เมื่อโจมตีแวนการ์ด [CB1] เพื่อรับพลังและ SC ตามดาเมจ?")) {
+                        if (payCounterBlast(1)) {
+                            attacker.dataset.julianUsed = "true";
+                            const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
+                            const pwrBonus = damageCount * 2000;
+                            attacker.dataset.power = parseInt(attacker.dataset.power) + pwrBonus;
+                            totalPower += pwrBonus;
+                            syncPowerDisplay(attacker);
+                            alert(`Julian: Power +${pwrBonus} จนจบเทิร์น!`);
 
-        const isVanguardAttacker = attacker.parentElement.classList.contains('vc');
-        const isTargetVanguard = target.parentElement.classList.contains('vc');
-
-        const attackData = {
-            attackerId: attacker.id,
-            attackerName: attackerNameFull,
-            boostPower: boosterPower,
-            totalPower: totalPower,
-            totalCritical: totalCritical,
-            targetId: targetId,
-            targetName: target.dataset.name,
-            isVanguardAttacker: isVanguardAttacker,
-            isTargetVanguard: isTargetVanguard,
-            vanguardGrade: attacker.dataset.grade
-        };
-
-        // Bruce Attack Ability Check
-        const isBruce = attacker.dataset.name && (attacker.dataset.name.includes('Viamance') || attacker.dataset.name.includes('Bruce'));
-        if (isVanguardAttacker && isFinalBurst && isBruce) {
-            setTimeout(() => {
-                if (confirm("FINAL BURST: Cost CB 1 to restand a column and give +5000 Power?")) {
-                    if (payCounterBlast(1)) {
-                        showColumnSelection(col => {
-                            if (col) restandColumn(col);
-                        });
+                            const vg = document.querySelector('.my-side .circle.vc .card');
+                            if (vg && vg.dataset.name.includes('Bruce')) {
+                                const scToPerform = Math.floor(damageCount / 2);
+                                if (scToPerform > 0) {
+                                    alert(`Julian: แวนการ์ดคือ Bruce! Soul Charge ${scToPerform} และเลือกคอลสูงสุด ${scToPerform} ใบ!`);
+                                    soulCharge(scToPerform);
+                                    promptCallMultipleFromSoul(scToPerform, "RC ที่ว่างอยู่");
+                                }
+                            }
+                        }
                     }
                 }
-            }, 500);
+            }
+
+            attacker.classList.add('rest');
+            sendMoveData(attacker);
+
+            const isVanguardAttacker = attacker.parentElement.classList.contains('vc');
+            const isTargetVanguard = target.parentElement.classList.contains('vc');
+
+            const attackData = {
+                attackerId: attacker.id,
+                attackerName: attackerNameFull,
+                boostPower: boosterPower,
+                totalPower: totalPower,
+                totalCritical: totalCritical,
+                targetId: targetId,
+                targetName: target.dataset.name,
+                isVanguardAttacker: isVanguardAttacker,
+                isTargetVanguard: isTargetVanguard,
+                vanguardGrade: attacker.dataset.grade
+            };
+
+            // Bruce Attack Ability Check
+            const isBruce = attacker.dataset.name && (attacker.dataset.name.includes('Viamance') || attacker.dataset.name.includes('Bruce'));
+            if (isVanguardAttacker && isFinalBurst && isBruce) {
+                setTimeout(() => {
+                    if (confirm("FINAL BURST: Cost CB 1 to restand a column and give +5000 Power?")) {
+                        if (payCounterBlast(1)) {
+                            showColumnSelection(col => {
+                                if (col) restandColumn(col);
+                            });
+                        }
+                    }
+                }, 500);
+            }
+
+            sendData({
+                type: 'declareAttack',
+                ...attackData
+            });
+
+            const statusText = document.getElementById('game-status-text');
+            if (statusText) statusText.textContent = "Waiting for opponent to guard...";
         }
-
-        sendData({
-            type: 'declareAttack',
-            ...attackData
-        });
-
-        const statusText = document.getElementById('game-status-text');
-        if (statusText) statusText.textContent = "Waiting for opponent to guard...";
     }
 
     function validateAndMoveCard(card, zone) {
@@ -1376,6 +1409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
+            applyStaticBonuses(card);
             sendMoveData(card);
             updateHandCount();
             updateDropCount();
@@ -1481,6 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 zone.appendChild(card);
 
                 applyStaticBonuses(card);
+                checkOnPlaceAbilities(card);
                 sendMoveData(card);
                 updateSoulUI();
                 updateHandCount();
@@ -1551,31 +1586,69 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyStaticBonuses(card) {
         if (!card) return;
         const name = card.dataset.name || "";
-        const zone = card.parentElement ? card.parentElement.dataset.zone : "";
+        const parent = card.parentElement;
+        const zone = parent ? parent.dataset.zone : "";
+        const isFrontRow = zone && (zone.startsWith('rc_front_') || zone === 'vc');
 
         // 1. Persona Ride (+10000 to front row and Vanguard)
-        if (personaRideActive && zone && (zone.startsWith('rc_front_') || zone === 'vc')) {
+        if (personaRideActive && isFrontRow) {
             if (card.dataset.personaBuffed !== "true") {
                 card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.personaBuffed = "true";
             }
-        } else if (!personaRideActive || (zone && zone.startsWith('rc_back_'))) {
-            // Remove persona buff if moved to back row or turn ended (already handled in STAND)
+        } else {
             if (card.dataset.personaBuffed === "true") {
                 card.dataset.power = parseInt(card.dataset.power) - 10000;
                 card.dataset.personaBuffed = "false";
             }
         }
 
-        // 2. Final Rush Static Bonus
-        if (isFinalRush) {
-            let bonus = 0;
-            if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) bonus = 5000;
-            else if (name.includes('Ivanka')) bonus = 2000;
+        // 2. Final Burst Bonus (+10000 to front row)
+        if ((isFinalBurst || isOpponentFinalBurst) && isFrontRow) {
+            if (card.dataset.burstFrontBuffApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.burstFrontBuffApplied = "true";
+            }
+        } else {
+            if (card.dataset.burstFrontBuffApplied === "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 10000;
+                card.dataset.burstFrontBuffApplied = "false";
+            }
+        }
 
-            if (bonus > 0 && card.dataset.frBonusApplied !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + bonus;
+        // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield)
+        if ((isFinalBurst || isOpponentFinalBurst) && name.includes('Jamil')) {
+            if (card.dataset.burstBonusApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.shield = parseInt(card.dataset.shield || "5000") + 5000;
+                card.dataset.burstBonusApplied = "true";
+            }
+        } else {
+            if (card.dataset.burstBonusApplied === "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 10000;
+                card.dataset.shield = parseInt(card.dataset.shield || "5000") - 5000;
+                card.dataset.burstBonusApplied = "false";
+            }
+        }
+
+        // 4. Final Rush Static Bonus
+        if (isFinalRush) {
+            let frBonus = 0;
+            if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) frBonus = 5000;
+            else if (name.includes('Ivanka')) frBonus = 2000;
+
+            if (frBonus > 0 && card.dataset.frBonusApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + frBonus;
                 card.dataset.frBonusApplied = "true";
+            }
+        } else {
+            if (card.dataset.frBonusApplied === "true") {
+                // Logic to find how much to subtract
+                let frBonus = 0;
+                if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) frBonus = 5000;
+                else if (name.includes('Ivanka')) frBonus = 2000;
+                card.dataset.power = parseInt(card.dataset.power) - frBonus;
+                card.dataset.frBonusApplied = "false";
             }
         }
 
@@ -1585,6 +1658,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const cVal = parseInt(card.dataset.critical || "1");
             let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
             pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
+        }
+        const sSpan = card.querySelector('.card-shield');
+        if (sSpan) {
+            sSpan.innerHTML = `🛡️${card.dataset.shield}`;
         }
     }
 
@@ -1872,36 +1949,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateFinalRushStaticBonuses(apply) {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(card => {
-            const name = card.dataset.name || "";
-            const zone = card.parentElement ? card.parentElement.dataset.zone : "";
-            let bonus = 0;
-
-            if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
-            else if (name.includes('Ivanka')) bonus = 2000;
-
-            if (bonus > 0) {
-                let currentPower = parseInt(card.dataset.power);
-                let basePower = parseInt(card.dataset.basePower);
-
-                if (apply && !card.dataset.frBonusApplied) {
-                    card.dataset.power = currentPower + bonus;
-                    card.dataset.frBonusApplied = "true";
-                } else if (!apply && card.dataset.frBonusApplied) {
-                    card.dataset.power = currentPower - bonus;
-                    delete card.dataset.frBonusApplied;
-                }
-
-                // Update display if power changed
-                if (parseInt(card.dataset.power) !== currentPower) {
-                    const powerSpan = card.querySelector('.card-power');
-                    if (powerSpan) {
-                        const critVal = parseInt(card.dataset.critical || "1");
-                        let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
-                    }
-                    sendMoveData(card);
-                }
-            }
+            applyStaticBonuses(card);
         });
     }
 
@@ -1909,14 +1957,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Resetting unit power/critical for new turn...");
         personaRideActive = false; // Reset Persona Ride
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
-            let changed = false;
-            // Reset Eden's restand flag
-            if (c.dataset.stoodByEffect) delete c.dataset.stoodByEffect;
-            if (c.dataset.frBonusApplied) delete c.dataset.frBonusApplied;
-            if (c.dataset.meganBuffed) delete c.dataset.meganBuffed;
-            if (c.dataset.edenCritApplied) delete c.dataset.edenCritApplied;
+            // Clean up all persistent skill flags
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed'];
+            flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
-            // Use loose inequality to handle string/number mismatches in dataset
+            let changed = false;
             if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
                 c.dataset.power = c.dataset.basePower;
                 changed = true;
@@ -1925,15 +1970,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 c.dataset.critical = c.dataset.baseCritical;
                 changed = true;
             }
+            if (c.dataset.baseShield && c.dataset.shield != c.dataset.baseShield) {
+                c.dataset.shield = c.dataset.baseShield;
+                changed = true;
+            }
 
-            if (changed || c.dataset.personaBuffed) {
-                if (c.dataset.personaBuffed) delete c.dataset.personaBuffed;
-
+            if (changed) {
                 const powerSpan = c.querySelector('.card-power');
                 if (powerSpan) {
                     const critVal = parseInt(c.dataset.critical || "1");
-                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                    const displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
                     powerSpan.innerHTML = `⚔️${c.dataset.power} ${displayCritical}`;
+                }
+                const shieldSpan = c.querySelector('.card-shield');
+                if (shieldSpan) {
+                    shieldSpan.innerHTML = `🛡️${c.dataset.shield}`;
                 }
                 sendMoveData(c);
             }
@@ -3069,6 +3120,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         alert(`Column ${col} has been restood! (+5000 Power)`);
+    }
+
+    function checkOnPlaceAbilities(card) {
+        if (!card) return;
+        const name = card.dataset.name || "";
+        if (name.includes('Jamil')) {
+            const vg = document.querySelector('.my-side .circle.vc .card');
+            if (vg && vg.dataset.name.includes('Bruce')) {
+                if (confirm("Jamil: [AUTO] เมื่อวางบนช่อง (RC) [CB1] เพื่อ SC 1 และคอลการ์ด 'เดียโบลอส' จากโซล?")) {
+                    if (payCounterBlast(1)) {
+                        soulCharge(1);
+                        // Filter: 'Normal Unit' means No trigger.
+                        promptCallMultipleFromSoul(1, "RC ที่ว่างอยู่", (c) => c.dataset.name.includes("Diabolos") && parseInt(c.dataset.grade) <= 3 && !c.dataset.trigger);
+                    }
+                }
+            }
+        }
+    }
+
+    function promptCallMultipleFromSoul(maxCount, targetInfo, filterFn = null, callCount = 0) {
+        if (callCount >= maxCount || soulPool.length === 0) return;
+        const openRCs = Array.from(document.querySelectorAll('.my-side .circle.rc')).filter(circle => !circle.querySelector('.card'));
+        if (openRCs.length === 0) {
+            alert("ไม่มีช่อง RC ที่ว่างอยู่สำหรับคอล!");
+            return;
+        }
+
+        let displayPool = filterFn ? soulPool.filter(filterFn) : soulPool;
+        if (displayPool.length === 0) {
+            alert("ไม่พบการ์ดที่ตรงตามเงื่อนไขในโซล!");
+            return;
+        }
+
+        openViewer(`เลือกการ์ดใบที่ ${callCount + 1}/${maxCount} (จากโซล)`, displayPool);
+        const sel = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const id = clicked.dataset.originalId;
+                const idx = soulPool.findIndex(c => c.id === id);
+                if (idx !== -1) {
+                    const chosen = soulPool.splice(idx, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', sel);
+                    alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${chosen.dataset.name}`);
+                    document.body.classList.add('targeting-mode');
+                    const call = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(chosen);
+                            chosen.classList.remove('rest');
+                            applyStaticBonuses(chosen);
+                            sendMoveData(chosen);
+                            updateSoulUI();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', call, true);
+                            promptCallMultipleFromSoul(maxCount, targetInfo, filterFn, callCount + 1);
+                        }
+                    };
+                    document.addEventListener('click', call, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', sel);
     }
 
     closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));
