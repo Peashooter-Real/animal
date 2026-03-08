@@ -1647,3 +1647,65 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   font-size: 1.2rem;
   width: 250px;
 }
+/* Alert and Notification Box Styles globally accessible */
+.vanguard-alert-box {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 15, 25, 0.95);
+  border: 2px solid var(--accent-vanguard);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(255, 42, 109, 0.5);
+  color: #fff;
+  z-index: 999999 !important;
+  text-align: center;
+  min-width: 300px;
+  max-width: 80%;
+  pointer-events: none; /* Let clicks pass through if it's just an alert. But if it contains buttons, use auto. For standard alerts, let's keep it none */
+}
+
+.vg-confirm-box {
+  pointer-events: auto !important; /* Must be clickable */
+}
+
+.fade-in {
+  animation: fadeIn 0.3s forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* Ensure column selection has highest priority */
+.column-selection-overlay {
+  z-index: 999999 !important;
+}
+
+/* Fix target mode overlay if needed */
+body.targeting-mode::after {
+  content: "TARGETING MODE ACTIVE";
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #05ffa1;
+  font-weight: bold;
+  font-size: 1.5rem;
+  z-index: 999998;
+  pointer-events: none;
+  animation: pulse 1.5s infinite;
+  text-shadow: 0 0 10px #05ffa1;
+}
+

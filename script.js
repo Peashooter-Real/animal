@@ -1066,10 +1066,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // --- Eden [AUTO](RC): On Hit Retire ---
-            if (isMyTurn && isHit && attacker.dataset.name.includes('Eden')) {
+            if (isMyTurn && isHit && attacker.dataset.name.includes('Eden') && isFinalRush && attacker.parentElement.classList.contains('rc')) {
                 if (await vgConfirm("Eden: [AUTO] เมื่อโจมตีฮิต! [CB1] เพื่อรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
                     if (payCounterBlast(1)) {
-                        promptOpponentRetireRG('Eden');
+                        sendData({ type: 'retireOpponentRG', attackerName: 'Eden' });
+                        alert("Eden: รอคู่แข่งเลือกเรียร์การ์ดเพื่อลงดรอปโซน");
                     }
                 }
             }
@@ -2467,7 +2468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const retireListener = (e) => {
             const targetRG = e.target.closest('.card');
-            if (targetRG && targetRG.classList.contains('opponent-card') && targetRG.parentElement.classList.contains('rc')) {
+            if (targetRG && !targetRG.classList.contains('opponent-card') && targetRG.parentElement.classList.contains('rc')) {
                 e.stopPropagation();
                 const dropZone = document.querySelector('.my-side .drop-zone');
                 dropZone.appendChild(targetRG);
@@ -2475,8 +2476,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Your Rear-guard has been retired!");
                 document.body.classList.remove('targeting-mode');
                 document.removeEventListener('click', retireListener, true);
-            } else if (targetRG && !targetRG.classList.contains('opponent-card')) {
-                alert("You must select your own Rear-guard to retire!");
+            } else if (targetRG && targetRG.classList.contains('opponent-card')) {
+                alert("You must select your OWN Rear-guard to retire!");
             }
         };
         document.addEventListener('click', retireListener, true);
