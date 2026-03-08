@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function attackHitCheck(initialCritical) {
+    function attackHitCheck(initialCritical, isOpponentPG = false) {
         if (!currentAttackData) return;
 
         const attacker = document.getElementById(currentAttackData.attackerId);
@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const gc = document.querySelector('.guardian-circle');
         const hasPG = gc && Array.from(gc.querySelectorAll('.card')).some(c => c.dataset.name.includes('Perfect Guard') || c.dataset.isPG === "true");
 
-        if (hasPG || data.isPG) {
+        if (hasPG || isOpponentPG) {
             alert("Perfect Guard activated! Attack is nullified.");
             sendData({
                 type: 'resolveAttack',
@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } else {
-                attackHitCheck(crit);
+                attackHitCheck(crit, isOpponentPG);
             }
             return;
         }
@@ -878,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
                     setTimeout(() => {
-                        attackHitCheck(crit);
+                        attackHitCheck(crit, isOpponentPG);
                     }, 500);
                 }
             };
