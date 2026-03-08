@@ -483,15 +483,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newName.includes('steve')) {
             queue.push({
                 name: 'ความสามารถของ Steve (G1)',
-                description: "เลือกการ์ด 1 ใบจากโซลคอลลงช่องแถวหลังตรงกลาง และ Soul Charge 1",
+                description: "เลือกการ์ด 1 ใบจากโซลเพื่อคอลลงช่องแถวหลังตรงกลาง และทำการ Soul Charge 1",
                 resolve: (done) => {
-                    alert("ความสามารถของ Steve: เลือกการ์ด 1 ใบจากโซลเพื่อคอลลงช่องแถวหลังตรงกลาง");
-                    promptSoulCall('rc_back_center', () => {
-                        console.log("Steve: Selection complete, performing Soul Charge 1...");
+                    if (soulPool.length === 0) {
+                        alert("ไม่มีการ์ดในโซล! ทำการ Soul Charge 1 เท่านั้น");
                         soulCharge(1);
-                        alert("ความสามารถของ Steve: ทำการ Soul Charge 1 เรียบร้อยแล้ว!");
                         if (done) done();
-                    }, false); // Mandatory
+                        return;
+                    }
+
+                    viewerTitle.textContent = "เลือการ์ด 1 ใบจากโซลเพื่อคอล (บังคับลงแถวหลังตรงกลาง)";
+                    viewerGrid.innerHTML = '';
+                    zoneViewer.classList.remove('hidden');
+
+                    soulPool.forEach((soulCard, index) => {
+                        const clone = soulCard.cloneNode(true);
+                        clone.classList.remove('dragging', 'rest', 'opponent-card');
+                        clone.style.position = 'relative';
+                        clone.style.cursor = 'pointer';
+
+                        clone.onclick = (e) => {
+                            e.stopPropagation();
+                            const targetCircle = document.querySelector('.my-side .circle[data-zone="rc_back_center"]');
+                            if (targetCircle) {
+                                // 1. Move card from soul to target
+                                const actualCard = soulPool.splice(index, 1)[0];
+                                const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                if (existing) {
+                                    const dropZone = document.querySelector('.my-side .drop-zone');
+                                    dropZone.appendChild(existing);
+                                    existing.classList.remove('rest');
+                                    sendMoveData(existing);
+                                }
+                                targetCircle.appendChild(actualCard);
+                                actualCard.classList.remove('rest');
+                                actualCard.style.transform = 'none';
+                                sendMoveData(actualCard);
+                                updateSoulUI();
+                                updateDropCount();
+
+                                alert("คอลยูนิทลงช่องกลางแถวหลังแล้ว!");
+
+                                // 2. Perform Soul Charge 1
+                                console.log("Steve: Performing Soul Charge...");
+                                soulCharge(1);
+                                alert("ทำการ Soul Charge 1 เรียบร้อยแล้ว!");
+                            }
+
+                            zoneViewer.classList.add('hidden');
+                            if (done) done();
+                        };
+                        viewerGrid.appendChild(clone);
+                    });
                 }
             });
         }
