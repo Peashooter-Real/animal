@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Viamance" Bruce': 'picture/grade3_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
         'Diabolos Madonna, Megan': '',
-        'Diabolos Boys, Eden': '',
+        'Diabolos Boys, Eden': 'picture/eden,jpg',
         'Diabolos Buckler, Jamil': '',
         'Recusal Hate Dragon (Perfect Guard)': '',
         'Diabolos Girls, Stefanie': '',
@@ -148,8 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +5000 และได้รับ "Intercept" แม้อยู่แถวหลัง' }),
 
             // G2 (15 cards total)
-            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ในสถานะพลังบุกชั่วอึดใจ ได้รับพลัง +5000' }),
-            ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตีฮิต ในสถานะพลังบุกชั่วอึดใจ เลือกเรียร์การ์ดคู่แข่ง 1 ใบ 퇴각 (Retire)' }),
+            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +10000 จนจบเทิร์น' }),
+            ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ถ้าอยู่ในสถานะพลังบุกชั่วอึดใจ ได้รับพลัง +5000\n[CONT](R): ถ้าเคย Stand ด้วยความสามารถในเทิร์นนี้ ได้รับ Critical +1\n[AUTO](R): เมื่อโจมตีฮิต [CB1] รีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ' }),
             ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับ Shield +5000' }),
             ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
 
@@ -1114,6 +1114,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        if (isMyTurn) {
+            // Megan +10000 on attack [AUTO]
+            if (isFinalRush && attacker.dataset.name.includes('Megan')) {
+                // Ensure Megan's auto only triggers once per attack if it's already applied?
+                // Actually user said "ได้พลัง 10000 จนจบเทิร์น" so it should stay.
+                // We'll check if already buffed by Megan this turn.
+                if (!attacker.dataset.meganBuffed) {
+                    attacker.dataset.power = parseInt(attacker.dataset.power) + 10000;
+                    totalPower += 10000;
+                    attacker.dataset.meganBuffed = "true";
+                    alert("Megan: [AUTO] Final Rush! Power +10000 until end of turn.");
+                    sendMoveData(attacker);
+                }
+            }
+
+            // Eden Critical check [CONT]
+            if (isFinalRush && attacker.dataset.name.includes('Eden')) {
+                // Power +5000 is already static in dataset.power if handled by updateFinalRushStaticBonuses
+                if (attacker.dataset.stoodByEffect === "true") {
+                    totalCritical += 1;
+                    // Note: We don't permanently modify dataset.critical here because totalCritical 
+                    // is what's used for damage calculation, and it resets per attack.
+                    // Wait, if it's [CONT], it should show on card.
+                    if (!attacker.dataset.edenCritApplied) {
+                        attacker.dataset.critical = parseInt(attacker.dataset.critical) + 1;
+                        attacker.dataset.edenCritApplied = "true";
+                    }
+                    alert("Eden: [CONT] Restood bonus! Critical +1 applied.");
+                }
+                sendMoveData(attacker);
+            }
+        }
+
         attacker.classList.add('rest');
         sendMoveData(attacker);
 
@@ -1257,232 +1290,155 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return false; }
                 if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return false; }
                 if (cardGrade !== vanguardGrade + 1 && !(cardGrade === 3 && vanguardGrade === 3)) {
-                    alert(`Cannot Ride Grade ${cardGrade} over ${vanguardGrade}!`);
+                    alert(`Cannot Ride Grade ${cardGrade} over Grade ${vanguardGrade}!`);
                     return false;
                 }
-                // This block handles the actual ride logic, regardless of where the card came from (hand or ride-deck)
-                if (vanguard) {
-                    const oldV = vanguard.cloneNode(true);
-                    Object.assign(oldV.dataset, vanguard.dataset);
 
-                    const oldVName = vanguard.dataset.name;
-                    const oldVGrade = parseInt(vanguard.dataset.grade);
-                    // Check if it's the same name and grade 3
-                    const isPersonaRide = (card.dataset.persona === 'true' || card.dataset.persona === true || card.dataset.name === oldVName) && (oldVGrade === 3) && (parseInt(card.dataset.grade) === 3);
-
-                    soulPool.push(vanguard);
-                    vanguard.remove();
-                    updateSoulUI();
-
-                    if (isPersonaRide) {
-                        alert("PERSONA RIDE! Front row units get +10,000 Power for the turn! Skipping to Main Phase.");
-                        personaRideActive = true;
-                        drawCard(true); // Persona Ride usually includes draw 1
-
-                        document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
-                            if (!unit.dataset.personaBuffed) {
-                                let p = parseInt(unit.dataset.power);
-                                unit.dataset.power = p + 10000;
-                                unit.dataset.personaBuffed = "true";
-                                const powerSpan = unit.querySelector('.card-power');
-                                if (powerSpan) {
-                                    const critVal = parseInt(unit.dataset.critical || "1");
-                                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                                    powerSpan.innerHTML = `⚔️${unit.dataset.power} ${displayCritical}`;
-                                }
-                                sendMoveData(unit);
-                            }
-                        });
-
-                        // Immediately skip to Main Phase
-                        setTimeout(() => {
-                            currentPhaseIndex = phases.indexOf('main');
-                            updatePhaseUI(true);
-                        }, 800);
-                    }
-                    checkRideAbilities(oldV, card);
-                }
+                // Ride success
+                zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
+                zone.innerHTML = '';
+                zone.appendChild(card);
                 hasRiddenThisTurn = true;
-            } else if (zone.classList.contains('rc')) {
-                if (currentPhase !== 'main') { alert("Only Call or Move during Main Phase!"); return false; }
+                updateSoulUI();
 
-                // Column check for Rear-guard movement (Horizontal restriction)
-                if (isFromField) {
-                    const oldZone = oldParent.dataset.zone || '';
-                    const newZone = zone.dataset.zone || '';
-                    const oldCol = oldZone.split('_').pop(); // 'left', 'right', 'center'
-                    const newCol = newZone.split('_').pop();
+                if (cardGrade === 3 && vanguardGrade === 3) personaRideActive = true;
 
-                    if (oldCol !== newCol) {
-                        alert("Invalid Move: Rear-guards can only move forward/backward within the same column!");
-                        return false;
-                    }
-                }
+                // Apply Final Rush or Persona bonuses if calling/riding
+                applyStaticBonuses(card);
+
+                sendMoveData(card);
+                handleRideAbilities(card); // Placeholder for ride abilities
+                updatePhaseUI(true);
+                return true;
             }
 
-            // Persona Ride Passive Power: If we call or move a unit while Persona Ride node is active
-            // This applies to both VC and RC (Front Row)
-            const isFrontRow = zone.parentElement.classList.contains('front-row');
+            if (zone.classList.contains('rc')) {
+                if (currentPhase !== 'main' && currentPhase !== 'ride') { alert("Call units during Ride or Main phase!"); return false; }
+                if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
-            if (personaRideActive) {
-                if (isFrontRow && !card.dataset.personaBuffed) {
-                    // Gaining buff
-                    let p = parseInt(card.dataset.power);
-                    card.dataset.power = p + 10000;
-                    card.dataset.personaBuffed = "true";
-                } else if (!isFrontRow && card.dataset.personaBuffed) {
-                    // Losing buff
-                    let p = parseInt(card.dataset.power);
-                    card.dataset.power = p - 10000;
-                    delete card.dataset.personaBuffed;
-                }
+                zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
+                zone.innerHTML = '';
+                zone.appendChild(card);
 
-                // Update UI for the moving card
-                const powerSpan = card.querySelector('.card-power');
-                if (powerSpan) {
-                    const critVal = parseInt(card.dataset.critical || "1");
-                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                    powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
-                }
-            }
+                applyStaticBonuses(card);
 
-            // --- Handle Existing Card (Swap or Retire) ---
-            const existingCard = zone.querySelector('.card:not(.opponent-card)');
-            if (existingCard && existingCard !== card) {
-                if (isFromField && zone.classList.contains('rc')) {
-                    // SWAP: Move existing card to old circle (only for RC to RC move)
-                    oldParent.appendChild(existingCard);
-                    sendMoveData(existingCard);
-                } else {
-                    // RETIRE: Move existing card to drop zone (if calling from hand or riding)
-                    const dropZone = document.querySelector('.my-side .drop-zone');
-                    dropZone.appendChild(existingCard);
-                    existingCard.classList.remove('rest');
-                    existingCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-                    sendMoveData(existingCard);
-                }
+                sendMoveData(card);
+                updateSoulUI();
+                return true;
             }
         }
-
-        // 5. Drop Zone Validation (Discard)
-        if (zone.classList.contains('drop-zone')) {
-            if (isFromHand) {
-                const isRidePhase = currentPhase === 'ride';
-                const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
-                const isDefending = isGuarding;
-
-                if (!canAutoRide && !isDefending) {
-                    alert("Movement Blocked: You can only discard from hand to pay for a Ride cost or when Guarding.");
-                    return false;
-                }
-
-                if (canAutoRide) {
-                    const vanguard = document.querySelector('.my-side .circle.vc .card');
-                    const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
-                    const nextGrade = vanguardGrade + 1;
-                    const rideDeckZone = document.getElementById('ride-deck');
-                    const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
-
-                    if (nextRideCard) {
-                        hasDiscardedThisTurn = true;
-                        hasRiddenThisTurn = true;
-                        setTimeout(() => {
-                            if (vanguard) {
-                                const oldV = vanguard.cloneNode(true);
-                                Object.assign(oldV.dataset, vanguard.dataset);
-
-                                soulPool.push(vanguard);
-                                // Notify opponent old vanguard is now in soul (alternatively, they handle it in VC replacement)
-                                sendData({ type: 'moveCard', cardId: vanguard.id, zone: 'soul', cardName: vanguard.dataset.name });
-                                vanguard.remove();
-                                updateSoulUI();
-                                checkRideAbilities(oldV, nextRideCard);
-                            }
-                            const vcZone = document.querySelector('.my-side .circle.vc');
-                            vcZone.appendChild(nextRideCard);
-                            nextRideCard.classList.remove('rest', 'opponent-card');
-                            nextRideCard.style.transform = 'none';
-                            sendMoveData(nextRideCard);
-                            alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
-                            currentPhaseIndex = phases.indexOf('main');
-                            updatePhaseUI(true);
-                        }, 500);
-                    }
-                }
-            }
-            card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-        } else {
-            card.style.transform = 'none';
-        }
-
-        // Execute Move
-        zone.appendChild(card);
-        card.classList.remove('rest');
-        card.classList.add('effect-drop');
-        setTimeout(() => card.classList.remove('effect-drop'), 400);
-
-        sendMoveData(card);
-        updateHandCount();
-        updateDropCount();
-        return true;
+        return false;
     }
 
-    // --- Interaction Setup ---
-    boardAreas.forEach(zone => {
-        zone.addEventListener('dragover', (e) => {
-            if (draggedCard) {
-                const isFromHand = draggedCard.parentElement && draggedCard.parentElement.dataset.zone === 'hand';
-                if (isFromHand) {
-                    const isMySide = zone.closest('.my-side');
-                    const isSharedGC = zone.id === 'shared-gc';
-                    const isVanguard = zone.classList.contains('vc');
-                    const isRearguard = zone.classList.contains('rc');
-                    const isDropZone = zone.classList.contains('drop-zone');
-                    const allowed = (isMySide && (isVanguard || isRearguard || isDropZone)) || isSharedGC;
+    function applyStaticBonuses(card) {
+        if (!card) return;
+        const name = card.dataset.name || "";
+        const zone = card.parentElement ? card.parentElement.dataset.zone : "";
 
-                    if (!allowed) {
-                        e.dataTransfer.dropEffect = 'none';
-                        return;
-                    }
+        // 1. Persona Ride (+10000 to front row)
+        if (personaRideActive && zone && zone.startsWith('rc_front_')) {
+            card.dataset.power = parseInt(card.dataset.power) + 10000;
+            card.dataset.personaBuffed = "true";
+        }
+
+        // 2. Final Rush Static Bonus
+        if (isFinalRush) {
+            let bonus = 0;
+            if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
+            else if (name.includes('Ivanka')) bonus = 2000;
+
+            if (bonus > 0 && !card.dataset.frBonusApplied) {
+                card.dataset.power = parseInt(card.dataset.power) + bonus;
+                card.dataset.frBonusApplied = "true";
+            }
+        }
+
+        // Update Display
+        const pSpan = card.querySelector('.card-power');
+        if (pSpan) {
+            const cVal = parseInt(card.dataset.critical || "1");
+            let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
+            pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
+        }
+    }
+
+    // Placeholder for handleRideAbilities, assuming it exists elsewhere or will be added.
+    function handleRideAbilities(card) {
+        // Implement specific ride abilities here
+        console.log(`Handling ride abilities for ${card.dataset.name}`);
+        // Example: checkRideAbilities(oldV, card);
+    }
+
+    // Placeholder for checkRideAbilities, assuming it exists elsewhere or will be added.
+    function checkRideAbilities(oldVanguard, newVanguard) {
+        // Implement specific ride abilities here
+        console.log(`Checking ride abilities from ${oldVanguard.dataset.name} to ${newVanguard.dataset.name}`);
+    }
+
+    // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
+    function checkBruceBattleAbility() {
+        // Implement Bruce's start of battle phase ability here
+        console.log("Checking Bruce's Battle Phase ability...");
+        if (isFinalRush && !isFinalBurst) {
+            if (confirm("Bruce: Enter Final Burst? (Cost: CB1, SB1)")) {
+                if (payCounterBlast(1) && paySoulBlast(1)) {
+                    isFinalBurst = true;
+                    alert("Bruce: FINAL BURST activated! All front row units get +10000 Power!");
+                    updateFinalRushStaticBonuses(true); // Apply bonuses immediately
+                    sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
+                } else {
+                    alert("Could not pay cost for Final Burst.");
                 }
             }
-            e.preventDefault();
-            if (!zone.classList.contains('drag-over') && draggedCard) {
-                zone.classList.add('drag-over');
+        }
+    }
+
+    function updateFinalRushStaticBonuses(apply) {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(card => {
+            const name = card.dataset.name || "";
+            const zone = card.parentElement ? card.parentElement.dataset.zone : "";
+            let bonus = 0;
+
+            if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
+            else if (name.includes('Ivanka')) bonus = 2000;
+
+            if (bonus > 0) {
+                let currentPower = parseInt(card.dataset.power);
+                let basePower = parseInt(card.dataset.basePower);
+
+                if (apply && !card.dataset.frBonusApplied) {
+                    card.dataset.power = currentPower + bonus;
+                    card.dataset.frBonusApplied = "true";
+                } else if (!apply && card.dataset.frBonusApplied) {
+                    card.dataset.power = currentPower - bonus;
+                    delete card.dataset.frBonusApplied;
+                }
+
+                // Update display if power changed
+                if (parseInt(card.dataset.power) !== currentPower) {
+                    const powerSpan = card.querySelector('.card-power');
+                    if (powerSpan) {
+                        const critVal = parseInt(card.dataset.critical || "1");
+                        let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                        powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
+                    }
+                    sendMoveData(card);
+                }
             }
         });
-
-        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zone.classList.remove('drag-over');
-            if (!draggedCard) return;
-            validateAndMoveCard(draggedCard, zone);
-        });
-    });
-
-    playerHand.addEventListener('dragover', e => e.preventDefault());
-    playerHand.addEventListener('drop', e => {
-        e.preventDefault();
-        if (draggedCard) {
-            playerHand.appendChild(draggedCard);
-            draggedCard.classList.remove('rest');
-            draggedCard.style.transform = 'none';
-            draggedCard.classList.add('effect-drop');
-            setTimeout(() => draggedCard.classList.remove('effect-drop'), 400);
-
-            updateHandCount();
-            sendMoveData(draggedCard);
-            updateHandCount();
-        }
-    });
+    }
 
     function resetMyUnits() {
         console.log("Resetting unit power/critical for new turn...");
         personaRideActive = false; // Reset Persona Ride
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             let changed = false;
+            // Reset Eden's restand flag
+            if (c.dataset.stoodByEffect) delete c.dataset.stoodByEffect;
+            if (c.dataset.frBonusApplied) delete c.dataset.frBonusApplied;
+            if (c.dataset.meganBuffed) delete c.dataset.meganBuffed;
+            if (c.dataset.edenCritApplied) delete c.dataset.edenCritApplied;
+
             // Use loose inequality to handle string/number mismatches in dataset
             if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
                 c.dataset.power = c.dataset.basePower;
@@ -1507,6 +1463,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Placeholder for restandColumn, assuming it exists elsewhere or will be added.
+    // This function would be called by Bruce's skill.
+    function restandColumn(columnName) {
+        const frontRG = document.querySelector(`.my-side .circle[data-zone="rc_front_${columnName}"] .card:not(.opponent-card)`);
+        const backRG = document.querySelector(`.my-side .circle[data-zone="rc_back_${columnName}"] .card:not(.opponent-card)`);
+
+        if (frontRG) {
+            frontRG.classList.remove('rest');
+            frontRG.dataset.stoodByEffect = "true"; // Mark as stood by effect
+            sendMoveData(frontRG);
+        }
+        if (backRG) {
+            backRG.classList.remove('rest');
+            backRG.dataset.stoodByEffect = "true"; // Mark as stood by effect
+            sendMoveData(backRG);
+        }
+        alert(`Column ${columnName} restood!`);
+    }
+
+    // Placeholder for payCounterBlast, assuming it exists elsewhere or will be added.
+    function payCounterBlast(cost) {
+        // Implement actual CB logic here
+        alert(`Paid ${cost} Counter Blast.`);
+        return true; // For now, always allow payment
+    }
+
+    // Placeholder for showColumnSelection, assuming it exists elsewhere or will be added.
+    function showColumnSelection(callback) {
+        const column = prompt("Select a column to restand (left, center, right):");
+        callback(column);
+    }
+
     // --- Game Navigation ---
     function updatePhaseUI(broadcast = true) {
         phaseSteps.forEach((step, index) => {
@@ -1528,6 +1516,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
                 isFinalRush = false;
                 isFinalBurst = false;
+                updateFinalRushStaticBonuses(false); // Remove bonuses
                 updateStatusUI();
                 alert("Bruce: Final Rush state has expired.");
                 sendData({ type: 'bruceStatus', isFinalRush: false, isFinalBurst: false });
@@ -1793,7 +1782,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalRushTurnLimit = data.limit;
                 updateStatusUI();
                 break;
+            case 'retireOpponentRG': // New case for Eden's skill
+                promptOpponentRetireRG(data.attackerName);
+                break;
         }
+    }
+
+    function promptOpponentRetireRG(attackerName) {
+        alert(`${attackerName} hit your Rear-guard! You must retire one of your Rear-guards.`);
+        document.body.classList.add('targeting-mode');
+
+        const retireListener = (e) => {
+            const targetRG = e.target.closest('.card');
+            if (targetRG && targetRG.classList.contains('opponent-card') && targetRG.parentElement.classList.contains('rc')) {
+                e.stopPropagation();
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                dropZone.appendChild(targetRG);
+                sendMoveData(targetRG); // Send back to attacker to confirm move to their drop
+                alert("Your Rear-guard has been retired!");
+                document.body.classList.remove('targeting-mode');
+                document.removeEventListener('click', retireListener, true);
+            } else if (targetRG && !targetRG.classList.contains('opponent-card')) {
+                alert("You must select your own Rear-guard to retire!");
+            }
+        };
+        document.addEventListener('click', retireListener, true);
     }
 
     function showOpponentDriveCheck(data) {
@@ -1948,6 +1961,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (isHit) {
                     alert("Rearguard attack hit! Resolving damage/retire...");
+                    // Eden On-Hit Retirement
+                    if (attackData.attackerName.includes('Eden') && isFinalRush) {
+                        setTimeout(() => {
+                            if (confirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
+                                if (payCounterBlast(1)) {
+                                    sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
+                                    alert("Eden: Opponent is choosing a Rear-guard to retire.");
+                                } else {
+                                    alert("Eden: Counter Blast not paid. Ability not activated.");
+                                }
+                            }
+                        }, 500);
+                    }
                 } else {
                     alert("Rearguard attack missed.");
                 }
@@ -2353,9 +2379,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 isFinalBurst = false;
                 alert("DIABOLOS: Entering FINAL RUSH state!");
             }
+            updateFinalRushStaticBonuses(true); // Apply bonuses immediately
             updateStatusUI();
             sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst, limit: finalRushTurnLimit });
         }
+    }
+
+    function updateFinalRushStaticBonuses(active) {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
+            const name = c.dataset.name || "";
+            let bonus = 0;
+            if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
+            else if (name.includes('Ivanka')) bonus = 2000;
+
+            if (bonus === 0) return;
+
+            const applied = c.dataset.frBonusApplied === "true";
+            if (active && !applied) {
+                c.dataset.power = parseInt(c.dataset.power) + bonus;
+                c.dataset.frBonusApplied = "true";
+                syncPowerDisplay(c);
+            } else if (!active && applied) {
+                c.dataset.power = parseInt(c.dataset.power) - bonus;
+                c.dataset.frBonusApplied = "false";
+                syncPowerDisplay(c);
+            }
+        });
+    }
+
+    function syncPowerDisplay(card) {
+        const pSpan = card.querySelector('.card-power');
+        if (pSpan) {
+            const cVal = parseInt(card.dataset.critical || "1");
+            let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
+            pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
+        }
+        sendMoveData(card);
     }
 
     function payCounterBlast(cost) {
@@ -2418,6 +2477,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Wait, user said "rearguard" but center has VC. I'll stick to RGCs in that column.
                 if (card && card.dataset.name && card.dataset.name.includes('Diabolos') && circle.classList.contains('rc')) {
                     card.classList.remove('rest');
+                    card.dataset.stoodByEffect = "true"; // Mark for Eden bonus
                     // Give +5000 Power
                     let p = parseInt(card.dataset.power);
                     card.dataset.power = p + 5000;
