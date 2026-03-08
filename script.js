@@ -518,6 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.trigger = cardData.trigger || '';
         card.dataset.name = cardData.name;
         card.dataset.skill = cardData.skill || 'No skill description available.';
+        card.dataset.persona = cardData.persona ? "true" : "false";
 
         const artText = cardData.name.substring(0, 3).toUpperCase();
         let triggerIcon = cardData.trigger ? `<div class="card-trigger bg-${cardData.trigger.toLowerCase()}">${cardData.trigger[0]}</div>` : '';
@@ -1126,17 +1127,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isMyTurn) {
             // Megan +10000 on attack [AUTO]
-            if (isFinalRush && attacker.dataset.name.includes('Megan')) {
-                // Ensure Megan's auto only triggers once per attack if it's already applied?
-                // Actually user said "ได้พลัง 10000 จนจบเทิร์น" so it should stay.
-                // We'll check if already buffed by Megan this turn.
-                if (!attacker.dataset.meganBuffed) {
-                    attacker.dataset.power = parseInt(attacker.dataset.power) + 10000;
-                    totalPower += 10000;
-                    attacker.dataset.meganBuffed = "true";
-                    alert("Megan: [AUTO] Final Rush! Power +10000 until end of turn.");
-                    sendMoveData(attacker);
-                }
+            if (isFinalRush && attacker.dataset.name.toLowerCase().includes('megan')) {
+                // Every time she attacks, she gets +10000 until end of turn. Stacks.
+                attacker.dataset.power = parseInt(attacker.dataset.power) + 10000;
+                totalPower += 10000;
+                alert(`Megan: [AUTO] Final Rush! Power +10000 applied (Total: ${attacker.dataset.power})`);
+                syncPowerDisplay(attacker);
             }
 
             // Eden Critical check [CONT]
@@ -1311,7 +1307,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasRiddenThisTurn = true;
                 updateSoulUI();
 
-                if (cardGrade === 3 && vanguardGrade === 3) personaRideActive = true;
+                if (card.dataset.persona === "true" && vanguardGrade === 3) {
+                    triggerPersonaRide();
+                }
 
                 // Apply Final Rush or Persona bonuses if calling/riding
                 applyStaticBonuses(card);
@@ -1428,6 +1426,26 @@ document.addEventListener('DOMContentLoaded', () => {
             let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
             pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
         }
+    }
+
+    function triggerPersonaRide() {
+        personaRideActive = true;
+
+        // 1. Alert and Broadcast
+        alert("PERSONA RIDE! Front row units get +10000 Power for the turn, and Draw 1 card!");
+        sendData({ type: 'announcePersona' });
+
+        // 2. Power up existing FRONT ROW units
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
+            const zone = unit.parentElement ? unit.parentElement.dataset.zone : "";
+            if ((zone && zone.startsWith('rc_front_')) || (unit.parentElement && unit.parentElement.classList.contains('vc'))) {
+                unit.dataset.power = parseInt(unit.dataset.power) + 10000;
+                syncPowerDisplay(unit);
+            }
+        });
+
+        // 3. Draw 1 card
+        setTimeout(() => drawCard(true), 500);
     }
 
     function handleRideAbilities(newVanguard) {
@@ -2144,6 +2162,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'retireOpponentRG': // New case for Eden's skill
                 promptOpponentRetireRG(data.attackerName);
+                break;
+            case 'announcePersona':
+                alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
                 break;
         }
     }
