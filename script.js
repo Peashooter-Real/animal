@@ -1371,6 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             applyStaticBonuses(nextRideCard);
                             sendMoveData(nextRideCard);
+                            handleRideAbilities(nextRideCard); // Added for Auto-Ride
                             alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
 
                             // Move to Main Phase after ride
@@ -1443,29 +1444,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bruce Ride Line
         if (oldName.includes('Matt') && newName.includes('Steve')) {
-            if (confirm(`Ride Ability (Matt): Draw 1 card?`)) {
-                drawCard(true);
-            }
+            // Mandatory: No cost
+            promptCallSteveVC();
         } else if (oldName.includes('Steve') && newName.includes('Richard')) {
-            if (confirm(`Ride Ability (Steve): Call 1 unit from Soul?`)) {
-                promptSoulCall();
-            }
-        } else if (oldName.includes('Richard') && newName.includes('Bruce')) {
-            if (confirm(`Ride Ability (Richard): Call 1 unit from Soul?`)) {
-                promptSoulCall();
+            // Optional: Has cost [Put RG to Soul]
+            if (confirm(`Richard VC Ability: [Cost: Put 1 Rear-guard into Soul] to Draw 1?`)) {
+                promptRichardVC();
             }
         }
 
         // Magnolia Ride Line
         else if (oldName.includes('Lotte') && newName.includes('Charis')) {
-            if (confirm(`Ride Ability (Lotte): Put 1 card from Drop to Soul?`)) {
-                promptDropToSoul();
-            }
+            // Mandatory: No cost
+            promptDropToSoul();
         } else if (oldName.includes('Charis') && newName.includes('Lattice')) {
+            // Optional: Has cost SB1
             if (confirm(`Ride Ability (Charis): SB1 to Call G2 or lower from top 5?`)) {
                 if (paySoulBlast(1)) promptTopDeckCall(5, 2);
             }
         } else if (oldName.includes('Lattice') && newName.includes('Magnolia')) {
+            // Optional: Has cost CB1
             if (confirm(`Ride Ability (Lattice): CB1 to allow backrow attack?`)) {
                 if (payCounterBlast(1)) {
                     alert("Magnolia: Backrow units can now attack this turn!");
@@ -1488,6 +1486,94 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSoulUI();
         updateDropCount();
         return true;
+    }
+
+    function promptCallSteveVC() {
+        if (soulPool.length === 0) {
+            alert("Soul is empty! Performing Soul Charge 1 only.");
+            soulCharge(1);
+            return;
+        }
+        openViewer("Select 1 card to CALL to Center Back Row", soulPool);
+
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalIndex = soulPool.findIndex(c => c.id === originalId);
+
+                if (originalIndex !== -1) {
+                    const card = soulPool.splice(originalIndex, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
+
+                    const centerBack = document.querySelector('.my-side .circle[data-zone="rc_back_center"]');
+                    if (centerBack) {
+                        // Vanguard Rule: Replacement
+                        if (centerBack.querySelector('.card')) {
+                            const oldCard = centerBack.querySelector('.card');
+                            soulPool.push(oldCard);
+                            oldCard.remove();
+                        }
+                        centerBack.appendChild(card);
+                        card.classList.remove('rest');
+                        sendMoveData(card);
+                        updateSoulUI();
+                        alert(`${card.dataset.name} called! Performing Soul Charge 1.`);
+                        soulCharge(1);
+                    }
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
+
+    function promptRichardVC() {
+        const rgs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        if (rgs.length === 0) {
+            alert("No Rear-guards to pay the cost! Ability failed.");
+            return;
+        }
+
+        alert("Select 1 of your Rear-guards to put into Soul.");
+        document.body.classList.add('targeting-mode');
+
+        const selectionHandler = (e) => {
+            const rg = e.target.closest('.circle.rc .card:not(.opponent-card)');
+            if (rg) {
+                e.stopPropagation();
+                soulPool.push(rg);
+                rg.remove();
+                updateSoulUI();
+                sendData({ type: 'syncSoulCount', count: soulPool.length });
+                document.body.classList.remove('targeting-mode');
+                document.removeEventListener('click', selectionHandler, true);
+
+                alert("Cost paid! Draw 1 card.");
+                drawCard(true);
+            }
+        };
+        document.addEventListener('click', selectionHandler, true);
+    }
+
+    function soulCharge(count) {
+        let scCount = 0;
+        for (let i = 0; i < count; i++) {
+            if (deckPool.length > 0) {
+                const cardData = deckPool.pop();
+                const card = createCardElement(cardData);
+                soulPool.push(card);
+                scCount++;
+            }
+        }
+        if (scCount > 0) {
+            updateSoulUI();
+            updateDeckCounter();
+            syncCounts();
+            alert(`Soul Charge ${scCount}!`);
+        } else {
+            alert("Deck empty! Cannot Soul Charge.");
+        }
     }
 
     function promptSoulCall() {
