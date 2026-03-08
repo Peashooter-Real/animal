@@ -102,35 +102,42 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Anger" Richard': 'picture/grade2_bruce.jpg',
         'Diabolos, "Viamance" Bruce': 'picture/grade3_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
-        'Diabolos Madonna, Megan': '',
+        'Diabolos Madonna, Megan': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_057.png',
         'Diabolos Boys, Eden': 'picture/eden.jpg',
-        'Diabolos Buckler, Jamil': '',
-        'Recusal Hate Dragon (Perfect Guard)': '',
-        'Diabolos Girls, Stefanie': '',
-        'Diabolos Madonna, Mabel': '',
-        'Diabolos Girls, Ivanka': '',
-
-        // Magnolia Deck
-        'Sylvan Horned Beast, Lotte': '',
-        'Sylvan Horned Beast, Charis': '',
-        'Sylvan Horned Beast, Lattice': '',
-        'Sylvan Horned Beast King, Magnolia': 'https://s3-ap-northeast-1.amazonaws.com/cf-img-mono-vanguard-card-front/201201_3879_1_c.jpg', // Example link
-        'Sylvan Horned Beast, Giunosla': '',
-        'Sylvan Horned Beast, Enpix': '',
+        'Diabolos Buckler, Jamil': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_056.png',
+        'Recusal Hate Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_035.png',
+        'Diabolos Girls, Stefanie': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_081.png',
+        'Diabolos Madonna, Mabel': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_074.png',
+        'Diabolos Girls, Ivanka': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_068.png',
 
         // Triggers - Dark States (Bruce)
-        'Critical Trigger (Dark States)': '',
-        'Draw Trigger (Dark States)': '',
-        'Front Trigger (Dark States)': '',
-        'Heal Trigger (Dark States)': '',
-        'Hades Dragon Deity, Gallmageveld': '',
+        'Critical Trigger (Dark States)': 'https://namu.wiki/file/dsd02_011.png',
+        'Draw Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_012.png',
+        'Front Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_014.png',
+        'Heal Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_013.png',
+        'Hades Dragon Deity, Gallmageveld': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_005.png',
+
+        // Magnolia Deck
+        'Sylvan Horned Beast, Lotte': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_006.png',
+        'Sylvan Horned Beast, Charis': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_004.png',
+        'Sylvan Horned Beast, Lattice': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_002.png',
+        'Sylvan Horned Beast King, Magnolia': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_001.png',
+        'Sylvan Horned Beast Emperor, Magnolia Elder': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_011.png',
+        'Blue Artillery Dragon, Inlet Pulse Dragon': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_013.png',
+        'Sylvan Horned Beast, Giunosla': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_049.png',
+        'Sylvan Horned Beast, Enpix': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_063.png',
+        'Sylvan Horned Beast, Goildot': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_061.png',
+        'Sylvan Horned Beast, Alpin': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_084.png',
+        'Sylvan Horned Beast, Winnsapooh': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_088.png',
+        'Sylvan Horned Beast, Gabregg': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_015.png',
+        'Sylvan Horned Beast, Bojacorn': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_043.png',
 
         // Triggers - Stoicheia (Magnolia)
-        'Critical Trigger (Stoicheia)': '',
-        'Draw Trigger (Stoicheia)': '',
-        'Front Trigger (Stoicheia)': '',
-        'Heal Trigger (Stoicheia)': '',
-        'Source Dragon Deity, Blessfavor': ''
+        'Critical Trigger (Stoicheia)': 'https://namu.wiki/file/dsd04_011.png',
+        'Draw Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_012.png',
+        'Front Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_014.png',
+        'Heal Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_013.png',
+        'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png'
     };
 
     // --- Deck Definitions ---
@@ -516,7 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let displayPower = cardData.overPower ? '100M' : cardData.power;
         let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
 
-        const artUrl = cardData.imageUrl || cardImages[cardData.name] || '';
+        const cardName = (cardData.name || "").trim();
+        const artUrl = cardData.imageUrl || cardImages[cardName] || '';
         const artStyle = artUrl ? `style="background-image: url('${artUrl}'); background-size: cover; background-position: center;"` : '';
         const artDisplay = artUrl ? '' : artText;
 
