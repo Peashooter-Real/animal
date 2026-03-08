@@ -1427,17 +1427,183 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Placeholder for handleRideAbilities, assuming it exists elsewhere or will be added.
-    function handleRideAbilities(card) {
-        // Implement specific ride abilities here
-        console.log(`Handling ride abilities for ${card.dataset.name}`);
-        // Example: checkRideAbilities(oldV, card);
+    function handleRideAbilities(newVanguard) {
+        if (soulPool.length === 0) return;
+        // The card just ridden over is the last one added to soulPool in validateAndMoveCard
+        const oldVanguard = soulPool[soulPool.length - 1];
+        checkRideAbilities(oldVanguard, newVanguard);
     }
 
-    // Placeholder for checkRideAbilities, assuming it exists elsewhere or will be added.
-    function checkRideAbilities(oldVanguard, newVanguard) {
-        // Implement specific ride abilities here
-        console.log(`Checking ride abilities from ${oldVanguard.dataset.name} to ${newVanguard.dataset.name}`);
+    function checkRideAbilities(oldV, newV) {
+        if (!oldV || !newV) return;
+        const oldName = oldV.dataset.name || "";
+        const newName = newV.dataset.name || "";
+
+        console.log(`Checking Ride Line: ${oldName} -> ${newName}`);
+
+        // Bruce Ride Line
+        if (oldName.includes('Matt') && newName.includes('Steve')) {
+            if (confirm(`Ride Ability (Matt): Draw 1 card?`)) {
+                drawCard(true);
+            }
+        } else if (oldName.includes('Steve') && newName.includes('Richard')) {
+            if (confirm(`Ride Ability (Steve): Call 1 unit from Soul?`)) {
+                promptSoulCall();
+            }
+        } else if (oldName.includes('Richard') && newName.includes('Bruce')) {
+            if (confirm(`Ride Ability (Richard): Call 1 unit from Soul?`)) {
+                promptSoulCall();
+            }
+        }
+
+        // Magnolia Ride Line
+        else if (oldName.includes('Lotte') && newName.includes('Charis')) {
+            if (confirm(`Ride Ability (Lotte): Put 1 card from Drop to Soul?`)) {
+                promptDropToSoul();
+            }
+        } else if (oldName.includes('Charis') && newName.includes('Lattice')) {
+            if (confirm(`Ride Ability (Charis): SB1 to Call G2 or lower from top 5?`)) {
+                if (paySoulBlast(1)) promptTopDeckCall(5, 2);
+            }
+        } else if (oldName.includes('Lattice') && newName.includes('Magnolia')) {
+            if (confirm(`Ride Ability (Lattice): CB1 to allow backrow attack?`)) {
+                if (payCounterBlast(1)) {
+                    alert("Magnolia: Backrow units can now attack this turn!");
+                }
+            }
+        }
+    }
+
+    function paySoulBlast(cost) {
+        if (soulPool.length < cost) {
+            alert("Insufficient Soul for SB!");
+            return false;
+        }
+        for (let i = 0; i < cost; i++) {
+            const blasted = soulPool.shift(); // Blast oldest first
+            const dropZone = document.querySelector('.my-side .drop-zone');
+            dropZone.appendChild(blasted);
+            sendMoveData(blasted);
+        }
+        updateSoulUI();
+        updateDropCount();
+        return true;
+    }
+
+    function promptSoulCall() {
+        if (soulPool.length === 0) {
+            alert("Soul is empty!");
+            return;
+        }
+        openViewer("Select 1 card to CALL from Soul", soulPool);
+
+        // Handle selecting from viewer
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalIndex = soulPool.findIndex(c => c.id === originalId);
+
+                if (originalIndex !== -1) {
+                    const card = soulPool.splice(originalIndex, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
+
+                    alert("Select an empty Rear-guard Circle to call.");
+                    document.body.classList.add('targeting-mode');
+
+                    const callHandler = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(card);
+                            card.classList.remove('rest');
+                            sendMoveData(card);
+                            updateSoulUI();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callHandler, true);
+                            alert("Unit called from Soul!");
+                        }
+                    };
+                    document.addEventListener('click', callHandler, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
+
+    function promptDropToSoul() {
+        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card:not(.opponent-card)'));
+        if (dropCards.length === 0) {
+            alert("Drop Zone is empty!");
+            return;
+        }
+        openViewer("Select 1 card to put into Soul", dropCards);
+
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const card = document.getElementById(originalId);
+                if (card) {
+                    soulPool.push(card);
+                    card.remove();
+                    zoneViewer.classList.add('hidden');
+                    updateSoulUI();
+                    updateDropCount();
+                    sendData({ type: 'syncSoulCount', count: soulPool.length });
+                    alert("Card moved to Soul.");
+                    viewerGrid.removeEventListener('click', selectionHandler);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
+
+    function promptTopDeckCall(count, maxGrade) {
+        const top5 = deckPool.slice(-count).reverse();
+        if (top5.length === 0) return;
+
+        // Show cards in viewer
+        const tempCards = top5.map(data => createCardElement(data));
+        openViewer(`Top ${count}: Select G${maxGrade} or lower`, tempCards);
+
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                if (parseInt(clicked.dataset.grade) > maxGrade) {
+                    alert(`Choose a card with Grade ${maxGrade} or lower.`);
+                    return;
+                }
+
+                const cardName = clicked.dataset.name;
+                const deckIdx = deckPool.findLastIndex(c => c.name === cardName);
+                if (deckIdx !== -1) {
+                    const cardData = deckPool.splice(deckIdx, 1)[0];
+                    const realCard = createCardElement(cardData);
+
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
+                    updateDeckCounter();
+
+                    alert("Select a Rear-guard Circle to call.");
+                    document.body.classList.add('targeting-mode');
+
+                    const callHandler = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(realCard);
+                            sendMoveData(realCard);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callHandler, true);
+                        }
+                    };
+                    document.addEventListener('click', callHandler, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
     }
 
     // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
@@ -1547,11 +1713,18 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`Column ${columnName} restood!`);
     }
 
-    // Placeholder for payCounterBlast, assuming it exists elsewhere or will be added.
     function payCounterBlast(cost) {
-        // Implement actual CB logic here
-        alert(`Paid ${cost} Counter Blast.`);
-        return true; // For now, always allow payment
+        const damageZone = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)');
+        if (damageZone.length < cost) {
+            alert("Not enough Counter Blast cost!");
+            return false;
+        }
+        for (let i = 0; i < cost; i++) {
+            damageZone[i].classList.add('face-down');
+            sendMoveData(damageZone[i]);
+        }
+        updateDamageCount();
+        return true;
     }
 
     // Placeholder for showColumnSelection, assuming it exists elsewhere or will be added.
@@ -2323,14 +2496,22 @@ document.addEventListener('DOMContentLoaded', () => {
         viewerGrid.innerHTML = '';
 
         cards.forEach(originalCard => {
-            const clone = originalCard.cloneNode(true);
-            clone.classList.remove('dragging', 'rest', 'opponent-card');
-            clone.style.position = 'relative';
-            clone.style.transform = 'none';
-            clone.style.top = 'auto';
-            clone.style.left = 'auto';
-            clone.style.margin = '0';
-            viewerGrid.appendChild(clone);
+            // Support both DOM elements and data objects
+            let node;
+            if (originalCard instanceof HTMLElement) {
+                node = originalCard.cloneNode(true);
+                node.dataset.originalId = originalCard.id;
+            } else {
+                node = createCardElement(originalCard);
+            }
+
+            node.classList.remove('dragging', 'rest', 'opponent-card');
+            node.style.position = 'relative';
+            node.style.transform = 'none';
+            node.style.top = 'auto';
+            node.style.left = 'auto';
+            node.style.margin = '0';
+            viewerGrid.appendChild(node);
         });
 
         zoneViewer.classList.remove('hidden');
