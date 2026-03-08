@@ -460,14 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkRideAbilities(oldVanguard, newCard) {
         const queue = [];
 
-        // G0 Matt: When ridden over, if second, draw 1 (Mandatory)
-        if (oldVanguard && (oldVanguard.dataset.name === 'Diabolos, "Innocent" Matt')) {
+        // 1. Universal Grade 0 "Go Second" Skill
+        if (oldVanguard && parseInt(oldVanguard.dataset.grade) === 0) {
             if (!isFirstPlayer) {
                 queue.push({
-                    name: 'Matt (G0)',
-                    description: "Draw 1 (Go Second Effect)",
+                    name: 'Starter Bonus',
+                    description: "Draw 1 card for going second",
                     resolve: (done) => {
-                        alert(`Ability: "Innocent" Matt - Draw 1!`);
+                        alert("Starter Bonus: You went second! Draw 1 card.");
                         drawCard(true);
                         if (done) done();
                     }
@@ -475,33 +475,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // G1 Steve: On V, Call from Soul and then SC1 (Mandatory if soul exists)
-        if (newCard.dataset.name === 'Diabolos, "Bad" Steve') {
+        // 2. Bruce Ride Line Specifics (Ridden Over Logic)
+
+        // G0 Matt ridden by G1 Steve
+        if (oldVanguard && oldVanguard.dataset.name.includes('Matt') && newCard.dataset.name.includes('Steve')) {
+            queue.push({
+                name: 'Matt (G0)',
+                description: "Soul Charge + Draw 1",
+                resolve: (done) => {
+                    if (confirm("Matt Skill: Put into soul to draw 1 card?")) {
+                        // Matt is already in soulPool from validateAndMoveCard, but we ensure it stays there
+                        drawCard(true);
+                        alert("Matt: Moved to soul and drew 1 card.");
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
+        // G1 Steve ridden by G2 Richard
+        if (oldVanguard && oldVanguard.dataset.name.includes('Steve') && newCard.dataset.name.includes('Richard')) {
             queue.push({
                 name: 'Steve (G1)',
-                description: "Call from Soul then Soul Charge 1",
+                description: "Cost: Put into soul to Call 1 from Soul",
                 resolve: (done) => {
-                    alert(`Ability: "Bad" Steve - Call from Soul then Soul Charge 1!`);
-                    promptSoulCall('rc_back_center', () => {
-                        soulCharge(1);
+                    if (confirm("Steve Skill: Put into soul and Call 1 from Soul?")) {
+                        promptSoulCall('rc_back_center', done, false);
+                    } else {
                         if (done) done();
-                    }, false); // Mandatory sourcing
+                    }
                 }
             });
         }
 
-        // G2 Richard: On V, Retire RG to Soul to Draw 1 (Optional - Cost)
-        if (newCard.dataset.name === 'Diabolos, "Anger" Richard') {
+        // G2 Richard ridden by G3 Bruce
+        if (oldVanguard && oldVanguard.dataset.name.includes('Richard') && newCard.dataset.name.includes('Bruce')) {
             queue.push({
                 name: 'Richard (G2)',
-                description: "Cost: Put RG to Soul to Draw 1",
+                description: "Cost: Put into soul to Call 1 from Soul",
                 resolve: (done) => {
-                    promptRetireToSoulForDraw(done);
+                    if (confirm("Richard Skill: Put into soul and Call 1 from Soul?")) {
+                        promptSoulCall('rc_front_left', done, false);
+                    } else {
+                        if (done) done();
+                    }
                 }
             });
         }
 
-        resolveAbilityQueue(queue);
+        // 3. New Card "On Entry" Skills (if any)
+        // Magnolia line usually has these, Bruce is mostly ridden over.
+
+        if (queue.length > 0) {
+            resolveAbilityQueue(queue);
+        }
     }
 
     function createCardElement(cardData) {
@@ -1292,7 +1319,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const vanguard = document.querySelector('.my-side .circle.vc .card');
             const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
 
+            // 4a. Move to Vanguard Circle (RIDE)
             if (zone.classList.contains('vc')) {
+                if (isFromField) {
+                    alert("The Vanguard cannot be moved or swapped with Rear-guards!");
+                    return false;
+                }
                 if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return false; }
                 if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return false; }
                 if (cardGrade !== vanguardGrade + 1 && !(cardGrade === 3 && vanguardGrade === 3)) {
@@ -1315,12 +1347,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyStaticBonuses(card);
 
                 sendMoveData(card);
-                handleRideAbilities(card); // Placeholder for ride abilities
+                handleRideAbilities(card);
                 updatePhaseUI(true);
                 return true;
             }
 
+            // 4b. Move to Rear-guard Circle (CALL or MOVE)
             if (zone.classList.contains('rc')) {
+                // IF MOVING WITHIN FIELD
+                if (isFromField) {
+                    if (currentPhase !== 'main') {
+                        alert("Rear-guards can only be moved during the Main Phase!");
+                        return false;
+                    }
+
+                    // Restriction: Same vertical column only
+                    const oldZone = oldParent.dataset.zone || "";
+                    const newZone = zone.dataset.zone || "";
+
+                    const getCol = (z) => {
+                        if (z.includes('left')) return 'left';
+                        if (z.includes('right')) return 'right';
+                        if (z.includes('center')) return 'center';
+                        return 'none';
+                    };
+
+                    if (getCol(oldZone) !== getCol(newZone)) {
+                        alert("Movement Restricted: Rear-guards can only move within the same vertical column!");
+                        return false;
+                    }
+
+                    // Swapping logic
+                    const existingCard = zone.querySelector('.card:not(.opponent-card)');
+                    if (existingCard) {
+                        oldParent.appendChild(existingCard);
+                        existingCard.style.transform = 'none';
+                        sendMoveData(existingCard);
+                    }
+                    zone.appendChild(card);
+                    card.style.transform = 'none';
+                    sendMoveData(card);
+
+                    // Re-apply bonuses (Persona might be active/inactive in different rows)
+                    applyStaticBonuses(card);
+                    if (existingCard) applyStaticBonuses(existingCard);
+
+                    return true;
+                }
+
+                // IF CALLING FROM HAND
                 if (currentPhase !== 'main' && currentPhase !== 'ride') { alert("Call units during Ride or Main phase!"); return false; }
                 if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
@@ -1329,9 +1404,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 zone.appendChild(card);
 
                 applyStaticBonuses(card);
-
                 sendMoveData(card);
                 updateSoulUI();
+                updateHandCount();
                 return true;
             }
         }
@@ -1401,10 +1476,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = card.dataset.name || "";
         const zone = card.parentElement ? card.parentElement.dataset.zone : "";
 
-        // 1. Persona Ride (+10000 to front row)
-        if (personaRideActive && zone && zone.startsWith('rc_front_')) {
-            card.dataset.power = parseInt(card.dataset.power) + 10000;
-            card.dataset.personaBuffed = "true";
+        // 1. Persona Ride (+10000 to front row and Vanguard)
+        if (personaRideActive && zone && (zone.startsWith('rc_front_') || zone === 'vc')) {
+            if (card.dataset.personaBuffed !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.personaBuffed = "true";
+            }
+        } else if (!personaRideActive || (zone && zone.startsWith('rc_back_'))) {
+            // Remove persona buff if moved to back row or turn ended (already handled in স্ট্যান্ড)
+            if (card.dataset.personaBuffed === "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 10000;
+                card.dataset.personaBuffed = "false";
+            }
         }
 
         // 2. Final Rush Static Bonus
@@ -1413,7 +1496,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name.includes('Eden') || name.includes('Julian')) bonus = 5000;
             else if (name.includes('Ivanka')) bonus = 2000;
 
-            if (bonus > 0 && !card.dataset.frBonusApplied) {
+            if (bonus > 0 && card.dataset.frBonusApplied !== "true") {
                 card.dataset.power = parseInt(card.dataset.power) + bonus;
                 card.dataset.frBonusApplied = "true";
             }
