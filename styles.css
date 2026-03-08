@@ -830,6 +830,9 @@ body {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .lobby-box h3 {
@@ -841,14 +844,16 @@ body {
 }
 
 .id-display {
-  margin-top: 1rem;
+  margin: 1rem auto 0;
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 0.5rem;
   background: rgba(0, 0, 0, 0.3);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   border: 1px dashed var(--accent-color);
+  max-width: fit-content;
 }
 
 .id-text {
@@ -881,6 +886,8 @@ body {
 .join-input-group {
   display: flex;
   gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
 }
 
 .join-input-group input {
@@ -1647,6 +1654,7 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   font-size: 1.2rem;
   width: 250px;
 }
+
 /* Alert and Notification Box Styles globally accessible */
 .vanguard-alert-box {
   position: fixed;
@@ -1663,11 +1671,13 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   text-align: center;
   min-width: 300px;
   max-width: 80%;
-  pointer-events: none; /* Let clicks pass through if it's just an alert. But if it contains buttons, use auto. For standard alerts, let's keep it none */
+  pointer-events: none;
+  /* Let clicks pass through if it's just an alert. But if it contains buttons, use auto. For standard alerts, let's keep it none */
 }
 
 .vg-confirm-box {
-  pointer-events: auto !important; /* Must be clickable */
+  pointer-events: auto !important;
+  /* Must be clickable */
 }
 
 .fade-in {
@@ -1679,13 +1689,27 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, -20px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; transform: translate(-50%, 0); }
-  to { opacity: 0; transform: translate(-50%, -20px); }
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
 }
 
 /* Ensure column selection has highest priority */
@@ -1708,4 +1732,3 @@ body.targeting-mode::after {
   animation: pulse 1.5s infinite;
   text-shadow: 0 0 10px #05ffa1;
 }
-
