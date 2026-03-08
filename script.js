@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isFinalRush = false;
     let isFinalBurst = false;
     let finalRushTurnLimit = 0;
+    let isOpponentFinalRush = false;
+    let isOpponentFinalBurst = false;
 
     // --- Card Image Database ---
     const cardImages = {
@@ -1858,13 +1860,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
                 isFinalRush = false;
                 isFinalBurst = false;
-                updateFinalRushStaticBonuses(false); // Remove bonuses
                 updateStatusUI();
                 alert("Bruce: Final Rush state has expired.");
                 sendData({ type: 'bruceStatus', isFinalRush: false, isFinalBurst: false });
             }
 
             resetMyUnits();
+
+            // Re-apply Final Rush bonuses if still active
+            if (isFinalRush) {
+                updateFinalRushStaticBonuses(true);
+            }
+
             pendingPowerIncrease = 0;
             pendingCriticalIncrease = 0;
             document.body.classList.remove('targeting-mode');
@@ -2118,9 +2125,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showOpponentDriveCheck(data);
                 break;
             case 'bruceStatus':
-                isFinalRush = data.isFinalRush;
-                isFinalBurst = data.isFinalBurst;
-                finalRushTurnLimit = data.limit;
+                isOpponentFinalRush = data.isFinalRush;
+                isOpponentFinalBurst = data.isFinalBurst;
                 updateStatusUI();
                 break;
             case 'retireOpponentRG': // New case for Eden's skill
@@ -2639,6 +2645,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.zone, .circle.vc, .circle.rc, .guardian-circle').forEach(el => {
+        // DRAG AND DROP
+        el.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            el.classList.add('zone-highlight');
+        });
+
+        el.addEventListener('dragleave', () => {
+            el.classList.remove('zone-highlight');
+        });
+
+        el.addEventListener('drop', (e) => {
+            e.preventDefault();
+            el.classList.remove('zone-highlight');
+            if (draggedCard) {
+                validateAndMoveCard(draggedCard, el);
+                draggedCard = null;
+            }
+        });
+
         el.addEventListener('click', (e) => {
             // TAP TO MOVE EXECUTION
             if (selectedCard) {
@@ -2681,20 +2706,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateStatusUI() {
-        const badge = document.getElementById('bruce-status-badge');
-        if (!badge) return;
+        const myBadge = document.getElementById('bruce-status-badge');
+        const oppBadge = document.getElementById('opp-bruce-status-badge');
 
-        if (isFinalRush) {
-            badge.classList.remove('hidden');
-            if (isFinalBurst) {
-                badge.textContent = "Final Burst";
-                badge.classList.add('burst-status');
+        // Update My Status
+        if (myBadge) {
+            if (isFinalRush) {
+                myBadge.classList.remove('hidden');
+                myBadge.textContent = isFinalBurst ? "Final Burst" : "Final Rush";
+                if (isFinalBurst) myBadge.classList.add('burst-status');
+                else myBadge.classList.remove('burst-status');
             } else {
-                badge.textContent = "Final Rush";
-                badge.classList.remove('burst-status');
+                myBadge.classList.add('hidden');
             }
-        } else {
-            badge.classList.add('hidden');
+        }
+
+        // Update Opponent Status
+        if (oppBadge) {
+            if (isOpponentFinalRush) {
+                oppBadge.classList.remove('hidden');
+                oppBadge.textContent = isOpponentFinalBurst ? "Rival Burst" : "Rival Rush";
+                if (isOpponentFinalBurst) oppBadge.classList.add('burst-status');
+                else oppBadge.classList.remove('burst-status');
+            } else {
+                oppBadge.classList.add('hidden');
+            }
         }
     }
 
