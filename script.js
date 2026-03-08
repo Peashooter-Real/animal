@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Card Image Database ---
     const cardImages = {
         // Bruce Deck
-        'Diabolos, "Innocent" Matt': '',
+        'Diabolos, "Innocent" Matt': 'picture/grade0_bruce.jpg',
         'Diabolos, "Bad" Steve': '',
         'Diabolos, "Anger" Richard': '',
         'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
