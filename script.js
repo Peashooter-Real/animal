@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Bad\" Steve" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น จั่วการ์ด 1 ใบ' },
             { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Anger\" Richard" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
             { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Viamance\" Bruce" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
-            { name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true, skill: '[AUTO](V): เมื่อเริ่มแบทเทิลเฟสของคุณ ถ้ายูนิททั้งหมดของคุณมีคำว่า "เดียโบลอส" คุณจะเข้าสู่สถานะ "พลังบุกชั่วอึดใจ" จนจบเทิร์นถัดไปของคู่แข่ง และถ้าแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า จะเข้าสู่สถานะ "พลังระเบิดเฮือกสุดท้าย"\n[AUTO](V): เมื่อยูนิทนี้โจมตี ในสถานะพลังระเบิดเฮือกสุดท้าย [CB1] เลือกแถวแนวตั้ง 1 แถว Stand เรียร์การ์ดเดียโบลอสทั้งหมดในแถวนั้น และได้รับพลัง +5000' }
+            { name: "Diabolos, \"Viamance\" Bruce", grade: 3, power: 13000, persona: true, skill: "[AUTO](V): เมื่อเริ่มแบทเทิลเฟสของคุณ ถ้ายูนิททั้งหมดของคุณมีคำว่า \"เดียโบลอส\" คุณจะเข้าสู่สถานะ \"พลังบุกชั่วอึดใจ\" จนจบเทิร์นถัดไปของคู่แข่ง และถ้าแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า จะเข้าสู่สถานะ \"พลังระเบิกเฮือกสุดท้าย\"\n[AUTO](V): เมื่อยูนิทนี้โจมตี ในสถานะพลังระเบิดเฮือกสุดท้าย [CB1] เลือกแถวแนวตั้ง 1 แถว Stand เรียร์การ์ดเดียโบลอสทั้งหมดในแถวนั้น และได้รับพลัง +5000" }
         ],
         mainDeck: [
             // G3 (6 cards total - excluding ride deck Bruce)
@@ -559,6 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('mouseleave', cancelLongPress);
         card.addEventListener('touchend', cancelLongPress);
         card.addEventListener('touchmove', cancelLongPress, { passive: true });
+
+        // Context Menu as reliable alternative for Skill Viewing
+        card.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            openSkillViewer(card);
+        });
 
         card.addEventListener('dragstart', (e) => {
             const inHand = card.parentElement.dataset.zone === 'hand';
@@ -1128,7 +1134,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Bruce Attack Ability Check
-        if (isVanguardAttacker && isFinalBurst && attacker.dataset.name.includes('"Viamance" Bruce')) {
+        const isBruce = attacker.dataset.name && (attacker.dataset.name.includes('Viamance') || attacker.dataset.name.includes('Bruce'));
+        if (isVanguardAttacker && isFinalBurst && isBruce) {
             setTimeout(() => {
                 if (confirm("FINAL BURST: Cost CB 1 to restand a column and give +5000 Power?")) {
                     if (payCounterBlast(1)) {
@@ -2319,13 +2326,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkBruceBattleAbility() {
         if (!isMyTurn) return;
         const vanguard = document.querySelector('.my-side .circle.vc .card');
-        if (!vanguard || !vanguard.dataset.name.includes('"Viamance" Bruce')) return;
+        const isBruceViamance = vanguard && (vanguard.dataset.name.includes('Viamance') || vanguard.dataset.name.includes('Bruce'));
+        if (!isBruceViamance) return;
 
         // Check if all units on field are "Diabolos"
         const myUnits = document.querySelectorAll('.my-side .circle .card:not(.opponent-card)');
         if (myUnits.length === 0) return;
 
-        const allDiabolos = Array.from(myUnits).every(u => u.dataset.name && u.dataset.name.includes('Diabolos'));
+        const allDiabolos = Array.from(myUnits).every(u => {
+            const hasName = u.dataset.name && u.dataset.name.includes('Diabolos');
+            if (!hasName) console.log("Ability blocked by non-Diabolos unit:", u.dataset.name);
+            return hasName;
+        });
 
         if (allDiabolos) {
             isFinalRush = true;
