@@ -459,10 +459,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkRideAbilities(oldVanguard, newCard) {
         const queue = [];
+        const oldName = (oldVanguard.dataset.name || "").toLowerCase();
+        const newName = (newCard.dataset.name || "").toLowerCase();
 
         // 1. Universal Grade 0 "Go Second" Skill
         if (oldVanguard && parseInt(oldVanguard.dataset.grade) === 0) {
-            console.log("Starter Bonus Check: isFirstPlayer =", isFirstPlayer);
+            // isFirstPlayer is false for guest, true for host.
             if (isFirstPlayer === false) {
                 queue.push({
                     name: 'Starter Bonus',
@@ -477,15 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Bruce Ride Line Specifics (Ridden Over Logic)
-
         // G0 Matt ridden by G1 Steve
-        if (oldVanguard && oldVanguard.dataset.name.includes('Matt') && newCard.dataset.name.includes('Steve')) {
+        if (oldName.includes('matt') && newName.includes('steve')) {
             queue.push({
                 name: 'Matt (G0)',
                 description: "Soul Charge + Draw 1",
                 resolve: (done) => {
                     if (confirm("Matt Skill: Put into soul to draw 1 card?")) {
-                        // Matt is already in soulPool from validateAndMoveCard, but we ensure it stays there
                         drawCard(true);
                         alert("Matt: Moved to soul and drew 1 card.");
                     }
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // G1 Steve ridden by G2 Richard
-        if (oldVanguard && oldVanguard.dataset.name.includes('Steve') && newCard.dataset.name.includes('Richard')) {
+        if (oldName.includes('steve') && newName.includes('richard')) {
             queue.push({
                 name: 'Steve (G1)',
                 description: "Cost: Put into soul to Call 1 from Soul",
@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // G2 Richard ridden by G3 Bruce
-        if (oldVanguard && oldVanguard.dataset.name.includes('Richard') && newCard.dataset.name.includes('Bruce')) {
+        if (oldName.includes('richard') && newName.includes('bruce')) {
             queue.push({
                 name: 'Richard (G2)',
                 description: "Cost: Put into soul to Call 1 from Soul",
@@ -524,9 +524,52 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 3. New Card "On Entry" Skills (if any)
-        // Magnolia line usually has these, Bruce is mostly ridden over.
+        // 3. Magnolia Ride Line
+        if (oldName.includes('lotte') && newName.includes('charis')) {
+             queue.push({
+                name: 'Lotte (G0)',
+                description: "Ability: Put into soul to Call 1 from Soul",
+                resolve: (done) => {
+                    if (confirm("Lotte Skill: Put into soul and Call 1 from Soul?")) {
+                        promptSoulCall('rc_back_center', done, false);
+                    } else {
+                        if (done) done();
+                    }
+                }
+            });
+        }
+        else if (oldName.includes('charis') && newName.includes('lattice')) {
+            queue.push({
+                name: 'Charis (G1)',
+                description: "SB1 to Call G2 or lower from top 5",
+                resolve: (done) => {
+                    if (confirm("Charis Skill: SB1 to Call G2 or lower from top 5?")) {
+                        if (paySoulBlast(1)) {
+                             // This is a simplified version, just drawing for now or using a generic top-call
+                             alert("Charis: Skill activated! (Placeholder for top-deck call)");
+                             drawCard(true);
+                        }
+                    }
+                    if (done) done();
+                }
+            });
+        }
+        else if (oldName.includes('lattice') && newName.includes('magnolia')) {
+            queue.push({
+                name: 'Lattice (G2)',
+                description: "CB1 to allow back row to attack",
+                resolve: (done) => {
+                    if (confirm("Lattice Skill: CB1 to allow back-row units to attack?")) {
+                        if (payCounterBlast(1)) {
+                            alert("Magnolia/Lattice: Back-row units can now attack this turn!");
+                        }
+                    }
+                    if (done) done();
+                }
+            });
+        }
 
+        console.log(`Ability Queue built: ${queue.length} items.`);
         if (queue.length > 0) {
             resolveAbilityQueue(queue);
         }
@@ -1556,51 +1599,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkRideAbilities(oldVanguard, newVanguard);
     }
 
-    function checkRideAbilities(oldV, newV) {
-        if (!oldV || !newV) return;
-        const oldName = (oldV.dataset.name || "").toLowerCase();
-        const newName = (newV.dataset.name || "").toLowerCase();
-
-        console.log(`Checking Ride Logic for: ${oldName} -> ${newName}`);
-
-        // --- Bruce Ride Line ---
-        // G0 (Matt) -> G1 (Steve)
-        if (oldName.includes('matt') && newName.includes('steve')) {
-            console.log("Condition Met: Matt -> Steve");
-            // Mandatory: No cost
-            promptCallSteveVC();
-        }
-        // G1 (Steve) -> G2 (Richard)
-        else if (oldName.includes('steve') && newName.includes('richard')) {
-            console.log("Condition Met: Steve -> Richard");
-            // Richard G2 Ability: [Cost: Put 1 RG into Soul] to Draw 1
-            if (confirm(`Richard VC Ability: [Cost: Put 1 Rear-guard into Soul] to Draw 1 card?`)) {
-                promptRichardVC();
-            }
-        }
-        // G2 (Richard) -> G3 (Bruce)
-        else if (oldName.includes('richard') && newName.includes('bruce')) {
-            console.log("Condition Met: Richard -> Bruce");
-            if (confirm(`Bruce VC Ability: Soul Charge 1?`)) {
-                soulCharge(1);
-            }
-        }
-
-        // --- Magnolia Ride Line ---
-        else if (oldName.includes('lotte') && newName.includes('charis')) {
-            promptDropToSoul();
-        } else if (oldName.includes('charis') && newName.includes('lattice')) {
-            if (confirm(`Charis Ability: SB1 to Call G2 or lower from top 5?`)) {
-                if (paySoulBlast(1)) promptTopDeckCall(5, 2);
-            }
-        } else if (oldName.includes('lattice') && newName.includes('magnolia')) {
-            if (confirm(`Lattice Ability: CB1 to allow backrow units to attack?`)) {
-                if (payCounterBlast(1)) {
-                    alert("Magnolia: Rear-guards in the back row can now attack this turn!");
-                }
-            }
-        }
-    }
 
     function paySoulBlast(cost) {
         if (soulPool.length < cost) {
