@@ -2129,6 +2129,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 isOpponentFinalBurst = data.isFinalBurst;
                 updateStatusUI();
                 break;
+            case 'hostAck': // Guest receives deck info from host
+                if (data.deck === 'magnolia') {
+                    // Host is Magnolia, Guest keeps Bruce (or whatever they picked)
+                }
+                console.log("Host deck info received:", data.deck);
+                break;
+            case 'syncSoulCount':
+                if (oppSoulBadge) {
+                    oppSoulBadge.textContent = `Soul: ${data.count}`;
+                    if (data.count > 0) oppSoulBadge.classList.remove('hidden');
+                    else oppSoulBadge.classList.add('hidden');
+                }
+                break;
             case 'retireOpponentRG': // New case for Eden's skill
                 promptOpponentRetireRG(data.attackerName);
                 break;
@@ -2737,22 +2750,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkBruceBattleAbility() {
         if (!isMyTurn) return;
         const vanguard = document.querySelector('.my-side .circle.vc .card');
-        const isBruceViamance = vanguard && (vanguard.dataset.name.includes('Viamance') || vanguard.dataset.name.includes('Bruce'));
-        if (!isBruceViamance) return;
+        if (!vanguard) {
+            console.log("Bruce Ability: No Vanguard found.");
+            return;
+        }
+
+        const name = (vanguard.dataset.name || "").toLowerCase();
+        const isBruce = name.includes('bruce');
+        const isViamance = name.includes('viamance');
+
+        console.log(`Bruce Ability Check: Name="${name}", isBruce=${isBruce}, isViamance=${isViamance}`);
+
+        if (!isBruce && !isViamance) return;
 
         // Check if all units on field are "Diabolos"
+        // Get all cards on player's circles
         const myUnits = document.querySelectorAll('.my-side .circle .card:not(.opponent-card)');
+        console.log(`Bruce Ability Check: Found ${myUnits.length} units.`);
+
         if (myUnits.length === 0) return;
 
         const allDiabolos = Array.from(myUnits).every(u => {
-            const hasName = u.dataset.name && u.dataset.name.includes('Diabolos');
-            if (!hasName) console.log("Ability blocked by non-Diabolos unit:", u.dataset.name);
-            return hasName;
+            const uName = (u.dataset.name || "").toLowerCase();
+            const hasDiabolos = uName.includes('diabolos');
+            if (!hasDiabolos) console.log("Ability blocked by non-Diabolos unit:", uName);
+            return hasDiabolos;
         });
+
+        console.log(`Bruce Ability Check: allDiabolos=${allDiabolos}`);
 
         if (allDiabolos) {
             isFinalRush = true;
-            finalRushTurnLimit = currentTurn + 1;
+            finalRushTurnLimit = currentTurn + 1; // Until end of opponent's next turn
 
             const oppVanguard = document.querySelector('.opponent-side .circle.vc .card');
             const oppGrade = oppVanguard ? parseInt(oppVanguard.dataset.grade || "0") : 0;
@@ -2764,9 +2793,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 isFinalBurst = false;
                 alert("DIABOLOS: Entering FINAL RUSH state!");
             }
-            updateFinalRushStaticBonuses(true); // Apply bonuses immediately
+            updateFinalRushStaticBonuses(true); // Apply power/crit bonuses
             updateStatusUI();
-            sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst, limit: finalRushTurnLimit });
+            sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst });
         }
     }
 
