@@ -754,67 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function driveCheck(checksLeft = 1, initialCritical = 1) {
-        if (deckPool.length === 0) {
-            alert("Deck out! You lose.");
-            showGameOver('Lose');
-            return;
-        }
-
-        const cardData = deckPool.pop();
-        updateDeckCounter();
-
-        // Show the card as a floating "check" element
-        const checkCard = createCardElement(cardData);
-        checkCard.style.position = 'fixed';
-        checkCard.style.top = '50%';
-        checkCard.style.left = '50%';
-        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
-        checkCard.style.zIndex = '9999';
-        checkCard.style.pointerEvents = 'none';
-        checkCard.classList.add('effect-trigger');
-        document.body.appendChild(checkCard);
-
-        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
-
-        setTimeout(() => {
-            if (cardData.trigger) {
-                resolveTrigger(cardData);
-            } else {
-                pendingPowerIncrease = 0;
-                pendingCriticalIncrease = 0;
-                document.body.classList.remove('targeting-mode');
-            }
-
-            const finishThisCheck = () => {
-                checkCard.remove();
-                // Add NEW clean copy to hand to fix sizing bugs
-                const cardInHand = createCardElement(cardData);
-                playerHand.appendChild(cardInHand);
-                updateHandCount();
-                sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
-
-                if (checksLeft > 1) {
-                    setTimeout(() => driveCheck(checksLeft - 1, initialCritical), 800);
-                } else {
-                    // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
-                    setTimeout(() => {
-                        resolveFinalAttack(initialCritical);
-                    }, 500);
-                }
-            };
-
-            // How long to show the card? If targeting, wait for click. If not, auto-move.
-            const checkTargeting = setInterval(() => {
-                if (!document.body.classList.contains('targeting-mode')) {
-                    clearInterval(checkTargeting);
-                    setTimeout(finishThisCheck, 1500);
-                }
-            }, 200);
-        }, 500);
-    }
-
-    function resolveFinalAttack() {
+    function attackHitCheck(initialCritical) {
         if (!currentAttackData) return;
 
         const attacker = document.getElementById(currentAttackData.attackerId);
@@ -871,6 +811,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentAttackData = null;
         pendingCriticalIncrease = 0;
+    }
+
+    function driveCheck(count, crit, isOpponentPG = false) {
+        if (count <= 0) {
+            // If PG was played, override hit check
+            if (isOpponentPG) {
+                alert("Attack Nullified by Perfect Guard!");
+                sendData({
+                    type: 'resolveAttack',
+                    attackData: {
+                        ...currentAttackData,
+                        totalPower: parseInt(document.getElementById(currentAttackData.attackerId).dataset.power),
+                        totalCritical: crit,
+                        isHit: false, // Force miss
+                        isPG: true
+                    }
+                });
+            } else {
+                attackHitCheck(crit);
+            }
+            return;
+        }
+
+        if (deckPool.length === 0) {
+            alert("Deck out! You lose.");
+            showGameOver('Lose');
+            return;
+        }
+
+        const cardData = deckPool.pop();
+        updateDeckCounter();
+
+        // Show the card as a floating "check" element
+        const checkCard = createCardElement(cardData);
+        checkCard.style.position = 'fixed';
+        checkCard.style.top = '50%';
+        checkCard.style.left = '50%';
+        checkCard.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        checkCard.style.zIndex = '9999';
+        checkCard.style.pointerEvents = 'none';
+        checkCard.classList.add('effect-trigger');
+        document.body.appendChild(checkCard);
+
+        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
+
+        setTimeout(() => {
+            if (cardData.trigger) {
+                resolveTrigger(cardData);
+            } else {
+                pendingPowerIncrease = 0;
+                pendingCriticalIncrease = 0;
+                document.body.classList.remove('targeting-mode');
+            }
+
+            const finishThisCheck = () => {
+                checkCard.remove();
+                // Add NEW clean copy to hand to fix sizing bugs
+                const cardInHand = createCardElement(cardData);
+                playerHand.appendChild(cardInHand);
+                updateHandCount();
+                sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
+
+                if (count > 1) {
+                    setTimeout(() => driveCheck(count - 1, crit, isOpponentPG), 800);
+                } else {
+                    // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
+                    setTimeout(() => {
+                        attackHitCheck(crit);
+                    }, 500);
+                }
+            };
+
+            // How long to show the card? If targeting, wait for click. If not, auto-move.
+            const checkTargeting = setInterval(() => {
+                if (!document.body.classList.contains('targeting-mode')) {
+                    clearInterval(checkTargeting);
+                    setTimeout(finishThisCheck, 1500);
+                }
+            }, 200);
+        }, 500);
     }
 
     function resolveTrigger(cardData, isDamageCheck = false) {
@@ -1057,6 +1077,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("You can only move cards to the Guard Circle when defending an attack!");
                 return false;
             }
+
+            // Perfect Guard Logic: Discard cost
+            const isPG = (card.dataset.name && card.dataset.name.includes('Perfect Guard')) || card.dataset.isPG === "true";
+            if (isPG) {
+                const cardsInHand = Array.from(playerHand.querySelectorAll('.card'));
+                // Filter out the current card being moved to GC if it's from hand
+                const otherCardsInHand = cardsInHand.filter(c => c.id !== card.id);
+
+                if (otherCardsInHand.length >= 1) { // If there are other cards left in hand
+                    if (confirm("Perfect Guard: Discard 1 card from hand as cost?")) {
+                        alert("Select a card from your hand to discard.");
+                        document.body.classList.add('targeting-mode');
+
+                        const pgDiscardListener = (e) => {
+                            const discardTarget = e.target.closest('.card');
+                            if (discardTarget && discardTarget.parentElement && discardTarget.parentElement.dataset.zone === 'hand' && discardTarget.id !== card.id) {
+                                e.stopPropagation();
+                                const dropZone = document.querySelector('.my-side .drop-zone');
+                                dropZone.appendChild(discardTarget);
+                                discardTarget.classList.remove('rest');
+                                sendMoveData(discardTarget);
+                                updateHandCount();
+                                updateDropCount();
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', pgDiscardListener, true);
+                                alert("Cost paid: Card discarded.");
+                            } else if (discardTarget && discardTarget.id === card.id) {
+                                alert("You cannot discard the card you are using to guard!");
+                            }
+                        };
+                        document.addEventListener('click', pgDiscardListener, true);
+                    } else {
+                        alert("Cost not paid. Perfect Guard will not activate!");
+                        // If cost not paid, prevent it from being a PG
+                        card.dataset.isPG = "false";
+                    }
+                } else {
+                    alert("No other cards in hand to pay Perfect Guard cost. PG will not activate!");
+                    card.dataset.isPG = "false";
+                }
+            }
+
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
@@ -1091,14 +1153,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const oldVName = vanguard.dataset.name;
                     const oldVGrade = parseInt(vanguard.dataset.grade);
-                    const isPersonaRide = (card.dataset.persona === 'true' || card.dataset.persona === true) && (card.dataset.name === oldVName) && (oldVGrade === 3);
+                    // Check if it's the same name and grade 3
+                    const isPersonaRide = (card.dataset.persona === 'true' || card.dataset.persona === true || card.dataset.name === oldVName) && (oldVGrade === 3) && (parseInt(card.dataset.grade) === 3);
 
                     soulPool.push(vanguard);
                     vanguard.remove();
                     updateSoulUI();
 
                     if (isPersonaRide) {
-                        alert("PERSONA RIDE! Front row units get +10,000 Power for the turn!");
+                        alert("PERSONA RIDE! Front row units get +10,000 Power for the turn! Skipping to Main Phase.");
                         personaRideActive = true;
                         drawCard(true); // Persona Ride usually includes draw 1
 
@@ -1113,6 +1176,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             sendMoveData(unit);
                         });
+
+                        // Immediately skip to Main Phase
+                        setTimeout(() => {
+                            currentPhaseIndex = phases.indexOf('main');
+                            updatePhaseUI(true);
+                        }, 800);
                     }
                     checkRideAbilities(oldV, card);
                 }
@@ -1634,15 +1703,19 @@ document.addEventListener('DOMContentLoaded', () => {
             isGuarding = false;
             document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.remove('zone-highlight'));
 
-            // Calculate Total Shield
+            // Calculate Total Shield and PG check
             let totalShieldAdded = 0;
+            let isPGActivated = false;
             const gc = document.querySelector('.guardian-circle');
             const guardCards = gc ? gc.querySelectorAll('.card') : [];
 
             guardCards.forEach(c => {
                 totalShieldAdded += parseInt(c.dataset.shield || "0");
+                if ((c.dataset.name && c.dataset.name.includes('Perfect Guard')) || c.dataset.isPG === "true") {
+                    isPGActivated = true;
+                }
 
-                // Return guards to drop zone immediately
+                // Return guards to drop zone
                 const dropZone = document.querySelector('.my-side .drop-zone');
                 dropZone.appendChild(c);
                 c.classList.remove('rest');
@@ -1653,7 +1726,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateGCShield();
 
             btn.remove();
-            sendData({ type: 'finishGuard', attackData: attackData, totalShield: totalShieldAdded });
+            sendData({
+                type: 'finishGuard',
+                attackData: attackData,
+                totalShield: totalShieldAdded,
+                isPG: isPGActivated
+            });
         };
         document.body.appendChild(btn);
     }
@@ -1700,26 +1778,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attackData.isVanguardAttacker) {
             const grade = parseInt(attackData.vanguardGrade || "0");
             const checks = grade >= 3 ? 2 : 1;
-            driveCheck(checks, attackData.totalCritical);
+            driveCheck(checks, attackData.totalCritical, data.isPG); // Pass PG to driveCheck
         } else {
             // Recalculate Rearguard attack hit immediately
             const attacker = document.getElementById(attackData.attackerId);
             const target = document.getElementById('opp-' + attackData.targetId);
             if (attacker && target) {
                 let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
-                let targetDefPower = parseInt(target.dataset.power) + totalShield;
-
-                // PG Check for Rearguard attack
-                const gc = document.querySelector('.guardian-circle');
-                const hasPG = gc && Array.from(gc.querySelectorAll('.card')).some(c => c.dataset.name.includes('Perfect Guard') || c.dataset.isPG === "true" || c.dataset.name === 'Recusal Hate Dragon (Perfect Guard)');
+                let targetDefPower = parseInt(target.dataset.power) + (data.totalShield || 0);
 
                 let isHit = finalPower >= targetDefPower;
-                if (hasPG) {
+                if (data.isPG) {
                     alert("Perfect Guard nullified the Rear-guard attack!");
                     isHit = false;
                 }
 
-                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit } });
+                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
             }
             currentAttackData = null;
         }
