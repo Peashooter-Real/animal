@@ -844,16 +844,18 @@ body {
 }
 
 .id-display {
-  margin: 1rem auto 0;
+  margin: 1rem auto;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 1px dashed var(--accent-color);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px dashed var(--accent-vanguard);
   max-width: fit-content;
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.2);
 }
 
 .id-text {
