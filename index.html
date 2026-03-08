@@ -204,8 +204,9 @@
                     </div>
 
                     <!-- Turn Controls (Moved from Header) -->
-                    <div class="game-info">
+                    <div class="game-info" style="display: flex; align-items: center;">
                         <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
+                        <div id="bruce-status-badge" class="rush-status hidden">Final Rush</div>
                         <button id="next-phase-btn" class="glass-btn highlight-btn"
                             style="margin-left: 1rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">Next Phase</button>
                         <button id="next-turn-btn" class="glass-btn"
@@ -228,6 +229,26 @@
             </div>
             <div id="viewer-grid" class="viewer-grid">
                 <!-- Cards will be cloned here for viewing -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Skill Modal -->
+    <div id="skill-viewer" class="modal-overlay hidden">
+        <div class="modal-content skill-modal">
+            <div class="modal-header">
+                <h2 id="skill-card-name">Card Name</h2>
+                <button id="close-skill-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="skill-body">
+                <div class="skill-info">
+                    <span id="skill-card-grade">Grade: 0</span> |
+                    <span id="skill-card-power">Power: 0</span> |
+                    <span id="skill-card-shield">Shield: 0</span>
+                </div>
+                <div id="skill-text" class="skill-description">
+                    Skill text goes here...
+                </div>
             </div>
         </div>
     </div>

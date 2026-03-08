@@ -1512,3 +1512,138 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   background: rgba(5, 255, 161, 0.1) !important;
   box-shadow: 0 0 15px var(--accent-cyan) !important;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20000;
+}
+
+.modal-content {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skill-modal {
+  max-width: 400px !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border: 2px solid var(--accent-blue) !important;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.4) !important;
+}
+
+.skill-info {
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skill-description {
+  line-height: 1.6;
+  color: #fff;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+
+/* Final Rush / Burst Indicators */
+.rush-status {
+  background: linear-gradient(135deg, #ff2a6d, #d1f7ff);
+  color: #000;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-weight: 800;
+  font-family: var(--font-cyber);
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.5);
+  margin-left: 10px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #fff;
+  animation: glow-pulse-rush 2s infinite alternate;
+}
+
+.rush-status.burst-status {
+  background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.7) !important;
+  color: #fff !important;
+}
+
+@keyframes glow-pulse-rush {
+  from {
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
+  }
+
+  to {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 42, 109, 0.7);
+  }
+}
+
+.face-down {
+  filter: brightness(0.4) grayscale(1) !important;
+  border: 2px solid #333 !important;
+}
+
+.face-down img {
+  visibility: hidden;
+}
+
+/* Modal for column selection */
+.column-selection-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 2rem;
+  border-radius: 20px;
+  border: 2px solid var(--accent-vanguard);
+  z-index: 11000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.column-btn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  width: 250px;
+}

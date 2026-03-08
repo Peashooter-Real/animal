@@ -27,6 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewerGrid = document.getElementById('viewer-grid');
     const closeViewerBtn = document.getElementById('close-viewer-btn');
 
+    // Skill Viewer
+    const skillViewer = document.getElementById('skill-viewer');
+    const skillCardName = document.getElementById('skill-card-name');
+    const skillCardGrade = document.getElementById('skill-card-grade');
+    const skillCardPower = document.getElementById('skill-card-power');
+    const skillCardShield = document.getElementById('skill-card-shield');
+    const skillText = document.getElementById('skill-text');
+    const closeSkillBtn = document.getElementById('close-skill-btn');
+
     // Opponent info
     const oppHandCountNum = document.getElementById('opp-hand-count');
     const oppDeckCountNum = document.getElementById('opp-deck-count-num');
@@ -81,6 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentAttackData = null; // Store for recalculation after buffs
     let selectedCard = null; // Track selected card for tap-to-move
     let personaRideActive = false; // Track if Persona Ride buff is active for this turn
+    let isFinalRush = false;
+    let isFinalBurst = false;
+    let finalRushTurnLimit = 0;
 
     // --- Card Image Database ---
     const cardImages = {
@@ -88,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Innocent" Matt': 'picture/grade0_bruce.jpg',
         'Diabolos, "Bad" Steve': 'picture/grade1_bruce.jpg',
         'Diabolos, "Anger" Richard': 'picture/grade2_bruce.jpg',
-        'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
+        'Diabolos, "Viamance" Bruce': 'picture/grade3_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
         'Diabolos Madonna, Megan': '',
         'Diabolos Boys, Eden': '',
@@ -125,26 +137,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Deck Definitions ---
     const bruceDeck = {
         rideDeck: [
-            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000 },
-            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000 },
-            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000 },
-            { name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true }
+            { name: 'Diabolos, "Innocent" Matt', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Bad\" Steve" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น จั่วการ์ด 1 ใบ' },
+            { name: 'Diabolos, "Bad" Steve', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Anger\" Richard" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
+            { name: 'Diabolos, "Anger" Richard', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Diabolos, \"Viamance\" Bruce" คุณอาจนำการ์ดนี้เข้าสู่โซล ถ้าทำเช่นนั้น เลือกการ์ด 1 ใบจากโซลคอลลง R' },
+            { name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true, skill: '[AUTO](V): เมื่อเริ่มแบทเทิลเฟสของคุณ ถ้ายูนิททั้งหมดของคุณมีคำว่า "เดียโบลอส" คุณจะเข้าสู่สถานะ "พลังบุกชั่วอึดใจ" จนจบเทิร์นถัดไปของคู่แข่ง และถ้าแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า จะเข้าสู่สถานะ "พลังระเบิดเฮือกสุดท้าย"\n[AUTO](V): เมื่อยูนิทนี้โจมตี ในสถานะพลังระเบิดเฮือกสุดท้าย [CB1] เลือกแถวแนวตั้ง 1 แถว Stand เรียร์การ์ดเดียโบลอสทั้งหมดในแถวนั้น และได้รับพลัง +5000' }
         ],
         mainDeck: [
             // G3 (6 cards total - excluding ride deck Bruce)
-            ...Array(3).fill({ name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true }),
-            ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000 }),
+            ...Array(3).fill({ name: 'Diabolos, "Viamance" Bruce', grade: 3, power: 13000, persona: true, skill: 'Persona Ride: Front row +10000\n[AUTO](V): เมื่อเริ่มแบทเทิลเฟส... (เหมือนตัว Ride Deck)' }),
+            ...Array(3).fill({ name: 'Diabolos Diver, Julian', grade: 3, power: 13000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +5000 และได้รับ "Intercept" แม้อยู่แถวหลัง' }),
 
             // G2 (15 cards total)
-            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true }), // PG typically has 0 shield but special effect
+            ...Array(4).fill({ name: 'Diabolos Madonna, Megan', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ในสถานะพลังบุกชั่วอึดใจ ได้รับพลัง +5000' }),
+            ...Array(4).fill({ name: 'Diabolos Boys, Eden', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตีฮิต ในสถานะพลังบุกชั่วอึดใจ เลือกเรียร์การ์ดคู่แข่ง 1 ใบ 퇴각 (Retire)' }),
+            ...Array(3).fill({ name: 'Diabolos Buckler, Jamil', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับ Shield +5000' }),
+            ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
 
-            // G1 (13 cards total - PG moved to G1 list for user clarification)
-            ...Array(4).fill({ name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 10000 }),
-            ...Array(3).fill({ name: 'Diabolos Madonna, Mabel', grade: 1, power: 8000, shield: 5000 }),
-            ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 10000 }),
+            // G1 (13 cards total)
+            ...Array(4).fill({ name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 10000, skill: '[AUTO]: เมื่อยูนิทนี้เข้าสู่ R [SB1] นำการ์ดเกรด 2 "เดียโบลอส" 1 ใบจากดรอปโซนขึ้นมือ' }),
+            ...Array(3).fill({ name: 'Diabolos Madonna, Mabel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้บูสต์ ในสถานะพลังบุกชั่วอึดใจ [CB1] จั่วการ์ด 1 ใบ' }),
+            ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 10000, skill: '[CONT](R): ในสถานะพลังบุกชั่วอึดใจ ยูนิทนี้ได้รับพลัง +2000' }),
 
             // Triggers (16 cards total)
             ...Array(8).fill({ name: 'Critical Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
@@ -168,31 +180,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const magnoliaDeck = {
         rideDeck: [
-            { name: 'Sylvan Horned Beast, Lotte', grade: 0, power: 6000, shield: 10000 },
-            { name: 'Sylvan Horned Beast, Charis', grade: 1, power: 8000, shield: 5000 },
-            { name: 'Sylvan Horned Beast, Lattice', grade: 2, power: 10000, shield: 5000 },
-            { name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true }
+            { name: 'Sylvan Horned Beast, Lotte', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ คุณอาจเลือกการ์ด 1 ใบจากดรอปโซนเข้าสู่โซล' },
+            { name: 'Sylvan Horned Beast, Charis', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Sylvan Horned Beast, Lattice" [SB1] ดูการ์ด 5 ใบจากกอง คอลยูนิทเกรด 2 หรือต่ำกว่า 1 ใบลง R' },
+            { name: 'Sylvan Horned Beast, Lattice', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Sylvan Horned Beast King, Magnolia" [CB1] เลือกยูนิท 1 ใบ จะสามารถโจมตีจากแถวหลังได้จนจบเทิร์น' },
+            { name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true, skill: '[AUTO](V): เมื่อยูนิทนี้โจมตี [CB1] เลือกเรียร์การ์ด 1 ใบ จะสามารถโจมตีจากแถวหลังได้ และได้รับพลัง +5000 จนจบเทิร์น' }
         ],
         mainDeck: [
             // Grade 4
-            ...Array(4).fill({ name: 'Sylvan Horned Beast Emperor, Magnolia Elder', grade: 4, power: 13000 }),
+            ...Array(4).fill({ name: 'Sylvan Horned Beast Emperor, Magnolia Elder', grade: 4, power: 13000, skill: '[CONT](V): ยูนิทแถวหลังทั้งหมดของคุณสามารถโจมตีและอินเตอร์เซปต์ได้ และเมื่อโจมตีได้รับพลัง +5000' }),
 
             // Grade 3
-            ...Array(3).fill({ name: 'Inlet Pulse Dragon', grade: 3, power: 13000 }),
-            ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 3, power: 13000 }),
+            ...Array(3).fill({ name: 'Inlet Pulse Dragon', grade: 3, power: 13000, skill: '[AUTO](R): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตีหรือบูสต์ ถ้าแวนการ์ดคุณเป็น "Magnolia" [เข้าโซล] จั่วการ์ด 1 ใบ' }),
+            ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 3, power: 13000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี ถ้ามีเรียร์การ์ด 4 ใบขึ้นไป ได้รับพลัง +5000' }),
 
             // Grade 2
-            ...Array(1).fill({ name: 'Sylvan Horned Beast, Bojacorn', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(1).fill({ name: 'Sylvan Horned Beast, Gabregg', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(3).fill({ name: 'Sylvan Horned Beast, Giunosla', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(3).fill({ name: 'Sylvan Horned Beast, Enpix', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(2).fill({ name: 'Sylvan Horned Beast, Goildot', grade: 2, power: 10000, shield: 5000 }),
-            ...Array(1).fill({ name: 'Sylvan Horned Beast, Alpin', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Bojacorn', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้เข้าสู่ R ถ้าแวนการ์ดคุณคือ Magnolia [CB1] คอลเรียร์การ์ด 1 ใบจากดรอปโซน' }),
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Gabregg', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ถ้าตัวมันโจมตีจากสถานะที่ Magnolia มอบความสามารถให้ ตัวมันจะได้รับพลัง +10000' }),
+            ...Array(3).fill({ name: 'Sylvan Horned Beast, Giunosla', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): เมื่อยูนิทนี้โจมตี [SB1] มอบพลังของตัวมันเองให้ยูนิทอื่น 1 ใบ' }),
+            ...Array(3).fill({ name: 'Sylvan Horned Beast, Enpix', grade: 2, power: 10000, shield: 5000, skill: '[CONT](R): ถ้าโจมตีจากแถวหลัง ได้รับพลัง +5000 และ "Resist"' }),
+            ...Array(2).fill({ name: 'Sylvan Horned Beast, Goildot', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูก Retire จาก R คืนชีพลง R ได้ 1 ครั้งต่อเทิร์น' }),
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Alpin', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](R): [SB1] เร่งพลังให้แถวหลังทั้งแถว +2000' }),
 
             // Grade 1
-            ...Array(4).fill({ name: 'Spiritual Body Condensation', grade: 1, power: 0, shield: 0 }),
-            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, shield: 0 }),
-            ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true }),
+            ...Array(4).fill({ name: 'Spiritual Body Condensation', grade: 1, power: 0, shield: 0, skill: '[Order]: [SB1] เลือกการ์ด 1 ใบจากดรอปโซนคอลลง R และได้รับพลัง +5000 ในเทิร์นนั้น' }),
+            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, shield: 0, skill: '[Order]: [CB1] จั่วการ์ด 1 ใบ และเลือกการ์ด 1 ใบจากดรอปโซนเข้าสู่โซล' }),
+            ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
 
             // Triggers
             ...Array(8).fill({ name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
@@ -496,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.shield = cardData.shield || 0;
         card.dataset.trigger = cardData.trigger || '';
         card.dataset.name = cardData.name;
+        card.dataset.skill = cardData.skill || 'No skill description available.';
 
         const artText = cardData.name.substring(0, 3).toUpperCase();
         let triggerIcon = cardData.trigger ? `<div class="card-trigger bg-${cardData.trigger.toLowerCase()}">${cardData.trigger[0]}</div>` : '';
@@ -521,6 +534,31 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         card.title = cardData.name;
+
+        // Long Press Logic for Skill Viewing
+        let longPressTimer;
+        let isLongPress = false;
+        const longPressDuration = 600; // 600ms
+
+        const startLongPress = (e) => {
+            isLongPress = false;
+            longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                openSkillViewer(card);
+            }, longPressDuration);
+        };
+
+        const cancelLongPress = () => {
+            clearTimeout(longPressTimer);
+        };
+
+        card.addEventListener('mousedown', startLongPress);
+        card.addEventListener('touchstart', startLongPress, { passive: true });
+
+        card.addEventListener('mouseup', cancelLongPress);
+        card.addEventListener('mouseleave', cancelLongPress);
+        card.addEventListener('touchend', cancelLongPress);
+        card.addEventListener('touchmove', cancelLongPress, { passive: true });
 
         card.addEventListener('dragstart', (e) => {
             const inHand = card.parentElement.dataset.zone === 'hand';
@@ -576,6 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
+            if (isLongPress) {
+                isLongPress = false;
+                return;
+            }
             if (document.body.classList.contains('targeting-mode')) {
                 if (card.parentElement.classList.contains('circle') && !card.classList.contains('opponent-card')) {
                     if (targetingType === 'critical') {
@@ -671,12 +713,14 @@ document.addEventListener('DOMContentLoaded', () => {
             cardName: card.dataset.name,
             zone: card.parentElement.dataset.zone,
             isRest: card.classList.contains('rest'),
+            isFaceDown: card.classList.contains('face-down'),
             grade: card.dataset.grade,
             power: card.dataset.power,
             critical: card.dataset.critical,
             shield: card.dataset.shield,
             basePower: card.dataset.basePower,
-            baseCritical: card.dataset.baseCritical
+            baseCritical: card.dataset.baseCritical,
+            skill: card.dataset.skill // Send skill text to opponent
         });
     }
 
@@ -1083,6 +1127,19 @@ document.addEventListener('DOMContentLoaded', () => {
             vanguardGrade: attacker.dataset.grade
         };
 
+        // Bruce Attack Ability Check
+        if (isVanguardAttacker && isFinalBurst && attacker.dataset.name.includes('"Viamance" Bruce')) {
+            setTimeout(() => {
+                if (confirm("FINAL BURST: Cost CB 1 to restand a column and give +5000 Power?")) {
+                    if (payCounterBlast(1)) {
+                        showColumnSelection(col => {
+                            if (col) restandColumn(col);
+                        });
+                    }
+                }
+            }, 500);
+        }
+
         sendData({
             type: 'declareAttack',
             ...attackData
@@ -1460,6 +1517,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset power/critical at the start of ANY turn's stand phase
         if (currentPhaseIndex === 0) { // Stand phase
+            // State expiration check
+            if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
+                isFinalRush = false;
+                isFinalBurst = false;
+                updateStatusUI();
+                alert("Bruce: Final Rush state has expired.");
+                sendData({ type: 'bruceStatus', isFinalRush: false, isFinalBurst: false });
+            }
+
             resetMyUnits();
             pendingPowerIncrease = 0;
             pendingCriticalIncrease = 0;
@@ -1514,6 +1580,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         updatePhaseUI(true);
                     }
                 }, 1000);
+            } else if (currentPhaseName === 'battle') {
+                // Bruce's Start of Battle Phase Ability
+                checkBruceBattleAbility();
             }
         }
 
@@ -1645,6 +1714,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (conn && conn.open) conn.send(data);
     }
 
+    function openSkillViewer(card) {
+        if (!skillViewer) return;
+
+        skillCardName.textContent = card.dataset.name;
+        skillCardGrade.textContent = `Grade: ${card.dataset.grade}`;
+        skillCardPower.textContent = `Power: ${card.dataset.power}`;
+        skillCardShield.textContent = `Shield: ${card.dataset.shield}`;
+        skillText.textContent = card.dataset.skill;
+
+        skillViewer.classList.remove('hidden');
+    }
+
+    if (closeSkillBtn) {
+        closeSkillBtn.onclick = () => skillViewer.classList.add('hidden');
+    }
+
     function handleIncomingData(data) {
         console.log('Data received:', data.type);
         const oppSide = document.querySelector('.opponent-side');
@@ -1694,6 +1779,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'revealDrive':
                 showOpponentDriveCheck(data);
+                break;
+            case 'bruceStatus':
+                isFinalRush = data.isFinalRush;
+                isFinalBurst = data.isFinalBurst;
+                finalRushTurnLimit = data.limit;
+                updateStatusUI();
                 break;
         }
     }
@@ -2008,7 +2099,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     grade: data.grade,
                     power: data.power,
                     shield: data.shield,
-                    critical: data.critical // Sync critical for new cards
+                    critical: data.critical,
+                    skill: data.skill // Sync skill text
                 });
                 card.id = cardId;
                 card.classList.add('opponent-card');
@@ -2044,6 +2136,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle visual orientation
             if (data.isRest) card.classList.add('rest');
             else card.classList.remove('rest');
+
+            if (data.isFaceDown) card.classList.add('face-down');
+            else card.classList.remove('face-down');
 
             updateDropCount();
         }
@@ -2202,6 +2297,131 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    function updateStatusUI() {
+        const badge = document.getElementById('bruce-status-badge');
+        if (!badge) return;
+
+        if (isFinalRush) {
+            badge.classList.remove('hidden');
+            if (isFinalBurst) {
+                badge.textContent = "Final Burst";
+                badge.classList.add('burst-status');
+            } else {
+                badge.textContent = "Final Rush";
+                badge.classList.remove('burst-status');
+            }
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    function checkBruceBattleAbility() {
+        if (!isMyTurn) return;
+        const vanguard = document.querySelector('.my-side .circle.vc .card');
+        if (!vanguard || !vanguard.dataset.name.includes('"Viamance" Bruce')) return;
+
+        // Check if all units on field are "Diabolos"
+        const myUnits = document.querySelectorAll('.my-side .circle .card:not(.opponent-card)');
+        if (myUnits.length === 0) return;
+
+        const allDiabolos = Array.from(myUnits).every(u => u.dataset.name && u.dataset.name.includes('Diabolos'));
+
+        if (allDiabolos) {
+            isFinalRush = true;
+            finalRushTurnLimit = currentTurn + 1;
+
+            const oppVanguard = document.querySelector('.opponent-side .circle.vc .card');
+            const oppGrade = oppVanguard ? parseInt(oppVanguard.dataset.grade || "0") : 0;
+
+            if (oppGrade >= 3) {
+                isFinalBurst = true;
+                alert("DIABOLOS: Entering FINAL BURST state!");
+            } else {
+                isFinalBurst = false;
+                alert("DIABOLOS: Entering FINAL RUSH state!");
+            }
+            updateStatusUI();
+            sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst, limit: finalRushTurnLimit });
+        }
+    }
+
+    function payCounterBlast(cost) {
+        const damageCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card')).filter(c => !c.classList.contains('face-down'));
+        if (damageCards.length < cost) {
+            alert("Insufficient Damage to Counter Blast!");
+            return false;
+        }
+
+        for (let i = 0; i < cost; i++) {
+            const card = damageCards[i];
+            card.classList.add('face-down');
+            sendMoveData(card);
+        }
+        return true;
+    }
+
+    function showColumnSelection(callback) {
+        const overlay = document.createElement('div');
+        overlay.className = 'column-selection-overlay glass-panel';
+        overlay.innerHTML = `
+            <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00;">SELECT COLUMN TO STAND</h2>
+            <button class="glass-btn column-btn" data-col="left">Left Column</button>
+            <button class="glass-btn column-btn" data-col="right">Right Column</button>
+            <button class="glass-btn column-btn" data-col="center">Center Column</button>
+            <button class="glass-btn" style="margin-top:10px;" id="cancel-col">Cancel</button>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.column-btn').forEach(btn => {
+            btn.onclick = () => {
+                const col = btn.dataset.col;
+                overlay.remove();
+                callback(col);
+            };
+        });
+
+        const cancel = overlay.querySelector('#cancel-col');
+        cancel.onclick = () => {
+            overlay.remove();
+            callback(null);
+        };
+    }
+
+    function restandColumn(col) {
+        const colMap = {
+            'left': ['rc_front_left', 'rc_back_left'],
+            'right': ['rc_front_right', 'rc_back_right'],
+            'center': ['vc', 'rc_back_center']
+        };
+
+        const zones = colMap[col];
+        if (!zones) return;
+
+        zones.forEach(zoneName => {
+            const circle = document.querySelector(`.my-side .circle[data-zone="${zoneName}"]`);
+            if (circle) {
+                const card = circle.querySelector('.card:not(.opponent-card)');
+                // Restand only Diabolos Rear-guards (as per user request: "stand เรียร์การ์ดทั้งหมดของคุณที่มี เดียโบลอส")
+                // Wait, user said "rearguard" but center has VC. I'll stick to RGCs in that column.
+                if (card && card.dataset.name && card.dataset.name.includes('Diabolos') && circle.classList.contains('rc')) {
+                    card.classList.remove('rest');
+                    // Give +5000 Power
+                    let p = parseInt(card.dataset.power);
+                    card.dataset.power = p + 5000;
+
+                    const powerSpan = card.querySelector('.card-power');
+                    if (powerSpan) {
+                        const critVal = parseInt(card.dataset.critical || "1");
+                        let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                        powerSpan.innerHTML = `⚔️${card.dataset.power} ${displayCritical}`;
+                    }
+                    sendMoveData(card);
+                }
+            }
+        });
+        alert(`Column ${col} has been restood! (+5000 Power)`);
+    }
 
     closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));
 });
