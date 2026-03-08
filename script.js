@@ -1,29 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 
-window.alert = function(msg) {
-    const box = document.createElement('div');
-    box.className = 'vanguard-alert-box fade-in';
-    box.innerHTML = `
+    window.alert = function (msg) {
+        const box = document.createElement('div');
+        box.className = 'vanguard-alert-box fade-in';
+        box.innerHTML = `
         <div class="vanguard-alert-content" style="text-align: center;">
             <h3 style="color:var(--accent-vanguard); margin-bottom:10px; font-family:'Orbitron', sans-serif; text-shadow:0 0 5px var(--accent-vanguard);">SYSTEM NOTICE</h3>
             <p style="color: white; font-size: 1.1rem;">${msg}</p>
         </div>
     `;
-    document.body.appendChild(box);
-    setTimeout(() => {
-        box.classList.remove('fade-in');
-        box.classList.add('fade-out');
-        setTimeout(() => box.remove(), 500);
-    }, 3500);
-};
+        document.body.appendChild(box);
+        setTimeout(() => {
+            box.classList.remove('fade-in');
+            box.classList.add('fade-out');
+            setTimeout(() => box.remove(), 500);
+        }, 3500);
+    };
 
-window.vgConfirm = function(msg) {
-    return new Promise(resolve => {
-        const overlay = document.createElement('div');
-        overlay.className = 'column-selection-overlay glass-panel';
-        overlay.style.zIndex = '99999';
-        overlay.innerHTML = `
+    window.vgConfirm = function (msg) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'column-selection-overlay glass-panel';
+            overlay.style.zIndex = '99999';
+            overlay.innerHTML = `
             <div class="mobile-guard-box vg-confirm-box" style="width: 90%; max-width: 450px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
                 <h3 style="color: var(--accent-vanguard); margin-bottom: 20px; font-size: 1.4rem; text-shadow:0 0 10px #f00;">ACTION REQUIRED</h3>
                 <p style="color: white; font-size: 1.2rem; margin-bottom: 30px; font-family: sans-serif;">${msg}</p>
@@ -33,18 +33,18 @@ window.vgConfirm = function(msg) {
                 </div>
             </div>
         `;
-        document.body.appendChild(overlay);
-        
-        document.getElementById('vg-confirm-yes').onclick = () => {
-            overlay.remove();
-            resolve(true);
-        };
-        document.getElementById('vg-confirm-no').onclick = () => {
-            overlay.remove();
-            resolve(false);
-        };
-    });
-};
+            document.body.appendChild(overlay);
+
+            document.getElementById('vg-confirm-yes').onclick = () => {
+                overlay.remove();
+                resolve(true);
+            };
+            document.getElementById('vg-confirm-no').onclick = () => {
+                overlay.remove();
+                resolve(false);
+            };
+        });
+    };
 
 
     // --- UI Elements ---
@@ -403,7 +403,7 @@ window.vgConfirm = function(msg) {
             clone.style.position = 'relative';
             clone.style.cursor = 'pointer';
 
-            clone.onclick = () => {
+            clone.onclick = async () => {
                 const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetZoneName}"]`);
                 if (targetCircle) {
                     const actualCard = soulPool.splice(index, 1)[0];
@@ -428,7 +428,7 @@ window.vgConfirm = function(msg) {
         });
     }
 
-    function promptRetireToSoulForDraw(onComplete) {
+    async function promptRetireToSoulForDraw(onComplete) {
         const rearGuards = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
         if (rearGuards.length === 0) {
             alert("No Rear-guards to pay for Richard's ability!");
@@ -592,7 +592,7 @@ window.vgConfirm = function(msg) {
             queue.push({
                 name: 'ความสามารถของ Richard (G2)',
                 description: "[คอสต์: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ",
-                resolve: (done) => {
+                resolve: async (done) => {
                     if (await vgConfirm("Richard Skill: [คอสต์: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ?")) {
                         promptRichardVC(done);
                     } else {
@@ -607,7 +607,7 @@ window.vgConfirm = function(msg) {
             queue.push({
                 name: 'Lotte (G0)',
                 description: "Ability: Put into soul to Call 1 from Soul",
-                resolve: (done) => {
+                resolve: async (done) => {
                     if (await vgConfirm("Lotte Skill: Put into soul and Call 1 from Soul?")) {
                         promptSoulCall('rc_back_center', done, false);
                     } else {
@@ -620,7 +620,7 @@ window.vgConfirm = function(msg) {
             queue.push({
                 name: 'Charis (G1)',
                 description: "SB1 to Call G2 or lower from top 5",
-                resolve: (done) => {
+                resolve: async (done) => {
                     if (await vgConfirm("Charis Skill: SB1 to Call G2 or lower from top 5?")) {
                         if (paySoulBlast(1)) {
                             // This is a simplified version, just drawing for now or using a generic top-call
@@ -636,7 +636,7 @@ window.vgConfirm = function(msg) {
             queue.push({
                 name: 'Lattice (G2)',
                 description: "CB1 to allow back row to attack",
-                resolve: (done) => {
+                resolve: async (done) => {
                     if (await vgConfirm("Lattice Skill: CB1 to allow back-row units to attack?")) {
                         if (payCounterBlast(1)) {
                             alert("Magnolia/Lattice: Back-row units can now attack this turn!");
@@ -1005,7 +1005,7 @@ window.vgConfirm = function(msg) {
         }
     }
 
-    function attackHitCheck(initialCritical, isOpponentPG = false) {
+    async function attackHitCheck(initialCritical, isOpponentPG = false) {
         if (!currentAttackData) return;
 
         const attacker = document.getElementById(currentAttackData.attackerId);
@@ -2045,7 +2045,7 @@ window.vgConfirm = function(msg) {
     }
 
     // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
-    function checkBruceBattleAbility() {
+    async function checkBruceBattleAbility() {
         // Implement Bruce's start of battle phase ability here
         console.log("Checking Bruce's Battle Phase ability...");
         if (isFinalRush && !isFinalBurst) {
@@ -2602,7 +2602,7 @@ window.vgConfirm = function(msg) {
         document.body.appendChild(btn);
     }
 
-    function triggerIvankaOnHitRC(attackData) {
+    async function triggerIvankaOnHitRC(attackData) {
         if (attackData.boosterName && attackData.boosterName.includes('Ivanka') && attackData.isTargetVanguard && isFinalRush) {
             setTimeout(async () => {
                 if (await vgConfirm("Ivanka: [AUTO] เมื่อบูสต์ฮิตแวนการ์ด! [CB1 & นำเรียร์ที่ถูกบูสต์ไว้ใต้กอง] เพื่อจั่ว 1 และให้พลัง +5000 แก่ยูนิทอื่น?")) {
@@ -2652,7 +2652,7 @@ window.vgConfirm = function(msg) {
 
     let currentAttackResolving = false; // Guard against double resolve
 
-    function handleGuardDecision(data) {
+    async function handleGuardDecision(data) {
         if (currentAttackResolving) return;
 
         const decision = data.decision;
@@ -2709,7 +2709,7 @@ window.vgConfirm = function(msg) {
         }
     }
 
-    function handleFinishGuard(data) {
+    async function handleFinishGuard(data) {
         const attackData = data.attackData;
         const totalShield = data.totalShield || 0;
         alert(`Opponent finished placing guards! (+${totalShield} Shield)`);
@@ -3266,7 +3266,7 @@ window.vgConfirm = function(msg) {
         alert(`Column ${col} has been restood! (+5000 Power)`);
     }
 
-    function checkOnPlaceAbilities(card) {
+    async function checkOnPlaceAbilities(card) {
         if (!card) return;
         const name = card.dataset.name || "";
         if (name.includes('Jamil')) {

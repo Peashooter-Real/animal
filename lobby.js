@@ -42,28 +42,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    window.alert = function (msg) {
+        const box = document.createElement('div');
+        box.className = 'vanguard-alert-box fade-in';
+        box.style.position = 'fixed';
+        box.style.top = '50%';
+        box.style.left = '50%';
+        box.style.transform = 'translate(-50%, -50%)';
+        box.style.background = 'rgba(15, 15, 25, 0.95)';
+        box.style.border = '2px solid #ff2a6d';
+        box.style.padding = '20px';
+        box.style.borderRadius = '15px';
+        box.style.boxShadow = '0 0 30px rgba(255, 42, 109, 0.5)';
+        box.style.color = '#fff';
+        box.style.zIndex = '99999';
+        box.style.textAlign = 'center';
+
+        box.innerHTML = `
+            <div class="vanguard-alert-content" style="text-align: center;">
+                <h3 style="color:#ff2a6d; margin-bottom:10px; font-family:'Orbitron', sans-serif; text-shadow:0 0 5px #ff2a6d;">SYSTEM NOTICE</h3>
+                <p style="color: white; font-size: 1.1rem; font-family: sans-serif;">${msg}</p>
+            </div>
+        `;
+        document.body.appendChild(box);
+        setTimeout(() => {
+            box.style.opacity = '0';
+            box.style.transition = 'opacity 0.5s';
+            setTimeout(() => box.remove(), 500);
+        }, 2000);
+    };
+
     const copyBtn = document.getElementById('copy-my-id-btn');
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
             const id = document.getElementById('my-peer-id').textContent;
-            const joinUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
 
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Join my Vanguard Match!',
-                    text: `Enter my Arena with ID: ${id}`,
-                    url: joinUrl
-                }).then(() => {
-                    copyBtn.textContent = "✅";
-                    setTimeout(() => copyBtn.textContent = "📋", 2000);
-                }).catch(() => {
-                    navigator.clipboard.writeText(joinUrl);
-                    alert('ID Link Copied!');
-                });
-            } else {
-                navigator.clipboard.writeText(joinUrl);
-                alert('ID Link Copied!');
-            }
+            navigator.clipboard.writeText(id).then(() => {
+                copyBtn.textContent = "✅";
+                setTimeout(() => copyBtn.textContent = "📋", 2000);
+                alert('Copied ID: ' + id);
+            }).catch(() => {
+                alert('Gonna need manual copy.');
+            });
         });
     }
 
