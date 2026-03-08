@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' },
                 { name: 'Critical Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' },
                 { name: 'Draw Trigger', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' },
-                { name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }
+                { name: 'Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' },
+                { name: 'Front Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }
             ]
         )
     };
@@ -294,8 +295,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 if (isOnField) {
-                    e.preventDefault();
-                    return;
+                    const currentPhase = phases[currentPhaseIndex];
+                    const zone = card.parentElement.dataset.zone;
+                    const isVanguard = card.parentElement.classList.contains('vc');
+                    const isLeftOrRightRG = zone && (zone.includes('_left') || zone.includes('_right'));
+
+                    // Allow moving Rear-guards during Main Phase (specifically left/right columns as requested)
+                    if (currentPhase === 'main' && !isVanguard && isLeftOrRightRG) {
+                        // Allowed
+                    } else {
+                        e.preventDefault();
+                        return;
+                    }
                 }
             }
             draggedCard = card;
@@ -616,6 +627,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`Trigger! ${triggerType} effect activating...`);
 
+        if (triggerType === 'Front') {
+            // AUTO-APPLY: Give +10,000 to all front row units immediately
+            document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
+                let currentPower = parseInt(unit.dataset.power);
+                unit.dataset.power = currentPower + 10000;
+
+                const powerSpan = unit.querySelector('.card-power');
+                if (powerSpan) {
+                    const critVal = parseInt(unit.dataset.critical || "1");
+                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                    powerSpan.innerHTML = `⚔️${unit.dataset.power} ${displayCritical}`;
+                }
+                sendMoveData(unit);
+            });
+            alert("Front Trigger! +10,000 Power to all your front row units!");
+
+            // Reset targeting states and exit
+            pendingPowerIncrease = 0;
+            pendingCriticalIncrease = 0;
+            targetingType = null;
+            document.body.classList.remove('targeting-mode');
+            return;
+        }
+
         if (triggerType === 'Draw') {
             if (!isDamageCheck) drawCard(true); // Draw unconditionally only if it's drive check
         } else if (triggerType === 'Heal') {
@@ -745,9 +780,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateAndMoveCard(card, zone) {
         if (!card || !zone) return false;
 
-        const isFromHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+        const oldParent = card.parentElement;
+        const isFromHand = oldParent && oldParent.dataset.zone === 'hand';
+        const isFromField = oldParent && oldParent.classList.contains('circle');
 
-        // 1. Basic Boundary Checks (Same as Drag/Drop restriction)
+        // 1. Basic Boundary Checks
         if (isFromHand) {
             const isMySide = zone.closest('.my-side');
             const isSharedGC = zone.id === 'shared-gc';
@@ -782,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isMyTurn) return false;
         const currentPhase = phases[currentPhaseIndex];
 
-        // 4. Circle Validation (Ride/Call)
+        // 4. Circle Validation (Ride/Call/Move)
         if (zone.classList.contains('circle')) {
             const cardGrade = parseInt(card.dataset.grade);
             const vanguard = document.querySelector('.my-side .circle.vc .card');
@@ -806,10 +843,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 hasRiddenThisTurn = true;
             } else if (zone.classList.contains('rc')) {
-                if (currentPhase !== 'main') { alert("Only Call during Main Phase!"); return false; }
-                if (cardGrade > vanguardGrade) {
+                if (currentPhase !== 'main') { alert("Only Call or Move during Main Phase!"); return false; }
+
+                // Only enforce grade limit if calling from hand
+                if (isFromHand && cardGrade > vanguardGrade) {
                     alert(`Cannot Call Grade ${cardGrade} (VG is G${vanguardGrade})!`);
                     return false;
+                }
+            }
+
+            // --- Handle Existing Card (Swap or Retire) ---
+            const existingCard = zone.querySelector('.card:not(.opponent-card)');
+            if (existingCard && existingCard !== card) {
+                if (isFromField && zone.classList.contains('rc')) {
+                    // SWAP: Move existing card to old circle (only for RC to RC move)
+                    oldParent.appendChild(existingCard);
+                    sendMoveData(existingCard);
+                } else {
+                    // RETIRE: Move existing card to drop zone (if calling from hand or riding)
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    dropZone.appendChild(existingCard);
+                    existingCard.classList.remove('rest');
+                    existingCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    sendMoveData(existingCard);
                 }
             }
         }
