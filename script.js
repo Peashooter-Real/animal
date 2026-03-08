@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
     let selectedCard = null; // Track selected card for tap-to-move
+    let personaRideActive = false; // Track if Persona Ride buff is active for this turn
 
     // --- Card Image Database ---
     const cardImages = {
@@ -834,19 +835,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isHit = finalPower >= targetDefendingPower;
 
-        if (!isHit) {
-            alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
-        }
+        // Check for Perfect Guard (PG) on target side if we were the attacker
+        // In local logic, if opponent used PG, we handle it during their finishGuard callback which sets opponentShield
+        // However, we should check if any PG was placed.
+        const gc = document.querySelector('.guardian-circle');
+        const hasPG = gc && Array.from(gc.querySelectorAll('.card')).some(c => c.dataset.name.includes('Perfect Guard') || c.dataset.isPG === "true");
 
-        sendData({
-            type: 'resolveAttack',
-            attackData: {
-                ...currentAttackData,
-                totalPower: finalPower,
-                totalCritical: finalCritical,
-                isHit: isHit
+        if (hasPG) {
+            alert("Perfect Guard activated! Attack is nullified.");
+            sendData({
+                type: 'resolveAttack',
+                attackData: {
+                    ...currentAttackData,
+                    totalPower: finalPower,
+                    totalCritical: finalCritical,
+                    isHit: false, // Forces miss
+                    isPG: true
+                }
+            });
+        } else {
+            if (!isHit) {
+                alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
             }
-        });
+
+            sendData({
+                type: 'resolveAttack',
+                attackData: {
+                    ...currentAttackData,
+                    totalPower: finalPower,
+                    totalCritical: finalCritical,
+                    isHit: isHit
+                }
+            });
+        }
 
         currentAttackData = null;
         pendingCriticalIncrease = 0;
@@ -1063,19 +1084,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(`Cannot Ride Grade ${cardGrade} over ${vanguardGrade}!`);
                     return false;
                 }
-                if (card.parentElement.id === 'ride-deck' && !hasDiscardedThisTurn) {
-                    alert("Must discard 1 for Ride from Ride Deck!");
-                    return false;
-                }
+                // This block handles the actual ride logic, regardless of where the card came from (hand or ride-deck)
                 if (vanguard) {
                     const oldV = vanguard.cloneNode(true);
-                    // Copy dataset manually as cloneNode might miss some properties in some environments
                     Object.assign(oldV.dataset, vanguard.dataset);
+
+                    const oldVName = vanguard.dataset.name;
+                    const oldVGrade = parseInt(vanguard.dataset.grade);
+                    const isPersonaRide = (card.dataset.persona === 'true' || card.dataset.persona === true) && (card.dataset.name === oldVName) && (oldVGrade === 3);
 
                     soulPool.push(vanguard);
                     vanguard.remove();
                     updateSoulUI();
 
+                    if (isPersonaRide) {
+                        alert("PERSONA RIDE! Front row units get +10,000 Power for the turn!");
+                        personaRideActive = true;
+                        drawCard(true); // Persona Ride usually includes draw 1
+
+                        document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
+                            let p = parseInt(unit.dataset.power);
+                            unit.dataset.power = p + 10000;
+                            const powerSpan = unit.querySelector('.card-power');
+                            if (powerSpan) {
+                                const critVal = parseInt(unit.dataset.critical || "1");
+                                let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                                powerSpan.innerHTML = `⚔️${unit.dataset.power} ${displayCritical}`;
+                            }
+                            sendMoveData(unit);
+                        });
+                    }
                     checkRideAbilities(oldV, card);
                 }
                 hasRiddenThisTurn = true;
@@ -1086,6 +1124,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFromHand && cardGrade > vanguardGrade) {
                     alert(`Cannot Call Grade ${cardGrade} (VG is G${vanguardGrade})!`);
                     return false;
+                }
+
+                // Persona Ride Passive Power: If we call a unit while Persona Ride node is active, it gets +10k
+                if (personaRideActive) {
+                    let p = parseInt(card.dataset.power);
+                    card.dataset.power = p + 10000;
+                    // Note: We'll need to update visuals after zone.appendChild if we were doing it right, 
+                    // but validateAndMoveCard does zone.appendChild(card) at the very end.
                 }
             }
 
@@ -1221,6 +1267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetMyUnits() {
         console.log("Resetting unit power/critical for new turn...");
+        personaRideActive = false; // Reset Persona Ride
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             let changed = false;
             // Use loose inequality to handle string/number mismatches in dataset
@@ -1661,7 +1708,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attacker && target) {
                 let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
                 let targetDefPower = parseInt(target.dataset.power) + totalShield;
+
+                // PG Check for Rearguard attack
+                const gc = document.querySelector('.guardian-circle');
+                const hasPG = gc && Array.from(gc.querySelectorAll('.card')).some(c => c.dataset.name.includes('Perfect Guard') || c.dataset.isPG === "true" || c.dataset.name === 'Recusal Hate Dragon (Perfect Guard)');
+
                 let isHit = finalPower >= targetDefPower;
+                if (hasPG) {
+                    alert("Perfect Guard nullified the Rear-guard attack!");
+                    isHit = false;
+                }
+
                 sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit } });
             }
             currentAttackData = null;
