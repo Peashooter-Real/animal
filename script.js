@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos, "Viamance" Bruce': 'picture/grade3_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
         'Diabolos Madonna, Megan': '',
-        'Diabolos Boys, Eden': 'picture/eden,jpg',
+        'Diabolos Boys, Eden': 'picture/eden.jpg',
         'Diabolos Buckler, Jamil': '',
         'Recusal Hate Dragon (Perfect Guard)': '',
         'Diabolos Girls, Stefanie': '',
@@ -538,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Long Press Logic for Skill Viewing
         let longPressTimer;
         let isLongPress = false;
-        const longPressDuration = 600; // 600ms
+        const longPressDuration = 1500; // 1.5 seconds
 
         const startLongPress = (e) => {
             isLongPress = false;
@@ -1326,6 +1326,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateSoulUI();
                 return true;
             }
+        }
+
+        // 5. Drop Zone Validation (Discard for Ride Cost)
+        if (zone.classList.contains('drop-zone')) {
+            if (isFromHand) {
+                const isRidePhase = currentPhase === 'ride';
+                const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
+                const isDefending = isGuarding;
+
+                if (!canAutoRide && !isDefending) {
+                    alert("Movement Blocked: You can only discard from hand to pay for a Ride cost or when Guarding.");
+                    return false;
+                }
+
+                if (canAutoRide) {
+                    const vanguard = document.querySelector('.my-side .circle.vc .card');
+                    const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
+                    const nextGrade = vanguardGrade + 1;
+                    const rideDeckZone = document.getElementById('ride-deck');
+                    const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
+
+                    if (nextRideCard) {
+                        hasDiscardedThisTurn = true;
+                        hasRiddenThisTurn = true;
+                        setTimeout(() => {
+                            if (vanguard) {
+                                soulPool.push(vanguard);
+                                vanguard.remove();
+                                updateSoulUI();
+                            }
+                            const vcZone = document.querySelector('.my-side .circle.vc');
+                            vcZone.appendChild(nextRideCard);
+                            nextRideCard.classList.remove('rest', 'opponent-card');
+                            nextRideCard.style.transform = 'none';
+
+                            applyStaticBonuses(nextRideCard);
+                            sendMoveData(nextRideCard);
+                            alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
+
+                            // Move to Main Phase after ride
+                            setTimeout(() => {
+                                currentPhaseIndex = phases.indexOf('main');
+                                updatePhaseUI(true);
+                            }, 800);
+                        }, 500);
+                    } else {
+                        alert(`No Grade ${nextGrade} unit found in your Ride Deck!`);
+                        return false;
+                    }
+                }
+            }
+            zone.appendChild(card);
+            card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+            sendMoveData(card);
+            updateHandCount();
+            updateDropCount();
+            return true;
         }
         return false;
     }
