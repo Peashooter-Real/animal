@@ -1118,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }
 
-        handleEndOfBattle(attacker, currentAttackData);
+        await handleEndOfBattle(attacker, currentAttackData);
         currentAttackData = null;
         pendingCriticalIncrease = 0;
     }
@@ -3373,14 +3373,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     triggerIvankaOnHitRC(attackData);
                 }
 
-                handleEndOfBattle(attacker, attackData);
+                await handleEndOfBattle(attacker, attackData);
                 sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
             }
             currentAttackData = null;
         }
     }
 
-    function handleEndOfBattle(attacker, attackData) {
+    async function handleEndOfBattle(attacker, attackData) {
         if (!attacker) return;
         const name = attacker.dataset.name;
 
