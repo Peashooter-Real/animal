@@ -137,7 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
     let selectedCard = null; // Track selected card for tap-to-move
-    let personaRideActive = false; // Track if Persona Ride buff is active for this turn
+    let personaRideActive = false;
+    let isOpponentPersonaRide = false;
     let isFinalRush = false;
     let isFinalBurst = false;
     let finalRushTurnLimit = 0;
@@ -1524,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasRiddenThisTurn = true;
                 updateSoulUI();
 
-                if (card.dataset.persona === "true" && vanguardGrade === 3) {
+                if (card.dataset.persona === "true" && vanguardGrade === 3 && currentPhase === 'ride') {
                     triggerPersonaRide();
                 }
 
@@ -1668,7 +1669,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFrontRow = zone && (zone.startsWith('rc_front_') || zone === 'vc');
 
         // 1. Persona Ride (+10000 to front row and Vanguard)
-        if (personaRideActive && isFrontRow) {
+        // Standard rule: Only on your turn if you rode that turn.
+        if (personaRideActive && isFrontRow && isMyTurn) {
             if (card.dataset.personaBuffed !== "true") {
                 card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.personaBuffed = "true";
@@ -1680,8 +1682,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Final Burst Bonus (+10000 to front row)
-        if ((isFinalBurst || isOpponentFinalBurst) && isFrontRow) {
+        // 2. Final Burst Bonus (+10000 to front row on owner's turn)
+        if (isFinalBurst && isFrontRow && isMyTurn) {
             if (card.dataset.burstFrontBuffApplied !== "true") {
                 card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.burstFrontBuffApplied = "true";
@@ -1693,8 +1695,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield)
-        if ((isFinalBurst || isOpponentFinalBurst) && name.includes('Jamil')) {
+        // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield) - Only for owner
+        if (isFinalBurst && name.includes('Jamil')) {
             if (card.dataset.burstBonusApplied !== "true") {
                 card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.shield = parseInt(card.dataset.shield || "5000") + 5000;
@@ -1708,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 4. Final Rush Static Bonus
+        // 4. Final Rush Static Bonus - Only for owner
         if (isFinalRush) {
             let frBonus = 0;
             if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) frBonus = 5000;
@@ -1720,7 +1722,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             if (card.dataset.frBonusApplied === "true") {
-                // Logic to find how much to subtract
                 let frBonus = 0;
                 if (name.includes('Eden') || name.includes('Julian') || name.includes('Steve') || name.includes('Richard')) frBonus = 5000;
                 else if (name.includes('Ivanka')) frBonus = 2000;
@@ -1729,9 +1730,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 5. Stefanie Column Bonus
+        // 5. Stefanie Column Bonus - Works in opponent's turn too if WE are in Final Rush/Burst
         let stefanieBonus = 0;
-        if (isFinalRush || isOpponentFinalRush || isFinalBurst || isOpponentFinalBurst) {
+        if (isFinalRush || isFinalBurst) {
             let myCol = null;
             if (zone.includes('left')) myCol = 'left';
             else if (zone.includes('right')) myCol = 'right';
@@ -1775,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateAllStaticBonuses() {
-        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(c => {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
             applyStaticBonuses(c);
             sendMoveData(c);
         });
@@ -2072,6 +2073,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetMyUnits() {
         console.log("Resetting unit power/critical for new turn...");
         personaRideActive = false; // Reset Persona Ride
+        isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
             const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed'];
@@ -2457,7 +2459,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 promptOpponentRetireRG(data.attackerName);
                 break;
             case 'announcePersona':
+                isOpponentPersonaRide = true;
                 alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
+                updateAllStaticBonuses();
                 break;
         }
     }
