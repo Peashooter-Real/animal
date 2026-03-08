@@ -467,10 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // isFirstPlayer is false for guest, true for host.
             if (isFirstPlayer === false) {
                 queue.push({
-                    name: 'Starter Bonus',
-                    description: "Draw 1 card for going second",
+                    name: 'โบนัสคนเริ่มหลัง (Starter Bonus)',
+                    description: "จั่วการ์ด 1 ใบเพราะได้เริ่มคนที่สอง",
                     resolve: (done) => {
-                        alert("Starter Bonus: You went second! Draw 1 card.");
+                        alert("Starter Bonus: คุณได้เริ่มเป็นคนที่สอง! จั่วการ์ด 1 ใบ");
                         drawCard(true);
                         if (done) done();
                     }
@@ -482,11 +482,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // G1 Steve
         if (newName.includes('steve')) {
             queue.push({
-                name: 'Bad Steve (G1)',
-                description: "Call from Soul + SC 1",
+                name: 'ความสามารถของ Steve (G1)',
+                description: "เลือกการ์ด 1 ใบจากโซลคอลลงช่องแถวหลังตรงกลาง และ Soul Charge 1",
                 resolve: (done) => {
-                    alert("Steve Skill: เลือกการ์ด 1 ใบจากโซล คอลลงแถวหลังตรงกลาง และ Soul Charge 1");
+                    alert("Steve Skill: เลือกการ์ด 1 ใบจากโซล คอลลงแถวหลังตรงกลาง");
                     promptSoulCall('rc_back_center', () => {
+                        alert("Steve Skill: ทำการ Soul Charge 1!");
                         soulCharge(1);
                         if (done) done();
                     }, false); // Mandatory
@@ -497,11 +498,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // G2 Richard
         if (newName.includes('richard')) {
             queue.push({
-                name: 'Anger Richard (G2)',
-                description: "Cost: Put RG into Soul to Draw 1",
+                name: 'ความสามารถของ Richard (G2)',
+                description: "[คอสต์: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ",
                 resolve: (done) => {
-                    if (confirm("Richard Skill: [Cost: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ?")) {
-                        promptRichardVC(done); // This puts RG into soul then draws
+                    if (confirm("Richard Skill: [คอสต์: นำเรียร์การ์ด 1 ใบเข้าสู่โซล] เพื่อจั่วการ์ด 1 ใบ?")) {
+                        promptRichardVC(done);
                     } else {
                         if (done) done();
                     }
