@@ -1969,471 +1969,471 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.power = parseInt(card.dataset.power) - 2000;
                 card.dataset.charisOrderBuff = "false";
             }
+        }
+        syncPowerDisplay(card);
+    }
 
-            syncPowerDisplay(card);
+    function syncPowerDisplay(card) {
+        if (!card) return;
+
+        const pSpan = card.querySelector('.card-power');
+        if (pSpan) {
+            const cVal = parseInt(card.dataset.critical || "1");
+            let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
+            pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
+        }
+        const sSpan = card.querySelector('.card-shield');
+        if (sSpan) {
+            sSpan.innerHTML = `🛡️${card.dataset.shield}`;
         }
 
-        function syncPowerDisplay(card) {
-            if (!card) return;
+        // Broadcast change if it's on a circle
+        if (card.parentElement && card.parentElement.classList.contains('circle')) {
+            sendMoveData(card);
+        }
+    }
 
-            const pSpan = card.querySelector('.card-power');
-            if (pSpan) {
-                const cVal = parseInt(card.dataset.critical || "1");
-                let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
-                pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
-            }
-            const sSpan = card.querySelector('.card-shield');
-            if (sSpan) {
-                sSpan.innerHTML = `🛡️${card.dataset.shield}`;
-            }
+    function isMagnoliaElderSkillActive() {
+        const vg = document.querySelector('.my-side .circle.vc .card');
+        if (!vg || !vg.dataset.name.includes('Magnolia Elder')) return false;
 
-            // Broadcast change if it's on a circle
-            if (card.parentElement && card.parentElement.classList.contains('circle')) {
-                sendMoveData(card);
+        const hasInSoul = soulPool.some(c => c.dataset.name.includes('Magnolia'));
+        if (hasInSoul) return true;
+
+        const hasOnField = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
+            .some(c => c.dataset.name.includes('Magnolia'));
+        return hasOnField;
+    }
+
+    function isCardResistant(card) {
+        if (!card) return false;
+        const rgCount = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').length;
+        if (rgCount <= 3) {
+            const zone = card.parentElement ? card.parentElement.dataset.zone : null;
+            if (zone) {
+                const columnZones = {
+                    'rc_front_left': ['rc_front_left', 'rc_back_left'],
+                    'rc_back_left': ['rc_front_left', 'rc_back_left'],
+                    'rc_front_right': ['rc_front_right', 'rc_back_right'],
+                    'rc_back_right': ['rc_front_right', 'rc_back_right'],
+                    'vc': ['vc', 'rc_back_center'],
+                    'rc_back_center': ['vc', 'rc_back_center']
+                };
+                const myCol = columnZones[zone];
+                if (myCol) {
+                    const hasEnpix = myCol.some(z => {
+                        const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+                        if (!circle) return false;
+                        const c = circle.querySelector('.card:not(.opponent-card)');
+                        return c && c.dataset.name.includes('Enpix');
+                    });
+                    if (hasEnpix) return true;
+                }
             }
         }
+        const name = card.dataset.name || "";
+        if (name.includes('Enpix')) return true; // Enpix protects column self too? Prompt says same column.
+        return false;
+    }
 
-        function isMagnoliaElderSkillActive() {
-            const vg = document.querySelector('.my-side .circle.vc .card');
-            if (!vg || !vg.dataset.name.includes('Magnolia Elder')) return false;
-
-            const hasInSoul = soulPool.some(c => c.dataset.name.includes('Magnolia'));
-            if (hasInSoul) return true;
-
-            const hasOnField = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
-                .some(c => c.dataset.name.includes('Magnolia'));
-            return hasOnField;
+    function counterCharge(count) {
+        const closedCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card.face-down'));
+        const toTurn = Math.min(count, closedCards.length);
+        for (let i = 0; i < toTurn; i++) {
+            closedCards[i].classList.remove('face-down');
+            sendMoveData(closedCards[i]);
         }
+        if (toTurn > 0) alert(`Counter Charge ${toTurn}!`);
+    }
 
-        function isCardResistant(card) {
-            if (!card) return false;
-            const rgCount = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').length;
-            if (rgCount <= 3) {
-                const zone = card.parentElement ? card.parentElement.dataset.zone : null;
-                if (zone) {
-                    const columnZones = {
-                        'rc_front_left': ['rc_front_left', 'rc_back_left'],
-                        'rc_back_left': ['rc_front_left', 'rc_back_left'],
-                        'rc_front_right': ['rc_front_right', 'rc_back_right'],
-                        'rc_back_right': ['rc_front_right', 'rc_back_right'],
-                        'vc': ['vc', 'rc_back_center'],
-                        'rc_back_center': ['vc', 'rc_back_center']
-                    };
-                    const myCol = columnZones[zone];
-                    if (myCol) {
-                        const hasEnpix = myCol.some(z => {
-                            const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
-                            if (!circle) return false;
-                            const c = circle.querySelector('.card:not(.opponent-card)');
-                            return c && c.dataset.name.includes('Enpix');
+    async function processInletPulse(units) {
+        for (const unit of units) {
+            if (await vgConfirm(`Inlet Pulse Dragon: [AUTO](RC) จ่าย [คอสต์: เข้าโซล] เพื่อจั่วการ์ด 1 ใบ?`)) {
+                soulPool.push(unit);
+                unit.remove();
+                updateSoulUI();
+                updateDropCount();
+                drawCard(true);
+
+                sendData({
+                    type: 'moveCard',
+                    cardId: unit.id,
+                    zone: 'soul'
+                });
+            }
+        }
+    }
+
+    async function checkDropAbilities(newVanguard) {
+        const vgName = (newVanguard.dataset.name || "").toLowerCase();
+        if (!vgName.includes('magnolia')) return;
+
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        if (!dropZone) return;
+        const cardsInDrop = Array.from(dropZone.querySelectorAll('.card'));
+
+        for (const card of cardsInDrop) {
+            const name = card.dataset.name || "";
+            if (name.includes('Goildoat')) {
+                const hasGoildoatInSoul = soulPool.some(c => c.dataset.name.includes('Goildoat'));
+                if (!hasGoildoatInSoul) {
+                    if (await vgConfirm(`Goildoat (Drop): [AUTO] เมื่อไรด์ Magnolia จ่าย [เข้าโซล] เพื่อให้ VG พลัง+5000?`)) {
+                        soulPool.push(card);
+                        card.remove();
+                        updateSoulUI();
+                        updateDropCount();
+
+                        newVanguard.dataset.power = parseInt(newVanguard.dataset.power) + 5000;
+                        syncPowerDisplay(newVanguard);
+                        alert("Goildoat: เข้าสู่โซลแล้ว! แวนการ์ดพลัง +5000");
+
+                        sendData({
+                            type: 'moveCard',
+                            cardId: card.id,
+                            zone: 'soul'
                         });
-                        if (hasEnpix) return true;
+                        break;
                     }
                 }
             }
-            const name = card.dataset.name || "";
-            if (name.includes('Enpix')) return true; // Enpix protects column self too? Prompt says same column.
+        }
+    }
+
+    function updateAllStaticBonuses() {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
+            applyStaticBonuses(c);
+            sendMoveData(c);
+        });
+    }
+
+    function triggerPersonaRide() {
+        personaRideActive = true;
+
+        // 1. Alert and Broadcast
+        alert("PERSONA RIDE! Front row units get +10000 Power for the turn, and Draw 1 card!");
+        sendData({ type: 'announcePersona' });
+
+        // 2. Power up existing FRONT ROW units
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
+            const zone = unit.parentElement ? unit.parentElement.dataset.zone : "";
+            if ((zone && zone.startsWith('rc_front_')) || (unit.parentElement && unit.parentElement.classList.contains('vc'))) {
+                // Check if already buffed to avoid double application (especially on the new V)
+                if (unit.dataset.personaBuffed !== "true") {
+                    unit.dataset.power = parseInt(unit.dataset.power) + 10000;
+                    unit.dataset.personaBuffed = "true";
+                    syncPowerDisplay(unit);
+                }
+            }
+        });
+
+        // 3. Draw 1 card
+        setTimeout(() => drawCard(true), 500);
+
+        // 4. Skip to Main Phase immediately
+        setTimeout(() => {
+            currentPhaseIndex = phases.indexOf('main');
+            updatePhaseUI(true);
+        }, 1200);
+    }
+
+    function handleRideAbilities(newVanguard) {
+        if (!newVanguard || soulPool.length === 0) {
+            console.log("Ride Ability Check Skipped: Soul empty or no unit.");
+            return;
+        }
+        // The card just ridden over is the last one added to soulPool in validateAndMoveCard
+        const oldVanguard = soulPool[soulPool.length - 1];
+        console.log(`Ride Triggered: ${oldVanguard.dataset.name} -> ${newVanguard.dataset.name}`);
+        checkRideAbilities(oldVanguard, newVanguard);
+    }
+
+
+    function paySoulBlast(cost) {
+        if (soulPool.length < cost) {
+            alert("Insufficient Soul for SB!");
             return false;
         }
-
-        function counterCharge(count) {
-            const closedCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card.face-down'));
-            const toTurn = Math.min(count, closedCards.length);
-            for (let i = 0; i < toTurn; i++) {
-                closedCards[i].classList.remove('face-down');
-                sendMoveData(closedCards[i]);
-            }
-            if (toTurn > 0) alert(`Counter Charge ${toTurn}!`);
-        }
-
-        async function processInletPulse(units) {
-            for (const unit of units) {
-                if (await vgConfirm(`Inlet Pulse Dragon: [AUTO](RC) จ่าย [คอสต์: เข้าโซล] เพื่อจั่วการ์ด 1 ใบ?`)) {
-                    soulPool.push(unit);
-                    unit.remove();
-                    updateSoulUI();
-                    updateDropCount();
-                    drawCard(true);
-
-                    sendData({
-                        type: 'moveCard',
-                        cardId: unit.id,
-                        zone: 'soul'
-                    });
-                }
-            }
-        }
-
-        async function checkDropAbilities(newVanguard) {
-            const vgName = (newVanguard.dataset.name || "").toLowerCase();
-            if (!vgName.includes('magnolia')) return;
-
+        for (let i = 0; i < cost; i++) {
+            const blasted = soulPool.shift(); // Blast oldest first
             const dropZone = document.querySelector('.my-side .drop-zone');
-            if (!dropZone) return;
-            const cardsInDrop = Array.from(dropZone.querySelectorAll('.card'));
+            dropZone.appendChild(blasted);
+            sendMoveData(blasted);
+        }
+        updateSoulUI();
+        updateDropCount();
+        return true;
+    }
 
-            for (const card of cardsInDrop) {
-                const name = card.dataset.name || "";
-                if (name.includes('Goildoat')) {
-                    const hasGoildoatInSoul = soulPool.some(c => c.dataset.name.includes('Goildoat'));
-                    if (!hasGoildoatInSoul) {
-                        if (await vgConfirm(`Goildoat (Drop): [AUTO] เมื่อไรด์ Magnolia จ่าย [เข้าโซล] เพื่อให้ VG พลัง+5000?`)) {
-                            soulPool.push(card);
-                            card.remove();
-                            updateSoulUI();
-                            updateDropCount();
+    function promptCallSteveVC() {
+        if (soulPool.length === 0) {
+            alert("Soul is empty! Performing Soul Charge 1 only.");
+            soulCharge(1);
+            return;
+        }
+        openViewer("Select 1 card to CALL to Center Back Row", soulPool);
 
-                            newVanguard.dataset.power = parseInt(newVanguard.dataset.power) + 5000;
-                            syncPowerDisplay(newVanguard);
-                            alert("Goildoat: เข้าสู่โซลแล้ว! แวนการ์ดพลัง +5000");
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalIndex = soulPool.findIndex(c => c.id === originalId);
 
-                            sendData({
-                                type: 'moveCard',
-                                cardId: card.id,
-                                zone: 'soul'
-                            });
-                            break;
+                if (originalIndex !== -1) {
+                    const card = soulPool.splice(originalIndex, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
+
+                    const centerBack = document.querySelector('.my-side .circle[data-zone="rc_back_center"]');
+                    if (centerBack) {
+                        // Vanguard Rule: Replacement
+                        if (centerBack.querySelector('.card')) {
+                            const oldCard = centerBack.querySelector('.card');
+                            soulPool.push(oldCard);
+                            oldCard.remove();
                         }
+                        centerBack.appendChild(card);
+                        card.classList.remove('rest');
+                        sendMoveData(card);
+                        updateSoulUI();
+                        alert(`${card.dataset.name} called! Performing Soul Charge 1.`);
+                        soulCharge(1);
                     }
                 }
             }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
+
+    function promptRichardVC(onComplete) {
+        const rgs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        if (rgs.length === 0) {
+            alert("No Rear-guards to pay the cost! Ability failed.");
+            if (onComplete) onComplete();
+            return;
         }
 
-        function updateAllStaticBonuses() {
-            document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
-                applyStaticBonuses(c);
-                sendMoveData(c);
-            });
-        }
+        alert("Select 1 of your Rear-guards to put into Soul.");
+        document.body.classList.add('targeting-mode');
 
-        function triggerPersonaRide() {
-            personaRideActive = true;
+        const selectionHandler = (e) => {
+            const rg = e.target.closest('.circle.rc .card:not(.opponent-card)');
+            if (rg) {
+                e.stopPropagation();
+                soulPool.push(rg);
+                rg.remove();
+                updateSoulUI();
+                sendData({ type: 'syncSoulCount', count: soulPool.length });
+                document.body.classList.remove('targeting-mode');
+                document.removeEventListener('click', selectionHandler, true);
 
-            // 1. Alert and Broadcast
-            alert("PERSONA RIDE! Front row units get +10000 Power for the turn, and Draw 1 card!");
-            sendData({ type: 'announcePersona' });
-
-            // 2. Power up existing FRONT ROW units
-            document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
-                const zone = unit.parentElement ? unit.parentElement.dataset.zone : "";
-                if ((zone && zone.startsWith('rc_front_')) || (unit.parentElement && unit.parentElement.classList.contains('vc'))) {
-                    // Check if already buffed to avoid double application (especially on the new V)
-                    if (unit.dataset.personaBuffed !== "true") {
-                        unit.dataset.power = parseInt(unit.dataset.power) + 10000;
-                        unit.dataset.personaBuffed = "true";
-                        syncPowerDisplay(unit);
-                    }
-                }
-            });
-
-            // 3. Draw 1 card
-            setTimeout(() => drawCard(true), 500);
-
-            // 4. Skip to Main Phase immediately
-            setTimeout(() => {
-                currentPhaseIndex = phases.indexOf('main');
-                updatePhaseUI(true);
-            }, 1200);
-        }
-
-        function handleRideAbilities(newVanguard) {
-            if (!newVanguard || soulPool.length === 0) {
-                console.log("Ride Ability Check Skipped: Soul empty or no unit.");
-                return;
+                alert("Cost paid! Draw 1 card.");
+                drawCard(true);
+                if (onComplete) onComplete();
             }
-            // The card just ridden over is the last one added to soulPool in validateAndMoveCard
-            const oldVanguard = soulPool[soulPool.length - 1];
-            console.log(`Ride Triggered: ${oldVanguard.dataset.name} -> ${newVanguard.dataset.name}`);
-            checkRideAbilities(oldVanguard, newVanguard);
+        };
+        document.addEventListener('click', selectionHandler, true);
+    }
+
+    function soulCharge(count) {
+        let scCount = 0;
+        for (let i = 0; i < count; i++) {
+            if (deckPool.length > 0) {
+                const cardData = deckPool.pop();
+                const card = createCardElement(cardData);
+                soulPool.push(card);
+                scCount++;
+            }
         }
-
-
-        function paySoulBlast(cost) {
-            if (soulPool.length < cost) {
-                alert("Insufficient Soul for SB!");
-                return false;
-            }
-            for (let i = 0; i < cost; i++) {
-                const blasted = soulPool.shift(); // Blast oldest first
-                const dropZone = document.querySelector('.my-side .drop-zone');
-                dropZone.appendChild(blasted);
-                sendMoveData(blasted);
-            }
+        if (scCount > 0) {
             updateSoulUI();
-            updateDropCount();
-            return true;
+            updateDeckCounter();
+            syncCounts();
+            alert(`Soul Charge ${scCount}!`);
+        } else {
+            alert("Deck empty! Cannot Soul Charge.");
         }
+    }
 
-        function promptCallSteveVC() {
-            if (soulPool.length === 0) {
-                alert("Soul is empty! Performing Soul Charge 1 only.");
-                soulCharge(1);
-                return;
-            }
-            openViewer("Select 1 card to CALL to Center Back Row", soulPool);
+    function promptSoulCall() {
+        if (soulPool.length === 0) {
+            alert("Soul is empty!");
+            return;
+        }
+        openViewer("Select 1 card to CALL from Soul", soulPool);
 
-            const selectionHandler = (e) => {
-                const clicked = e.target.closest('.card');
-                if (clicked && clicked.parentElement === viewerGrid) {
-                    const originalId = clicked.dataset.originalId;
-                    const originalIndex = soulPool.findIndex(c => c.id === originalId);
+        // Handle selecting from viewer
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalIndex = soulPool.findIndex(c => c.id === originalId);
 
-                    if (originalIndex !== -1) {
-                        const card = soulPool.splice(originalIndex, 1)[0];
-                        zoneViewer.classList.add('hidden');
-                        viewerGrid.removeEventListener('click', selectionHandler);
+                if (originalIndex !== -1) {
+                    const card = soulPool.splice(originalIndex, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
 
-                        const centerBack = document.querySelector('.my-side .circle[data-zone="rc_back_center"]');
-                        if (centerBack) {
-                            // Vanguard Rule: Replacement
-                            if (centerBack.querySelector('.card')) {
-                                const oldCard = centerBack.querySelector('.card');
-                                soulPool.push(oldCard);
-                                oldCard.remove();
-                            }
-                            centerBack.appendChild(card);
+                    alert("Select an empty Rear-guard Circle to call.");
+                    document.body.classList.add('targeting-mode');
+
+                    const callHandler = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(card);
                             card.classList.remove('rest');
                             sendMoveData(card);
                             updateSoulUI();
-                            alert(`${card.dataset.name} called! Performing Soul Charge 1.`);
-                            soulCharge(1);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callHandler, true);
+                            alert("Unit called from Soul!");
                         }
-                    }
+                    };
+                    document.addEventListener('click', callHandler, true);
                 }
-            };
-            viewerGrid.addEventListener('click', selectionHandler);
-        }
-
-        function promptRichardVC(onComplete) {
-            const rgs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
-            if (rgs.length === 0) {
-                alert("No Rear-guards to pay the cost! Ability failed.");
-                if (onComplete) onComplete();
-                return;
             }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
 
-            alert("Select 1 of your Rear-guards to put into Soul.");
-            document.body.classList.add('targeting-mode');
-
-            const selectionHandler = (e) => {
-                const rg = e.target.closest('.circle.rc .card:not(.opponent-card)');
-                if (rg) {
-                    e.stopPropagation();
-                    soulPool.push(rg);
-                    rg.remove();
-                    updateSoulUI();
-                    sendData({ type: 'syncSoulCount', count: soulPool.length });
-                    document.body.classList.remove('targeting-mode');
-                    document.removeEventListener('click', selectionHandler, true);
-
-                    alert("Cost paid! Draw 1 card.");
-                    drawCard(true);
-                    if (onComplete) onComplete();
-                }
-            };
-            document.addEventListener('click', selectionHandler, true);
+    function promptDropToSoul() {
+        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card:not(.opponent-card)'));
+        if (dropCards.length === 0) {
+            alert("Drop Zone is empty!");
+            return;
         }
+        openViewer("Select 1 card to put into Soul", dropCards);
 
-        function soulCharge(count) {
-            let scCount = 0;
-            for (let i = 0; i < count; i++) {
-                if (deckPool.length > 0) {
-                    const cardData = deckPool.pop();
-                    const card = createCardElement(cardData);
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const card = document.getElementById(originalId);
+                if (card) {
                     soulPool.push(card);
-                    scCount++;
+                    card.remove();
+                    zoneViewer.classList.add('hidden');
+                    updateSoulUI();
+                    updateDropCount();
+                    sendData({ type: 'syncSoulCount', count: soulPool.length });
+                    alert("Card moved to Soul.");
+                    viewerGrid.removeEventListener('click', selectionHandler);
                 }
             }
-            if (scCount > 0) {
-                updateSoulUI();
-                updateDeckCounter();
-                syncCounts();
-                alert(`Soul Charge ${scCount}!`);
-            } else {
-                alert("Deck empty! Cannot Soul Charge.");
-            }
-        }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
 
-        function promptSoulCall() {
-            if (soulPool.length === 0) {
-                alert("Soul is empty!");
-                return;
-            }
-            openViewer("Select 1 card to CALL from Soul", soulPool);
+    function promptTopDeckCall(count, maxGrade) {
+        const top5 = deckPool.slice(-count).reverse();
+        if (top5.length === 0) return;
 
-            // Handle selecting from viewer
-            const selectionHandler = (e) => {
-                const clicked = e.target.closest('.card');
-                if (clicked && clicked.parentElement === viewerGrid) {
-                    const originalId = clicked.dataset.originalId;
-                    const originalIndex = soulPool.findIndex(c => c.id === originalId);
+        // Show cards in viewer
+        const tempCards = top5.map(data => createCardElement(data));
+        openViewer(`Top ${count}: Select G${maxGrade} or lower`, tempCards);
 
-                    if (originalIndex !== -1) {
-                        const card = soulPool.splice(originalIndex, 1)[0];
-                        zoneViewer.classList.add('hidden');
-                        viewerGrid.removeEventListener('click', selectionHandler);
-
-                        alert("Select an empty Rear-guard Circle to call.");
-                        document.body.classList.add('targeting-mode');
-
-                        const callHandler = (ev) => {
-                            const circle = ev.target.closest('.circle.rc');
-                            if (circle && !circle.querySelector('.card')) {
-                                ev.stopPropagation();
-                                circle.appendChild(card);
-                                card.classList.remove('rest');
-                                sendMoveData(card);
-                                updateSoulUI();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', callHandler, true);
-                                alert("Unit called from Soul!");
-                            }
-                        };
-                        document.addEventListener('click', callHandler, true);
-                    }
+        const selectionHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                if (parseInt(clicked.dataset.grade) > maxGrade) {
+                    alert(`Choose a card with Grade ${maxGrade} or lower.`);
+                    return;
                 }
-            };
-            viewerGrid.addEventListener('click', selectionHandler);
-        }
 
-        function promptDropToSoul() {
-            const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card:not(.opponent-card)'));
-            if (dropCards.length === 0) {
-                alert("Drop Zone is empty!");
-                return;
-            }
-            openViewer("Select 1 card to put into Soul", dropCards);
+                const cardName = clicked.dataset.name;
+                const deckIdx = deckPool.findLastIndex(c => c.name === cardName);
+                if (deckIdx !== -1) {
+                    const cardData = deckPool.splice(deckIdx, 1)[0];
+                    const realCard = createCardElement(cardData);
 
-            const selectionHandler = (e) => {
-                const clicked = e.target.closest('.card');
-                if (clicked && clicked.parentElement === viewerGrid) {
-                    const originalId = clicked.dataset.originalId;
-                    const card = document.getElementById(originalId);
-                    if (card) {
-                        soulPool.push(card);
-                        card.remove();
-                        zoneViewer.classList.add('hidden');
-                        updateSoulUI();
-                        updateDropCount();
-                        sendData({ type: 'syncSoulCount', count: soulPool.length });
-                        alert("Card moved to Soul.");
-                        viewerGrid.removeEventListener('click', selectionHandler);
-                    }
-                }
-            };
-            viewerGrid.addEventListener('click', selectionHandler);
-        }
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selectionHandler);
+                    updateDeckCounter();
 
-        function promptTopDeckCall(count, maxGrade) {
-            const top5 = deckPool.slice(-count).reverse();
-            if (top5.length === 0) return;
+                    alert("Select a Rear-guard Circle to call.");
+                    document.body.classList.add('targeting-mode');
 
-            // Show cards in viewer
-            const tempCards = top5.map(data => createCardElement(data));
-            openViewer(`Top ${count}: Select G${maxGrade} or lower`, tempCards);
-
-            const selectionHandler = (e) => {
-                const clicked = e.target.closest('.card');
-                if (clicked && clicked.parentElement === viewerGrid) {
-                    if (parseInt(clicked.dataset.grade) > maxGrade) {
-                        alert(`Choose a card with Grade ${maxGrade} or lower.`);
-                        return;
-                    }
-
-                    const cardName = clicked.dataset.name;
-                    const deckIdx = deckPool.findLastIndex(c => c.name === cardName);
-                    if (deckIdx !== -1) {
-                        const cardData = deckPool.splice(deckIdx, 1)[0];
-                        const realCard = createCardElement(cardData);
-
-                        zoneViewer.classList.add('hidden');
-                        viewerGrid.removeEventListener('click', selectionHandler);
-                        updateDeckCounter();
-
-                        alert("Select a Rear-guard Circle to call.");
-                        document.body.classList.add('targeting-mode');
-
-                        const callHandler = (ev) => {
-                            const circle = ev.target.closest('.circle.rc');
-                            if (circle && !circle.querySelector('.card')) {
-                                ev.stopPropagation();
-                                circle.appendChild(realCard);
-                                sendMoveData(realCard);
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', callHandler, true);
-                            }
-                        };
-                        document.addEventListener('click', callHandler, true);
-                    }
-                }
-            };
-            viewerGrid.addEventListener('click', selectionHandler);
-        }
-
-        // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
-        async function checkBruceBattleAbility() {
-            // Implement Bruce's start of battle phase ability here
-            console.log("Checking Bruce's Battle Phase ability...");
-            if (isFinalRush && !isFinalBurst) {
-                if (await vgConfirm("Bruce: Enter Final Burst? (Cost: CB1, SB1)")) {
-                    if (payCounterBlast(1) && paySoulBlast(1)) {
-                        isFinalBurst = true;
-                        alert("Bruce: FINAL BURST activated! All front row units get +10000 Power!");
-                        updateFinalRushStaticBonuses(true); // Apply bonuses immediately
-                        sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
-                    } else {
-                        alert("Could not pay cost for Final Burst.");
-                    }
+                    const callHandler = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(realCard);
+                            sendMoveData(realCard);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callHandler, true);
+                        }
+                    };
+                    document.addEventListener('click', callHandler, true);
                 }
             }
-        }
+        };
+        viewerGrid.addEventListener('click', selectionHandler);
+    }
 
-        function updateFinalRushStaticBonuses(apply) {
-            document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(card => {
-                applyStaticBonuses(card);
-            });
-        }
-
-        function resetMyUnits() {
-            console.log("Resetting unit power/critical for new turn...");
-            personaRideActive = false; // Reset Persona Ride
-            isOpponentPersonaRide = false;
-            document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
-                // Clean up all persistent skill flags
-                const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed'];
-                flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
-
-                let changed = false;
-                if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
-                    c.dataset.power = c.dataset.basePower;
-                    changed = true;
+    // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
+    async function checkBruceBattleAbility() {
+        // Implement Bruce's start of battle phase ability here
+        console.log("Checking Bruce's Battle Phase ability...");
+        if (isFinalRush && !isFinalBurst) {
+            if (await vgConfirm("Bruce: Enter Final Burst? (Cost: CB1, SB1)")) {
+                if (payCounterBlast(1) && paySoulBlast(1)) {
+                    isFinalBurst = true;
+                    alert("Bruce: FINAL BURST activated! All front row units get +10000 Power!");
+                    updateFinalRushStaticBonuses(true); // Apply bonuses immediately
+                    sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
+                } else {
+                    alert("Could not pay cost for Final Burst.");
                 }
-                if (c.dataset.baseCritical && c.dataset.critical != c.dataset.baseCritical) {
-                    c.dataset.critical = c.dataset.baseCritical;
-                    changed = true;
-                }
-                if (c.dataset.baseShield && c.dataset.shield != c.dataset.baseShield) {
-                    c.dataset.shield = c.dataset.baseShield;
-                    changed = true;
-                }
-
-                if (changed) {
-                    const powerSpan = c.querySelector('.card-power');
-                    if (powerSpan) {
-                        const critVal = parseInt(c.dataset.critical || "1");
-                        const displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${c.dataset.power} ${displayCritical}`;
-                    }
-                    const shieldSpan = c.querySelector('.card-shield');
-                    if (shieldSpan) {
-                        shieldSpan.innerHTML = `🛡️${c.dataset.shield}`;
-                    }
-                    sendMoveData(c);
-                }
-            });
-            orderPlayedThisTurn = false;
+            }
         }
     }
+
+    function updateFinalRushStaticBonuses(apply) {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(card => {
+            applyStaticBonuses(card);
+        });
+    }
+
+    function resetMyUnits() {
+        console.log("Resetting unit power/critical for new turn...");
+        personaRideActive = false; // Reset Persona Ride
+        isOpponentPersonaRide = false;
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
+            // Clean up all persistent skill flags
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed'];
+            flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
+
+            let changed = false;
+            if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
+                c.dataset.power = c.dataset.basePower;
+                changed = true;
+            }
+            if (c.dataset.baseCritical && c.dataset.critical != c.dataset.baseCritical) {
+                c.dataset.critical = c.dataset.baseCritical;
+                changed = true;
+            }
+            if (c.dataset.baseShield && c.dataset.shield != c.dataset.baseShield) {
+                c.dataset.shield = c.dataset.baseShield;
+                changed = true;
+            }
+
+            if (changed) {
+                const powerSpan = c.querySelector('.card-power');
+                if (powerSpan) {
+                    const critVal = parseInt(c.dataset.critical || "1");
+                    const displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                    powerSpan.innerHTML = `⚔️${c.dataset.power} ${displayCritical}`;
+                }
+                const shieldSpan = c.querySelector('.card-shield');
+                if (shieldSpan) {
+                    shieldSpan.innerHTML = `🛡️${c.dataset.shield}`;
+                }
+                sendMoveData(c);
+            }
+        });
+        orderPlayedThisTurn = false;
+    }
+
 
     function restandColumn(col) {
         const colMap = {
