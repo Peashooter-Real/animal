@@ -485,10 +485,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'ความสามารถของ Steve (G1)',
                 description: "เลือกการ์ด 1 ใบจากโซลคอลลงช่องแถวหลังตรงกลาง และ Soul Charge 1",
                 resolve: (done) => {
-                    alert("Steve Skill: เลือกการ์ด 1 ใบจากโซล คอลลงแถวหลังตรงกลาง");
+                    alert("ความสามารถของ Steve: เลือกการ์ด 1 ใบจากโซลเพื่อคอลลงช่องแถวหลังตรงกลาง");
                     promptSoulCall('rc_back_center', () => {
-                        alert("Steve Skill: ทำการ Soul Charge 1!");
+                        console.log("Steve: Selection complete, performing Soul Charge 1...");
                         soulCharge(1);
+                        alert("ความสามารถของ Steve: ทำการ Soul Charge 1 เรียบร้อยแล้ว!");
                         if (done) done();
                     }, false); // Mandatory
                 }
