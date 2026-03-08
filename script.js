@@ -87,10 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bruce Deck
         'Diabolos, "Innocent" Matt': 'picture/grade0_bruce.jpg',
         'Diabolos, "Bad" Steve': 'picture/grade1_bruce.jpg',
-        'Diabolos, "Anger" Richard': '',
+        'Diabolos, "Anger" Richard': 'picture/grade2_bruce.jpg',
         'Diabolos, "Viamance" Bruce': 'picture/viamance_bruce.jpg',
         'Diabolos Diver, Julian': 'picture/145378.jpg',
         'Diabolos Madonna, Megan': '',
+        'Diabolos Boys, Eden': '',
+        'Diabolos Buckler, Jamil': '',
+        'Recusal Hate Dragon (Perfect Guard)': '',
+        'Diabolos Girls, Stefanie': '',
+        'Diabolos Madonna, Mabel': '',
+        'Diabolos Girls, Ivanka': '',
 
         // Magnolia Deck
         'Sylvan Horned Beast, Lotte': '',
@@ -167,19 +173,33 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Sylvan Horned Beast, Lattice', grade: 2, power: 10000, shield: 5000 },
             { name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true }
         ],
-        mainDeck: generateMainDeck(
-            [
-                { name: 'Sylvan Horned Beast, Giunosla', grade: 2, power: 10000, shield: 5000 },
-                { name: 'Sylvan Horned Beast, Enpix', grade: 1, power: 8000, shield: 10000 }
-            ],
-            [
-                { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' },
-                { name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' },
-                { name: 'Draw Trigger (Stoicheia)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' },
-                { name: 'Heal Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' },
-                { name: 'Front Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }
-            ]
-        )
+        mainDeck: [
+            // Grade 4
+            ...Array(4).fill({ name: 'Sylvan Horned Beast Emperor, Magnolia Elder', grade: 4, power: 13000 }),
+
+            // Grade 3
+            ...Array(3).fill({ name: 'Inlet Pulse Dragon', grade: 3, power: 13000 }),
+            ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 3, power: 13000 }),
+
+            // Grade 2
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Bojacorn', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Gabregg', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Sylvan Horned Beast, Giunosla', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Sylvan Horned Beast, Enpix', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(2).fill({ name: 'Sylvan Horned Beast, Goildot', grade: 2, power: 10000, shield: 5000 }),
+            ...Array(1).fill({ name: 'Sylvan Horned Beast, Alpin', grade: 2, power: 10000, shield: 5000 }),
+
+            // Grade 1
+            ...Array(4).fill({ name: 'Spiritual Body Condensation', grade: 1, power: 0, shield: 0 }),
+            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, shield: 0 }),
+            ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true }),
+
+            // Triggers
+            ...Array(8).fill({ name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(3).fill({ name: 'Front Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
     };
 
     let currentDeck = bruceDeck;
@@ -532,8 +552,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isVanguard = card.parentElement.classList.contains('vc');
                     const isLeftOrRightRG = zone && (zone.includes('_left') || zone.includes('_right'));
 
-                    // Allow moving Rear-guards during Main Phase (specifically left/right columns as requested)
-                    if (currentPhase === 'main' && !isVanguard && isLeftOrRightRG) {
+                    // Allow moving Rear-guards during Main Phase (ONLY within the same column)
+                    if (currentPhase === 'main' && !isVanguard) {
                         // Allowed
                     } else {
                         e.preventDefault();
@@ -873,11 +893,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const finishThisCheck = () => {
                 checkCard.remove();
-                // Add NEW clean copy to hand to fix sizing bugs
-                const cardInHand = createCardElement(cardData);
-                playerHand.appendChild(cardInHand);
-                updateHandCount();
-                sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
+                // Check if it's an Over Trigger - if so, move to Remove Zone (or just hide it), otherwise move to hand
+                if (cardData.trigger === 'Over') {
+                    alert("Over Trigger! Removing from game as per rules.");
+                    const removeZone = document.querySelector('.my-side .drop-zone'); // Using drop zone as fallback or just remove it
+                    // Search for a remove-zone if it exists, otherwise just remove it.
+                    // For now, let's just not add it to hand.
+                    checkCard.remove();
+                } else {
+                    const cardInHand = createCardElement(cardData);
+                    playerHand.appendChild(cardInHand);
+                    updateHandCount();
+                    sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
+                }
 
                 if (count > 1) {
                     setTimeout(() => driveCheck(count - 1, crit, isOpponentPG), 800);
@@ -1179,15 +1207,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         drawCard(true); // Persona Ride usually includes draw 1
 
                         document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
-                            let p = parseInt(unit.dataset.power);
-                            unit.dataset.power = p + 10000;
-                            const powerSpan = unit.querySelector('.card-power');
-                            if (powerSpan) {
-                                const critVal = parseInt(unit.dataset.critical || "1");
-                                let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                                powerSpan.innerHTML = `⚔️${unit.dataset.power} ${displayCritical}`;
+                            if (!unit.dataset.personaBuffed) {
+                                let p = parseInt(unit.dataset.power);
+                                unit.dataset.power = p + 10000;
+                                unit.dataset.personaBuffed = "true";
+                                const powerSpan = unit.querySelector('.card-power');
+                                if (powerSpan) {
+                                    const critVal = parseInt(unit.dataset.critical || "1");
+                                    let displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
+                                    powerSpan.innerHTML = `⚔️${unit.dataset.power} ${displayCritical}`;
+                                }
+                                sendMoveData(unit);
                             }
-                            sendMoveData(unit);
                         });
 
                         // Immediately skip to Main Phase
@@ -1208,12 +1239,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
 
-                // Persona Ride Passive Power: If we call a unit while Persona Ride node is active, it gets +10k
-                if (personaRideActive) {
-                    let p = parseInt(card.dataset.power);
-                    card.dataset.power = p + 10000;
+                // Column check for Rear-guard movement (Horizontal restriction)
+                if (isFromField) {
+                    const oldZone = oldParent.dataset.zone || '';
+                    const newZone = zone.dataset.zone || '';
+                    const oldCol = oldZone.split('_').pop(); // 'left', 'right', 'center'
+                    const newCol = newZone.split('_').pop();
 
-                    // Immediately update UI for the called card
+                    if (oldCol !== newCol) {
+                        alert("Invalid Move: Rear-guards can only move forward/backward within the same column!");
+                        return false;
+                    }
+                }
+
+                // Persona Ride Passive Power: If we call or move a unit while Persona Ride node is active
+                const isFrontRow = zone.parentElement.classList.contains('front-row');
+
+                if (personaRideActive) {
+                    if (isFrontRow && !card.dataset.personaBuffed) {
+                        // Gaining buff
+                        let p = parseInt(card.dataset.power);
+                        card.dataset.power = p + 10000;
+                        card.dataset.personaBuffed = "true";
+                    } else if (!isFrontRow && card.dataset.personaBuffed) {
+                        // Losing buff
+                        let p = parseInt(card.dataset.power);
+                        card.dataset.power = p - 10000;
+                        delete card.dataset.personaBuffed;
+                    }
+
+                    // Update UI
                     const powerSpan = card.querySelector('.card-power');
                     if (powerSpan) {
                         const critVal = parseInt(card.dataset.critical || "1");
@@ -1368,7 +1423,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 changed = true;
             }
 
-            if (changed) {
+            if (changed || c.dataset.personaBuffed) {
+                if (c.dataset.personaBuffed) delete c.dataset.personaBuffed;
+
                 const powerSpan = c.querySelector('.card-power');
                 if (powerSpan) {
                     const critVal = parseInt(c.dataset.critical || "1");
@@ -1768,6 +1825,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const grade = parseInt(attackData.vanguardGrade || "0");
                 const checks = grade >= 3 ? 2 : 1;
                 driveCheck(checks, attackData.totalCritical);
+            } else {
                 // Rearguard attack check vs base target power
                 const target = document.getElementById('opp-' + attackData.targetId);
                 let isHit = false;
