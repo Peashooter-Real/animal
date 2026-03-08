@@ -1577,6 +1577,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset power/critical at the start of ANY turn's stand phase
         if (currentPhaseIndex === 0) { // Stand phase
+            // Reset turn-based flags
+            hasRiddenThisTurn = false;
+            hasDiscardedThisTurn = false;
+            hasDrawnThisTurn = false;
+
             // State expiration check
             if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
                 isFinalRush = false;
@@ -1618,7 +1623,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentPhaseName === 'stand') {
                 console.log("Auto Phase: Stand");
                 document.querySelectorAll('.my-side .circle .card.rest').forEach(c => c.classList.remove('rest'));
-                hasDrawnThisTurn = false;
 
                 // Auto advance to draw after 1 second
                 setTimeout(() => {
