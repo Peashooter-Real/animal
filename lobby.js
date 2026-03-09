@@ -76,14 +76,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
             const id = document.getElementById('my-peer-id').textContent;
+            const joinUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
 
-            navigator.clipboard.writeText(id).then(() => {
-                copyBtn.textContent = "✅";
-                setTimeout(() => copyBtn.textContent = "📋", 2000);
-                alert('Copied ID: ' + id);
-            }).catch(() => {
-                alert('Gonna need manual copy.');
-            });
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join my Vanguard Match!',
+                    text: `Enter my Arena with ID: ${id}`,
+                    url: joinUrl
+                }).catch(err => {
+                    navigator.clipboard.writeText(joinUrl).then(() => {
+                        copyBtn.textContent = "✅";
+                        setTimeout(() => copyBtn.textContent = "📋", 2000);
+                        alert('Match Link Copied: ' + joinUrl);
+                    });
+                });
+            } else {
+                navigator.clipboard.writeText(joinUrl).then(() => {
+                    copyBtn.textContent = "✅";
+                    setTimeout(() => copyBtn.textContent = "📋", 2000);
+                    alert('Match Link Copied: ' + joinUrl);
+                }).catch(() => {
+                    alert('Gonna need manual copy. ID: ' + id);
+                });
+            }
         });
     }
 
