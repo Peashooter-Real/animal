@@ -1022,6 +1022,9 @@ body {
   align-items: center;
   z-index: 5000;
   backdrop-filter: blur(5px);
+  overflow-y: auto;
+  /* Allow scrolling for tall content like Mulligan */
+  padding: 20px 0;
 }
 
 .modal-content {
@@ -1822,28 +1825,33 @@ body.targeting-mode::after {
 
 /* Mulligan System */
 .mulligan-content {
-  width: 90% !important;
-  max-width: 1000px !important;
+  width: 95% !important;
+  max-width: 900px !important;
   background: rgba(5, 5, 15, 0.98) !important;
   border: 1px solid var(--accent-blue) !important;
-  padding: 2rem !important;
+  padding: 1.5rem !important;
+  margin: auto;
+  /* Center when scrolling */
 }
 
 .mulligan-title {
   font-family: var(--font-cyber);
   color: var(--accent-blue);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
 }
 
 .mulligan-grid {
-  display: flex;
-  gap: 1rem;
+  display: flex !important;
+  gap: 10px !important;
   justify-content: center;
-  padding: 2rem;
+  flex-wrap: wrap;
+  /* Wrap on small screens */
+  padding: 1rem !important;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 15px;
-  margin: 2rem 0;
-  min-height: 200px;
+  margin: 1rem 0 !important;
+  min-height: 150px;
 }
 
 .mulligan-card {
@@ -1853,6 +1861,7 @@ body.targeting-mode::after {
   top: auto !important;
   left: auto !important;
   transform: none !important;
+  flex-shrink: 0;
 }
 
 .mulligan-card:hover {

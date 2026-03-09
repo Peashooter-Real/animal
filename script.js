@@ -706,6 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.name = cardData.name;
         card.dataset.skill = cardData.skill || 'No skill description available.';
         card.dataset.persona = cardData.persona ? "true" : "false";
+        card.dataset.cardData = JSON.stringify(cardData);
 
         // Grade Reduction Helper (e.g., Winnsapooh)
         card.getEffectiveGrade = function () {
