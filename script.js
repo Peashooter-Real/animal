@@ -197,7 +197,27 @@ document.addEventListener('DOMContentLoaded', () => {
         'Draw Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_012.png',
         'Front Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_014.png',
         'Heal Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_013.png',
-        'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png'
+        'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png',
+
+        // Nirvana Jheva Deck
+        'Sunrise Egg': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_015.png',
+        'Heart-pounding Blaze Maiden, Rino': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_013.png',
+        'Snuggling Blaze Maiden, Reiyu': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_006.png',
+        'Chakrabarthi Pheonix Dragon, Nirvana Jheva': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_001.png',
+        'Trickstar': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_004.png',
+        'Sparkle Rejector Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_023.png',
+        'Illuminate Equip Dragon, Graillumirror': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_022.png',
+        'Strike Equip Dragon, Stragallio': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_038.png',
+        'Sword Equip Dragon, Galondight': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_021.png',
+        'Mirror Reflection Equip, Mirrors Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_003.png',
+        'Jeweled Sword Equip, Garou Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_020.png',
+        'Sturdy Wall Equip, Vils Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt07/d-bt07_032.png',
+        'Brilliant Equip, Bram Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt07/d-bt07_012.png',
+
+        // Triggers - Dragon Empire
+        'Critical Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_011.png',
+        'Draw Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_012.png',
+        'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png'
     };
 
     // --- Deck Definitions ---
@@ -279,6 +299,32 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ]
             .sort(() => 0.5 - Math.random())
+    };
+
+    const nirvanaJhevaDeck = {
+        rideDeck: [
+            { name: 'Sunrise Egg', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Heart-pounding Blaze Maiden, Rino', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Snuggling Blaze Maiden, Reiyu" ค้นหา "Trickstar" 1 ใบจากกองการ์ดคอลลง (RC) และสับกอง\n[CONT](RC): ในเทิร์นของคุณ หากมี <Prayer Dragon> ในแถวเดียวกัน พลัง+5000' },
+            { name: 'Snuggling Blaze Maiden, Reiyu', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Nirvana Jheva" ดูการ์ด 7 ใบจากบนสุดของกอง เลือก <Prayer Dragon> 1 ใบขึ้นมือ และสับกอง\n[CONT](RC): ในเทิร์นของคุณ หากมี <Prayer Dragon> ในแถวเดียวกัน พลัง+5000' },
+            { name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: [ทิ้งการ์ด 1 ใบ] เลือก "Trickstar" 1 ใบ และ <Prayer Dragon> 1 ใบจากดรอบคอลลง (RC)\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบที่อยู่ในสถานะ [XoverDress] และ Stand ยูนิทนั้น' }
+        ],
+        mainDeck: [
+            ...Array(4).fill({ name: 'Trickstar', grade: 0, power: 5000, shield: 5000, skill: '[CONT](RC): ไม่สามารถถูกเลือกโดยความสามารถการ์ดของคู่แข่ง' }),
+            ...Array(4).fill({ name: 'Sparkle Rejector Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
+            ...Array(3).fill({ name: 'Illuminate Equip Dragon, Graillumirror', grade: 1, power: 8000, shield: 5000, skill: '[ACT](VC)[1/Turn]: [ทิ้งการ์ด 1 ใบ] เลือก "Trickstar" 1 ใบ และ <Prayer Dragon> 1 ใบจากดรอบคอลลง (RC)\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบที่อยู่ในสถานะ [XoverDress] และ Stand ยูนิทนั้น' }),
+            ...Array(3).fill({ name: 'Strike Equip Dragon, Stragallio', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากบนมือ ถ้าแวนมีชื่อ "Nirvana" [ทิ้งการ์ด 1 ใบ] ค้นหาการ์ดที่มีความสามารถ [overDress] หรือ "Trickstar" 1 ใบขึ้นมือและสับกอง\n[AUTO]: เมื่อตกอยู่ในสถานะ originalDress [CB1] เลือก "Trickstar" จากดรอบคอลลง (RC)' }),
+            ...Array(3).fill({ name: 'Sword Equip Dragon, Galondight', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกนำไปซ้อนใต้ร่าง X-overDress เลือกยูนิทที่ซ้อนทับ พลัง+5000 จนจบเทิร์น (ถ้าเป็น Garou Vairina พลัง+5000 แทนที่จะเป็น +5000)' }),
+            ...Array(4).fill({ name: 'Mirror Reflection Equip, Mirrors Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Graillumirror"\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือก "Vairina" 2 ใบจากดรอบมาซ้อนใต้การ์ดนี้\n[AUTO](RC): เมื่อโจมตี พลัง+10000 จากนั้น [ทิ้งการ์ด Vairina ที่ซ้อนอยู่ 1 ใบ] เลือก "จั่วการ์ด 1 ใบ" หรือ "CC1"' }),
+            ...Array(3).fill({ name: 'Jeweled Sword Equip, Garou Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Galondight"\n[CONT](RC): หากอยู่ในสถานะ X-overDress พลัง+10000 และเมื่อยูนิทนี้โจมตี คู่แข่งต้องคอลการ์ดจากบนมือลง (GC) ครั้งละ 2 ใบขึ้นไป' }),
+            ...Array(1).fill({ name: 'Sturdy Wall Equip, Vils Vairina', grade: 2, power: 10000, shield: 10000, skill: 'X-overDress: "Trickstar" & <Prayer Dragon>\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือกการ์ดที่มี X-overDress จากดรอบ 1 ใบขึ้นมือ\n[CONT](RC/GC): หากอยู่ในสถานะ X-overDress พลัง+5000/Shield+10000 และไม่ถูกเลือกโดยสกิลคู่แข่ง' }),
+            ...Array(2).fill({ name: 'Brilliant Equip, Bram Vairina', grade: 3, power: 13000, skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[CONT](RC): ในเทิร์นคุณ หากอยู่ในสถานะ X-overDress พลัง+10000 และถ้าแวนคู่แข่งเกรด 3 ขึ้นไป พลัง+10000\n[AUTO](RC)[1/turn]: เมื่อโจมตีฮิตแวนการ์ด หากอยู่ในสถานะ X-overDress [SB1] เลือก 1 แถวตั้ง และรีไทร์ยูนิทคู่แข่งทั้งหมดในแถวนั้น' }),
+            ...Array(3).fill({ name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: 'Persona Ride: Front row +10000' }),
+
+            ...Array(7).fill({ name: 'Critical Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(4).fill({ name: 'Draw Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
     };
 
     let currentDeck = bruceDeck;
@@ -612,6 +658,42 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // 3. Nirvana Jheva Ride Line Specifics
+        // G0 Sunrise Egg -> G1 Rino
+        if (oldName.includes('sunrise egg') && newName.includes('rino')) {
+            // Drawn by Universal Grade 0 skill above if guest.
+        }
+
+        // G1 Rino -> G2 Reiyu
+        if (oldName.includes('rino') && newName.includes('reiyu')) {
+            queue.push({
+                name: 'ความสามารถของ Rino (G1)',
+                description: "ค้นหา Trickstar 1 ใบจากกองการ์ดคอลลง (RC)",
+                resolve: async (done) => {
+                    const confirmSearch = await vgConfirm("Rino Skill: ค้นหา Trickstar 1 ใบจากกองคอลลง (RC)?");
+                    if (confirmSearch) {
+                        promptSearchAndCall('Trickstar');
+                    }
+                    done();
+                }
+            });
+        }
+
+        // G2 Reiyu -> G3 Nirvana Jheva
+        if (oldName.includes('reiyu') && newName.includes('nirvana jheva')) {
+            queue.push({
+                name: 'ความสามารถของ Reiyu (G2)',
+                description: "ดูการ์ด 7 ใบจากบนสุดของกอง เลือก <Prayer Dragon> 1 ใบขึ้นมือ",
+                resolve: async (done) => {
+                    const confirmLook = await vgConfirm("Reiyu Skill: ดูการ์ด 7 ใบ เลือก Prayer Dragon (Equip Dragon) ขึ้นมือ?");
+                    if (confirmLook) {
+                        promptLookTop7ForPrayerDragon();
+                    }
+                    done();
+                }
+            });
+        }
+
         // 3. Magnolia Ride Line
         // Lotte (G0) -> draw 1 if second. (Already handled in Universal rule above)
 
@@ -842,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', (e) => {
             const currentTime = new Date().getTime();
             const tapGap = currentTime - lastClickTime;
-            
+
             // Double click/tap for skill viewing
             if (tapGap < 350 && tapGap > 0) {
                 openSkillViewer(card);
@@ -1406,6 +1488,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Nirvana Jheva / Graillumirror [AUTO](VC) ---
+        if (isMyTurn && (attacker.dataset.name.includes('Nirvana Jheva') || attacker.dataset.name.includes('Graillumirror')) && parentZone === 'vc') {
+            if (await vgConfirm(`${attacker.dataset.name.includes('Nirvana') ? 'Nirvana Jheva' : 'Graillumirror'}: เมื่อโจมตี [CB1] เลือก Stand เรียร์การ์ดสถานะ [XoverDress] 1 ใบ?`)) {
+                if (payCounterBlast(1)) {
+                    alert("เลือกเรียร์การ์ดสถานะ X-overDress (Vairina) 1 ใบเพื่อ Stand");
+                    document.body.classList.add('targeting-mode');
+                    const standListener = (e) => {
+                        const targetRG = e.target.closest('.circle.rc .card:not(.opponent-card)');
+                        if (targetRG && targetRG.dataset.name.includes('Vairina')) {
+                            e.stopPropagation();
+                            targetRG.classList.remove('rest');
+                            sendMoveData(targetRG);
+                            alert(`${targetRG.dataset.name} Stand!`);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', standListener, true);
+                        }
+                    };
+                    document.addEventListener('click', standListener, true);
+                }
+            }
+        }
+
         if (isMyTurn) {
             const isTargetVanguard = target.parentElement.classList.contains('vc');
 
@@ -1473,6 +1577,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     attacker.dataset.guardRestrictGrades = JSON.stringify([...new Set(grades)]);
                     alert(`Gabregg: Guard Restrict! คู่แข่งไม่สามารถคอลเกรด ${JSON.parse(attacker.dataset.guardRestrictGrades).join(', ')} จากบนมือได้`);
                 }
+            }
+
+            // --- Mirrors Vairina [AUTO](RC) ---
+            if (attacker.dataset.name.includes('Mirrors Vairina')) {
+                if (attacker.dataset.isXoverDress === "true") {
+                    attacker.dataset.power = parseInt(attacker.dataset.power) + 10000;
+                    attacker.dataset.mirrorsPowerAdded = "true";
+                    totalPower += 10000;
+                    alert("Mirrors Vairina: X-overDress Attack! Power +10000");
+                    syncPowerDisplay(attacker);
+
+                    const vairinasInDress = (attacker.originalDress || []).filter(d => d.name.includes("Vairina"));
+                    if (vairinasInDress.length > 0) {
+                        if (await vgConfirm("Mirrors Vairina: [COST][ส่ง Vairina ที่ซ้อนอยู่ลงดรอบ] เพื่อจั่วการ์ด 1 ใบ หรือ CC 1?")) {
+                            openViewer("Choose Vairina to Drop", vairinasInDress);
+                            const selDrop = (ev) => {
+                                const clicked = ev.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    viewerGrid.removeEventListener('click', selDrop);
+                                    zoneViewer.classList.add('hidden');
+
+                                    const cIdx = attacker.originalDress.findIndex(d => d.name === clicked.dataset.name);
+                                    const dropped = attacker.originalDress.splice(cIdx, 1)[0];
+
+                                    const dropZone = document.querySelector('.my-side .drop-zone');
+                                    const dropElem = createCardElement(dropped);
+                                    dropZone.appendChild(dropElem);
+                                    sendMoveData(dropElem);
+                                    updateDropCount();
+                                    alert(`ทิ้ง ${dropped.name} แล้ว!`);
+
+                                    if (confirm("เลือก OK สำหรับ 'จั่วการ์ด 1 ใบ' หรือ Cancel สำหรับ 'Counter Charge 1'")) {
+                                        drawCard(true);
+                                    } else {
+                                        counterCharge(1);
+                                    }
+                                }
+                            };
+                            viewerGrid.addEventListener('click', selDrop);
+                        }
+                    }
+                }
+            }
+
+            // --- Garou Vairina [CONT](RC) Guard Restrict ---
+            if (attacker.dataset.name.includes('Garou Vairina') && attacker.dataset.isXoverDress === "true") {
+                alert("Garou Vairina: คู่แข่งต้อง Guard ครั้งละ 2 ใบขึ้นไป!");
+                attacker.dataset.guardRestrictCount = "2";
             }
 
             // Existing attack-time skills...
@@ -1553,7 +1705,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 boosterName: boosterCardInfo ? boosterCardInfo.name : null,
                 tripleDrive: attacker.dataset.tripleDrive === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
-                guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null
+                guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null,
+                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || "0")
             };
 
             // Bruce Attack Ability Check
@@ -1619,6 +1772,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isGuarding) {
                 alert("You can only move cards to the Guard Circle when defending an attack!");
                 return false;
+            }
+
+            if (isFromHand) {
+                card.dataset.fromHand = "true";
+            } else {
+                card.dataset.fromHand = "false";
             }
 
             if (isFromField && !isFromHand) {
@@ -1689,7 +1848,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMoveData(card);
             updateHandCount();
             updateDropCount();
-            updateGCShield();
             return true;
         }
 
@@ -1989,22 +2147,101 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.enpixBackBuffed = "true";
             }
-        } else {
-            if (card.dataset.enpixBackBuffed === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 10000;
-                card.dataset.enpixBackBuffed = "false";
+        }
+
+        // 9. Garou Vairina [CONT] X-overDress +10000 Power
+        if (name.includes('Garou Vairina') && card.dataset.isXoverDress === "true") {
+            if (card.dataset.garouXoverBuffed !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.garouXoverBuffed = "true";
             }
-            // 9. Charis [CONT](RC): +2000 if order played
-            if (name.includes('Charis') && isOnRC && orderPlayedThisTurn) {
-                if (card.dataset.charisOrderBuff !== "true") {
-                    card.dataset.power = parseInt(card.dataset.power) + 2000;
-                    card.dataset.charisOrderBuff = "true";
-                }
-            } else if (card.dataset.charisOrderBuff === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 2000;
-                card.dataset.charisOrderBuff = "false";
+        } else {
+            if (card.dataset.garouXoverBuffed === "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 10000;
+                card.dataset.garouXoverBuffed = "false";
             }
         }
+
+        // 10. Vils Vairina [CONT] X-overDress +5000 Power / +10000 Shield / Resist
+        if (name.includes('Vils Vairina') && card.dataset.isXoverDress === "true") {
+            if (card.dataset.vilsXoverBuffed !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 5000;
+                card.dataset.shield = parseInt(card.dataset.shield || "10000") + 10000;
+                card.dataset.vilsXoverBuffed = "true";
+                card.dataset.resist = "true";
+            }
+        } else {
+            if (card.dataset.vilsXoverBuffed === "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 5000;
+                card.dataset.shield = parseInt(card.dataset.shield || "20000") - 10000;
+                card.dataset.vilsXoverBuffed = "false";
+                card.dataset.resist = "false";
+            }
+        }
+
+        // 11. Charis [CONT](RC): +2000 if order played
+        if (name.includes('Charis') && isOnRC && orderPlayedThisTurn) {
+            if (card.dataset.charisOrderBuff !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 2000;
+                card.dataset.charisOrderBuff = "true";
+            }
+        } else if (card.dataset.charisOrderBuff === "true") {
+            card.dataset.power = parseInt(card.dataset.power) - 2000;
+            card.dataset.charisOrderBuff = "false";
+        }
+
+        // 12. Bram Vairina [CONT] X-overDress +10000/20000 Power
+        if (name.includes('Bram Vairina') && card.dataset.isXoverDress === "true" && isMyTurn) {
+            const oppVg = document.querySelector('.opponent-side .circle.vc .card');
+            const oppVgGrade = oppVg ? parseInt(oppVg.dataset.grade || "0") : 0;
+            let pwr = 10000;
+            if (oppVgGrade >= 3) pwr = 20000;
+
+            if (card.dataset.bramXoverBuff !== pwr.toString()) {
+                const oldPwr = parseInt(card.dataset.bramXoverBuff || "0");
+                card.dataset.power = (parseInt(card.dataset.power) - oldPwr) + pwr;
+                card.dataset.bramXoverBuff = pwr.toString();
+            }
+        } else if (card.dataset.bramXoverBuff && card.dataset.bramXoverBuff !== "0") {
+            const oldPwr = parseInt(card.dataset.bramXoverBuff);
+            card.dataset.power = parseInt(card.dataset.power) - oldPwr;
+            card.dataset.bramXoverBuff = "0";
+        }
+
+        // 6. Nirvana Jheva Ride Line Column Bonus (+5000 if Prayer Dragon in column)
+        const isRinoOrReiyu = name.includes('Rino') || name.includes('Reiyu');
+        if (isRinoOrReiyu && isMyTurn) {
+            let myCol = null;
+            if (zone.includes('left')) myCol = 'left';
+            else if (zone.includes('right')) myCol = 'right';
+            else if (zone.includes('center') || zone === 'vc') myCol = 'center';
+
+            if (myCol) {
+                const colZones = myCol === 'left' ? ['rc_front_left', 'rc_back_left'] :
+                    myCol === 'right' ? ['rc_front_right', 'rc_back_right'] :
+                        ['vc', 'rc_back_center'];
+
+                let hasPrayerDragon = false;
+                colZones.forEach(z => {
+                    if (z !== zone) {
+                        const targetCircle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+                        const otherCard = targetCircle ? targetCircle.querySelector('.card:not(.opponent-card)') : null;
+                        if (otherCard && (otherCard.dataset.name.includes('Equip Dragon') || otherCard.dataset.name.includes('Trickstar'))) {
+                            hasPrayerDragon = true;
+                        }
+                    }
+                });
+
+                if (hasPrayerDragon && card.dataset.columnBonusApplied !== "true") {
+                    card.dataset.power = parseInt(card.dataset.power) + 5000;
+                    card.dataset.columnBonusApplied = "true";
+                } else if (!hasPrayerDragon && card.dataset.columnBonusApplied === "true") {
+                    card.dataset.power = parseInt(card.dataset.power) - 5000;
+                    card.dataset.columnBonusApplied = "false";
+                }
+            }
+        }
+
         syncPowerDisplay(card);
     }
 
@@ -2067,7 +2304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         const name = card.dataset.name || "";
-        if (name.includes('Enpix')) return true; // Enpix protects column self too? Prompt says same column.
+        if (name.includes('Enpix') || card.dataset.resist === "true") return true;
         return false;
     }
 
@@ -2552,6 +2789,37 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkOnPlaceAbilities(card) {
         if (!card) return;
         const name = card.dataset.name || "";
+        if (name.includes('Stragallio')) {
+            const vg = document.querySelector('.my-side .circle.vc .card');
+            if (vg && vg.dataset.name.includes('Nirvana')) {
+                if (await vgConfirm("Stragallio: [AUTO] เมื่อวางบน (RC) [ทิ้งการ์ด 1 ใบ] เพื่อดึง Trickstar หรือ [overDress] ขึ้นมือ?")) {
+                    alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
+                    document.body.classList.add('targeting-mode');
+                    const discarded = await new Promise(resolve => {
+                        const discardListener = (e) => {
+                            const target = e.target.closest('.card');
+                            if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
+                                e.stopPropagation();
+                                const dropZone = document.querySelector('.my-side .drop-zone');
+                                dropZone.appendChild(target);
+                                sendMoveData(target);
+                                updateHandCount();
+                                updateDropCount();
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', discardListener, true);
+                                resolve(true);
+                            }
+                        };
+                        document.addEventListener('click', discardListener, true);
+                    });
+
+                    if (discarded) {
+                        promptSearchAndAddHand((c) => c.name.includes("overDress") || c.name.includes("Trickstar"), "Select [overDress] or Trickstar");
+                    }
+                }
+            }
+        }
+
         if (name.includes('Jamil')) {
             const vg = document.querySelector('.my-side .circle.vc .card');
             if (vg && vg.dataset.name.includes('Bruce')) {
@@ -2672,6 +2940,124 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         viewerGrid.addEventListener('click', selectFromDrop);
+    }
+
+    function promptSearchAndCall(cardName) {
+        const matches = deckPool.filter(c => c.name.includes(cardName));
+        if (matches.length === 0) {
+            alert(`ไม่พบ ${cardName} ในกองการ์ด!`);
+            return;
+        }
+
+        openViewer(`Select 1 ${cardName} from Deck to Call`, matches);
+
+        const selHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const targetName = clicked.dataset.name;
+                const idx = deckPool.findIndex(c => c.name === targetName);
+                if (idx !== -1) {
+                    const cardData = deckPool.splice(idx, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selHandler);
+
+                    const card = createCardElement(cardData);
+                    alert(`เรียก ${cardData.name}! โปรดเลือกช่อง RC ที่ว่างอยู่`);
+
+                    document.body.classList.add('targeting-mode');
+                    const call = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(card);
+                            card.classList.remove('rest');
+                            applyStaticBonuses(card);
+                            sendMoveData(card);
+                            updateDeckCounter();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', call, true);
+
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                        }
+                    };
+                    document.addEventListener('click', call, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selHandler);
+    }
+
+    function promptSearchAndAddHand(filterFn, title = "Select a card to add to Hand") {
+        const matches = deckPool.filter(filterFn);
+        if (matches.length === 0) {
+            alert("ไม่พบการ์ดที่ต้องการในกองการ์ด!");
+            return;
+        }
+
+        openViewer(title, matches);
+
+        const selHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const targetName = clicked.dataset.name;
+                const idx = deckPool.findIndex(c => c.name === targetName);
+                if (idx !== -1) {
+                    const cardData = deckPool.splice(idx, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selHandler);
+
+                    const card = createCardElement(cardData);
+                    playerHand.appendChild(card);
+                    updateHandSpacing();
+                    sendMoveData(card);
+                    updateDeckCounter();
+                    alert(`นำ ${cardData.name} ขึ้นมือ!`);
+
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selHandler);
+    }
+
+    function promptLookTop7ForPrayerDragon() {
+        if (deckPool.length === 0) return;
+        const top7 = [];
+        for (let i = 0; i < 7; i++) {
+            if (deckPool.length > 0) top7.push(deckPool.pop());
+        }
+        updateDeckCounter();
+
+        openViewer("Top 7 Cards (Select <Prayer Dragon> to add to hand)", top7);
+
+        const sel = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const name = clicked.dataset.name;
+                const isPD = name.includes('Equip Dragon');
+                if (isPD) {
+                    const idx = top7.findIndex(c => c.name === name);
+                    const chosen = top7.splice(idx, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', sel);
+
+                    const cardNode = createCardElement(chosen);
+                    playerHand.appendChild(cardNode);
+                    updateHandSpacing();
+                    sendMoveData(cardNode);
+                    alert(`เพิ่ม ${chosen.name} ขึ้นมือ!`);
+
+                    deckPool.push(...top7);
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                } else {
+                    alert("ต้องเป็น <Prayer Dragon> (Equip Dragon) เท่านั้น!");
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', sel);
     }
 
     // --- Rock Paper Scissors ---
@@ -2995,10 +3381,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lobbyContent = document.querySelector('.lobby-content');
                     if (lobbyContent) lobbyContent.classList.add('effect-match-found');
 
+                    const deckNameLookup = { bruce: 'bruce', magnolia: 'magnolia', nirvana: 'nirvana' };
+                    let currentDeckName = 'bruce';
+                    if (currentDeck === magnoliaDeck) currentDeckName = 'magnolia';
+                    else if (currentDeck === nirvanaJhevaDeck) currentDeckName = 'nirvana';
+
                     setTimeout(() => {
                         setupConnection();
                         // Sync deck info
-                        sendData({ type: 'hostAck', deck: currentDeck === magnoliaDeck ? 'magnolia' : 'bruce' });
+                        sendData({ type: 'hostAck', deck: currentDeckName });
                     }, 1000); // 1s effect duration
                 }
             };
@@ -3089,7 +3480,211 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        const xoverBtn = document.getElementById('x-overdress-btn');
+        if (xoverBtn) {
+            const skill = card.dataset.skill || "";
+            const isVairina = name.includes('Vairina');
+            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+            if (isVairina && inHand && isMyTurn) {
+                xoverBtn.classList.remove('hidden');
+                xoverBtn.onclick = () => {
+                    skillViewer.classList.add('hidden');
+                    performXoverDress(card);
+                };
+            } else {
+                xoverBtn.classList.add('hidden');
+            }
+        }
+
         skillViewer.classList.remove('hidden');
+    }
+
+    async function performXoverDress(vairinaCard) {
+        const skill = vairinaCard.dataset.skill || "";
+        let material1Name = "Trickstar";
+        let material2Name = "Prayer Dragon"; // Default
+
+        if (skill.includes('"Trickstar" & "Graillumirror"')) material2Name = "Graillumirror";
+        else if (skill.includes('"Trickstar" & "Galondight"')) material2Name = "Galondight";
+        else if (skill.includes('"Trickstar" & <Prayer Dragon>')) material2Name = "Equip Dragon";
+
+        alert(`X-overDress: เลือก ${material1Name} และ ${material2Name} จากสนาม`);
+
+        // Step 1: Select Material 1
+        alert(`Step 1: เลือก ${material1Name} จากสนาม`);
+        document.body.classList.add('targeting-mode');
+        const mat1 = await new Promise(resolve => {
+            const listener = (e) => {
+                const target = e.target.closest('.circle.rc .card:not(.opponent-card)');
+                if (target && target.dataset.name.includes(material1Name)) {
+                    e.stopPropagation();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', listener, true);
+                    resolve(target);
+                }
+            };
+            document.addEventListener('click', listener, true);
+        });
+
+        // Step 2: Select Material 2
+        alert(`Step 2: เลือก ${material2Name} (Equip Dragon) จากสนาม`);
+        document.body.classList.add('targeting-mode');
+        const mat2 = await new Promise(resolve => {
+            const listener = (e) => {
+                const target = e.target.closest('.circle.rc .card:not(.opponent-card)');
+                if (target && (target.dataset.name.includes(material2Name) || (material2Name === "Equip Dragon" && target.dataset.name.includes("Equip Dragon")))) {
+                    if (target === mat1) {
+                        alert("เลือกซ้ำไม่ได้!");
+                        return;
+                    }
+                    e.stopPropagation();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', listener, true);
+                    resolve(target);
+                }
+            };
+            document.addEventListener('click', listener, true);
+        });
+
+        // Step 3: Choose where to Call Vairina
+        alert("Step 3: เลือกช่อง RC เพื่อคอลยูนิท X-overDress");
+        document.body.classList.add('targeting-mode');
+        const circle = await new Promise(resolve => {
+            const listener = (ev) => {
+                const targetCircle = ev.target.closest('.circle.rc');
+                if (targetCircle) {
+                    ev.stopPropagation();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', listener, true);
+                    resolve(targetCircle);
+                }
+            };
+            document.addEventListener('click', listener, true);
+        });
+
+        // Resolve X-overDress
+        const mats = [mat1, mat2];
+        vairinaCard.originalDress = mats.map(m => {
+            return {
+                name: m.dataset.name,
+                grade: m.dataset.grade,
+                power: m.dataset.power,
+                shield: m.dataset.shield,
+                skill: m.dataset.skill,
+                isPG: m.dataset.isPG === "true"
+            };
+        });
+
+        mats.forEach(m => {
+            soulPool.push(m); // Still keep in soul for general SC/SB interaction if needed
+            m.remove();
+        });
+
+        circle.innerHTML = '';
+        circle.appendChild(vairinaCard);
+        vairinaCard.classList.remove('rest');
+        vairinaCard.dataset.isXoverDress = "true";
+        applyStaticBonuses(vairinaCard);
+        sendMoveData(vairinaCard);
+        updateSoulUI();
+        updateHandCount();
+
+        alert(`${vairinaCard.dataset.name} X-overDress สำเร็จ!`);
+
+        // Mirrors Vairina On-Place
+        if (vairinaCard.dataset.name.includes('Mirrors Vairina')) {
+            if (await vgConfirm("Mirrors Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือก 'Vairina' 2 ใบจากดรอบมาซ้อนใต้?")) {
+                promptDressMultipleFromDrop(vairinaCard, 2, (c) => c.dataset.name.includes("Vairina"));
+            }
+        }
+
+        // Vils Vairina On-Place
+        if (vairinaCard.dataset.name.includes('Vils Vairina')) {
+            if (await vgConfirm("Vils Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือกการ์ด X-overDress 1 ใบจากดรอบขึ้นมือ?")) {
+                promptAddFromDropToHand((c) => c.dataset.skill && c.dataset.skill.includes("X-overDress") && !c.dataset.name.includes("Vils Vairina"));
+            }
+        }
+
+        // Trigger "When becomes Original Dress" skills
+        for (const m of mats) {
+            const mName = m.dataset.name;
+            const mSkill = m.dataset.skill;
+            if (mName.includes('Stragallio')) {
+                if (await vgConfirm("Stragallio: [AUTO] เมื่อเป็น originalDress [CB1] คอล Trickstar จากดรอบ?")) {
+                    if (payCounterBlast(1)) {
+                        promptCallFromDrop(1, (c) => c.dataset.name.includes('Trickstar'));
+                    }
+                }
+            } else if (mName.includes('Galondight')) {
+                const bonus = 5000;
+                const totalBonus = vairinaCard.dataset.name.includes('Garou Vairina') ? 10000 : 5000;
+                vairinaCard.dataset.power = parseInt(vairinaCard.dataset.power) + totalBonus;
+                syncPowerDisplay(vairinaCard);
+                alert(`Galondight: มอบพลังให้ ${vairinaCard.dataset.name} +${totalBonus}!`);
+            }
+        }
+    }
+
+    function promptDressMultipleFromDrop(vairinaCard, maxCount, filterFn, count = 0) {
+        if (count >= maxCount) return;
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        const cards = Array.from(dropZone.querySelectorAll('.card')).filter(filterFn);
+        if (cards.length === 0) return;
+
+        openViewer(`เลือกการ์ดใบที่ ${count + 1}/${maxCount} เพื่อซ้อนใต้ ${vairinaCard.dataset.name}`, cards);
+        const sel = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalCard = document.getElementById(originalId);
+                if (originalCard) {
+                    viewerGrid.removeEventListener('click', sel);
+                    zoneViewer.classList.add('hidden');
+
+                    // Track originalDress
+                    if (!vairinaCard.originalDress) vairinaCard.originalDress = [];
+                    vairinaCard.originalDress.push({
+                        name: originalCard.dataset.name,
+                        grade: originalCard.dataset.grade,
+                        power: originalCard.dataset.power,
+                        shield: originalCard.dataset.shield,
+                        skill: originalCard.dataset.skill
+                    });
+
+                    soulPool.push(originalCard); // Simulating originalDress via soul pool
+                    originalCard.remove();
+                    updateSoulUI();
+                    updateDropCount();
+                    promptDressMultipleFromDrop(vairinaCard, maxCount, filterFn, count + 1);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', sel);
+    }
+
+    function promptAddFromDropToHand(filterFn) {
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        const cards = Array.from(dropZone.querySelectorAll('.card')).filter(filterFn);
+        if (cards.length === 0) return;
+
+        openViewer("เลือกการ์ดจาก Drop Box ขึ้นมือ", cards);
+        const sel = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const originalId = clicked.dataset.originalId;
+                const originalCard = document.getElementById(originalId);
+                if (originalCard) {
+                    viewerGrid.removeEventListener('click', sel);
+                    zoneViewer.classList.add('hidden');
+                    playerHand.appendChild(originalCard);
+                    updateHandSpacing();
+                    sendMoveData(originalCard);
+                    updateDropCount();
+                    alert(`นำ ${originalCard.dataset.name} ขึ้นมือสำเร็จ!`);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', sel);
     }
 
     async function playOrder(card) {
@@ -3118,6 +3713,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function activateCardSkill(card) {
         const name = card.dataset.name;
+        const isJhevaOrGrail = name.includes('Nirvana Jheva') || name.includes('Graillumirror');
+        if (isJhevaOrGrail && card.parentElement.classList.contains('vc')) {
+            const skillName = name.includes('Nirvana') ? 'Nirvana Jheva' : 'Graillumirror';
+            if (await vgConfirm(`${skillName}: [ACT][ทิ้งการ์ด 1 ใบ] คอล Trickstar และ Prayer Dragon จาก Drop?`)) {
+                alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
+                document.body.classList.add('targeting-mode');
+                const discarded = await new Promise(resolve => {
+                    const discardListener = (e) => {
+                        const target = e.target.closest('.card');
+                        if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
+                            e.stopPropagation();
+                            const dropZone = document.querySelector('.my-side .drop-zone');
+                            dropZone.appendChild(target);
+                            sendMoveData(target);
+                            updateHandCount();
+                            updateDropCount();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', discardListener, true);
+                            resolve(true);
+                        }
+                    };
+                    document.addEventListener('click', discardListener, true);
+                });
+
+                if (discarded) {
+                    alert("Step 1: เลือก Trickstar 1 ใบจาก Drop");
+                    promptCallFromDrop(1, (c) => c.dataset.name.includes('Trickstar'));
+                    setTimeout(() => {
+                        alert("Step 2: เลือก Prayer Dragon (Equip Dragon) 1 ใบจาก Drop");
+                        promptCallFromDrop(1, (c) => c.dataset.name.includes('Equip Dragon'));
+                    }, 500);
+                }
+            }
+        }
+
         if (name.includes('Bojalcorn')) {
             if (await vgConfirm("Bojalcorn: [ACT] จ่าย CB1 เพื่อรับความสามารถโจมตีแถวหน้าทั้งหมดจากแถวหลัง?")) {
                 if (payCounterBlast(1)) {
@@ -3188,6 +3818,44 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     alert("Charis Skill: สำเร็จแล้ว!");
+                }
+            }
+        }
+
+        // --- Nirvana Jheva (VC) ACT ---
+        if (name.includes('Nirvana Jheva') && card.parentElement.classList.contains('vc')) {
+            if (await vgConfirm("Nirvana Jheva: [ACT][ทิ้งการ์ด 1 ใบ] คอล Trickstar และ Prayer Dragon จาก Drop?")) {
+                // Discard 1 Card
+                alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
+                document.body.classList.add('targeting-mode');
+                const discarded = await new Promise(resolve => {
+                    const discardListener = (e) => {
+                        const target = e.target.closest('.card');
+                        if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
+                            e.stopPropagation();
+                            const dropZone = document.querySelector('.my-side .drop-zone');
+                            dropZone.appendChild(target);
+                            sendMoveData(target);
+                            updateHandCount();
+                            updateDropCount();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', discardListener, true);
+                            resolve(true);
+                        }
+                    };
+                    document.addEventListener('click', discardListener, true);
+                });
+
+                if (discarded) {
+                    // Call Trickstar
+                    alert("Step 1: เลือก Trickstar 1 ใบจาก Drop");
+                    promptCallFromDrop(1, (c) => c.dataset.name.includes('Trickstar'));
+
+                    // Call Prayer Dragon
+                    setTimeout(() => {
+                        alert("Step 2: เลือก Prayer Dragon (Equip Dragon) 1 ใบจาก Drop");
+                        promptCallFromDrop(1, (c) => c.dataset.name.includes('Equip Dragon'));
+                    }, 500);
                 }
             }
         }
@@ -3379,12 +4047,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
                 updateAllStaticBonuses();
                 break;
-            case 'removeCard':
-                const cardToRemove = document.getElementById(`opp-${data.cardId}`);
-                if (cardToRemove) {
-                    cardToRemove.classList.add('effect-retired');
-                    setTimeout(() => cardToRemove.remove(), 500);
-                }
+            case 'retireColumn':
+                retireMyColumn(data.column);
                 break;
         }
     }
@@ -3413,6 +4077,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         document.addEventListener('click', retireListener, true);
+    }
+
+    async function promptRetireColumn() {
+        alert("Bram Vairina: เลือก 1 Column ของคุณ เพื่อรีไทร์ยูนิทคู่แข่งในแถวนั้นทั้งหมด");
+        document.body.classList.add('targeting-mode');
+
+        return new Promise(resolve => {
+            const choiceListener = (e) => {
+                const circle = e.target.closest('.my-side .circle');
+                if (circle) {
+                    const zone = circle.dataset.zone || "";
+                    let col = null;
+                    if (zone.includes('left')) col = 'left';
+                    else if (zone.includes('right')) col = 'right';
+                    else if (zone.includes('center')) col = 'center';
+
+                    if (col) {
+                        e.stopPropagation();
+                        sendData({ type: 'retireColumn', column: col });
+                        alert(`เลือกแถวตั้ง ${col}! ยูนิทคู่แข่งในแถวนั้นจะถูกรีไทร์`);
+                        document.body.classList.remove('targeting-mode');
+                        document.removeEventListener('click', choiceListener, true);
+                        resolve(true);
+                    }
+                }
+            };
+            document.addEventListener('click', choiceListener, true);
+        });
+    }
+
+    function retireMyColumn(column) {
+        const colZones = column === 'left' ? ['rc_front_left', 'rc_back_left'] :
+            column === 'right' ? ['rc_front_right', 'rc_back_right'] :
+                ['vc', 'rc_back_center'];
+
+        colZones.forEach(z => {
+            const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+            if (circle) {
+                const card = circle.querySelector('.card:not(.opponent-card)');
+                if (card && !circle.classList.contains('vc')) {
+                    if (isCardResistant(card)) {
+                        alert(`ยูนิทในช่อง ${z} มี Resist! ไม่สามารถรีไทร์ได้`);
+                        return;
+                    }
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    dropZone.appendChild(card);
+                    card.classList.remove('rest');
+                    sendMoveData(card);
+                    updateDropCount();
+                }
+            }
+        });
+        alert(`แถวตั้ง ${column} ของคุณถูกรีไทร์แล้ว!`);
     }
 
     function promptGiunoslaPowerTransfer(giunoslaCard) {
@@ -3478,7 +4195,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let restrictMsg = "";
         if (attackData.guardRestrictGrades && attackData.guardRestrictGrades.length > 0) {
-            restrictMsg = `<p style="color:#ff2a6d; font-weight:bold; margin-top:10px;">GUARD RESTRICT: ยูนิทมือเกรด ${attackData.guardRestrictGrades.join(', ')} คอลไม่ได้!</p>`;
+            restrictMsg += `<p style="color:#ff2a6d; font-weight:bold; margin-top:10px;">GUARD RESTRICT: ยูนิทมือเกรด ${attackData.guardRestrictGrades.join(', ')} คอลไม่ได้!</p>`;
+        }
+        if (attackData.guardRestrictCount && attackData.guardRestrictCount > 1) {
+            restrictMsg += `<p style="color:#ff2a6d; font-weight:bold; margin-top:5px;">GUARD RESTRICT: ต้อง Guard ด้วยการ์ดจากมือครั้งละ ${attackData.guardRestrictCount} ใบขึ้นไป!</p>`;
         }
 
         overlay.innerHTML = `
@@ -3536,6 +4256,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let isPGActivated = false;
             const gc = document.querySelector('.guardian-circle');
             const guardCards = gc ? gc.querySelectorAll('.card') : [];
+
+            // Check Guard Restrict Count (Garou Vairina)
+            const fromHandCount = Array.from(guardCards).filter(c => c.dataset.fromHand === "true").length;
+            if (attackData.guardRestrictCount && attackData.guardRestrictCount > 1 && fromHandCount > 0 && fromHandCount < attackData.guardRestrictCount) {
+                alert(`GUARD RESTRICT: ต้อง Guard ด้วยการ์ดจากบนมืออย่างน้อย ${attackData.guardRestrictCount} ใบ! (ตอนนี้เลือกไว้ ${fromHandCount} ใบ)`);
+                return;
+            }
 
             guardCards.forEach(c => {
                 totalShieldAdded += parseInt(c.dataset.shield || "0");
@@ -3788,12 +4515,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Mirrors Vairina Reset ---
+        if (attacker.dataset.mirrorsPowerAdded === "true") {
+            attacker.dataset.power = parseInt(attacker.dataset.power) - 10000;
+            attacker.dataset.mirrorsPowerAdded = "false";
+            syncPowerDisplay(attacker);
+        }
+
+        // --- Bram Vairina On-Hit ---
+        if (attackData.isHit && attackData.isTargetVanguard && name.includes('Bram Vairina') && attacker.dataset.isXoverDress === "true") {
+            if (await vgConfirm("Bram Vairina: [AUTO] เมื่อโจมตีฮิตแวนการ์ด! [SB1] เลือก 1 แถวตั้ง และรีไทร์ยูนิทคู่แข่งทั้งหมดในแถวนั้น?")) {
+                if (paySoulBlast(1)) {
+                    await promptRetireColumn();
+                }
+            }
+        }
+
         // Reset temporary flags
         attacker.dataset.magnoliaUsedInThisBattle = "false";
         attacker.dataset.alpinBindReady = "false";
         attacker.dataset.goildoatRetireReady = "false";
         attacker.dataset.gabrestrict = "false";
         attacker.dataset.guardRestrictGrades = "";
+        attacker.dataset.guardRestrictCount = "0";
     }
 
     function counterCharge(count) {
@@ -4027,6 +4771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const customId = urlParams.get('customId');
 
     if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
+    else if (deckChoice === 'nirvana') currentDeck = nirvanaJhevaDeck;
 
     if (role === 'host') {
         initPeer(customId);
