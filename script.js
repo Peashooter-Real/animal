@@ -266,9 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
 
             // G1 (13 cards total)
-            ...Array(4).fill({ name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 10000, skill: '[CONT](RC): ในสถานะ "Final Rush" ยูนิทอื่นทั้งหมดของคุณในแถวแนวตั้งเดียวกับยูนิทนี้ได้รับพลัง +5000 (ทำงานในเทิร์นคู่แข่งด้วย)' }),
-            ...Array(3).fill({ name: 'Diabolos Madonna, Mabel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้บูสต์แวนการ์ด ในสถานะ "Final Rush" [CB1] แวนการ์ดได้รับ "Triple Drive" จนจบเทิร์น' }),
-            ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 10000, skill: '[AUTO](RC): เมื่อยูนิทที่บูสต์ด้วยยูนิทนี้โจมตีฮิตแวนการ์ด ในสถานะ "Final Rush" [คอสต์][CB1 & นำเรียร์การ์ดที่ยูนิทนี้บูสต์ไปไว้ใต้กอง] จั่วการ์ด 1 ใบ เลือกยูนิทอื่นของคุณ 1 ใบ ได้รับพลัง +5000 จนจบเทิร์น' }),
+            ...Array(4).fill({ name: 'Diabolos Girls, Stefanie', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): ในสถานะ "Final Rush" ยูนิทอื่นทั้งหมดของคุณในแถวแนวตั้งเดียวกับยูนิทนี้ได้รับพลัง +5000 (ทำงานในเทิร์นคู่แข่งด้วย)' }),
+            ...Array(3).fill({ name: 'Diabolos Madonna, Mabel', grade: 1, power: 7000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้บูสต์แวนการ์ด ในสถานะ "Final Rush" [CB1] แวนการ์ดได้รับ "Triple Drive" จนจบเทิร์น' }),
+            ...Array(2).fill({ name: 'Diabolos Girls, Ivanka', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทที่บูสต์ด้วยยูนิทนี้โจมตีฮิตแวนการ์ด ในสถานะ "Final Rush" [คอสต์][CB1 & นำเรียร์การ์ดที่ยูนิทนี้บูสต์ไปไว้ใต้กอง] จั่วการ์ด 1 ใบ เลือกยูนิทอื่นของคุณ 1 ใบ ได้รับพลัง +5000 จนจบเทิร์น' }),
 
             // Triggers (16 cards total)
             ...Array(8).fill({ name: 'Critical Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Grade 3 (Listed as G3 by user, but Winnsapooh is G1 base with reduction)
             ...Array(3).fill({ name: 'Blue Artillery Dragon, Inlet Pulse Dragon', grade: 3, power: 13000, skill: '[AUTO](RC): เมื่อจบเทิร์นของคุณ หากมีการโจมตี 4 ครั้งขึ้นไปในเทิร์นนี้ [คอสต์][นำยูนิทนี้เข้าสู่โซล] จั่วการ์ด 1 ใบ' }),
             ...Array(3).fill({ name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true, skill: '[AUTO](VC): เมื่อจบการโจมตีแบทเทิลที่ยูนิทนี้โจมตี [คอสต์][Counter-Blast 1] เลือกเรียร์การ์ดของคุณ 1 ใบจนจบเทิร์นยูนิทนั้นสามารถโจมตีจากแถวหลังได้และได้รับพลัง +5000 หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกได้ 3 ใบแทน 1 ใบ' }),
-            ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 1, power: 8000, shield: 5000, skill: '[CONT]Deck/Hand: หากมีแวนการ์ด "Sylvan Horned Beast" เกรด 2 ขึ้นไปที่ไม่ใช่ชื่อตัวมันเอง การ์ดนี้เกรด -1\n[CONT](RC): หากแวนการ์ด "Magnolia" ถูกวางในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +10000' }),
+            ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 3, power: 13000, skill: '[CONT]Deck/Hand: หากมีแวนการ์ด "Sylvan Horned Beast" เกรด 2 ขึ้นไปที่ไม่ใช่ชื่อตัวมันเอง การ์ดนี้เกรด -1\n[CONT](RC): หากแวนการ์ด "Magnolia" ถูกวางในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +10000' }),
 
             // Grade 2
             ...Array(1).fill({ name: 'Sylvan Horned Beast, Bojalcorn', grade: 2, power: 10000, shield: 5000, skill: '[ACT](RC): [CB1] จนจบเทิร์น ยูนิทนี้ได้รับ "[CONT]Back Row (RC): เมื่อยูนิทนี้โจมตี จะโจมตีแถวหน้าคู่แข่งทั้งหมด"' }),
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Sword Equip Dragon, Galondight', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกนำไปซ้อนใต้ร่าง X-overDress เลือกยูนิทที่ซ้อนทับ พลัง+5000 จนจบเทิร์น (ถ้าเป็น Garou Vairina พลัง+5000 แทนที่จะเป็น +5000)' }),
             ...Array(4).fill({ name: 'Mirror Reflection Equip, Mirrors Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Graillumirror"\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือก "Vairina" 2 ใบจากดรอบมาซ้อนใต้การ์ดนี้\n[AUTO](RC): เมื่อโจมตี พลัง+10000 จากนั้น [ทิ้งการ์ด Vairina ที่ซ้อนอยู่ 1 ใบ] เลือก "จั่วการ์ด 1 ใบ" หรือ "CC1"' }),
             ...Array(2).fill({ name: 'Jeweled Sword Equip, Garou Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Galondight"\n[CONT](RC): หากอยู่ในสถานะ X-overDress พลัง+10000 และเมื่อยูนิทนี้โจมตี คู่แข่งต้องคอลการ์ดจากบนมือลง (GC) ครั้งละ 2 ใบขึ้นไป' }),
-            ...Array(1).fill({ name: 'Flaring Cannon Equip, Baur Vairina', grade: 2, power: 10000, shield: 5000, skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[ACT](RC): หากอยู่ในสถานะ X-overDress [SB2] เลือกเรียร์การ์ดคู่แข่ง 1 ใบและรีไทร์\n[AUTO](RC): เมื่อโจมตีแวนการ์ดในสถานะ X-overDress พลัง+2000 ต่อช่อง RC ที่ว่างของคู่แข่ง และถ้าคู่แข่งมีเรียร์การ์ด 1 ใบหรือน้อยกว่า [CB1] ยูนิทนี้ Drive-1 และทำการ Drive Check' }),
+            ...Array(1).fill({ name: 'Flaring Cannon Equip, Baur Vairina', grade: 3, power: 13000,  skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[ACT](RC): หากอยู่ในสถานะ X-overDress [SB2] เลือกเรียร์การ์ดคู่แข่ง 1 ใบและรีไทร์\n[AUTO](RC): เมื่อโจมตีแวนการ์ดในสถานะ X-overDress พลัง+2000 ต่อช่อง RC ที่ว่างของคู่แข่ง และถ้าคู่แข่งมีเรียร์การ์ด 1 ใบหรือน้อยกว่า [CB1] ยูนิทนี้ Drive-1 และทำการ Drive Check' }),
             ...Array(2).fill({ name: 'Vairina Arcs', grade: 2, power: 10000, shield: 5000, skill: '[overDress]-"Trickstar"\n[AUTO]: เมื่อลง (RC) ในสถานะ overDress [CB1] จั่วการ์ด 2 ใบและพลัง+5000' }),
             ...Array(3).fill({ name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: [ทิ้งการ์ด 1 ใบ] เลือก "Trickstar" 1 ใบ และ <Prayer Dragon> 1 ใบจากดรอบคอลลง (RC)\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบที่อยู่ในสถานะ [XoverDress] และ Stand ยูนิทนั้น' }),
 
