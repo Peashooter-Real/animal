@@ -164,9 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos Boys, Eden': 'picture/eden.jpg',
         'Diabolos Buckler, Jamil': 'picture/jamil.jpg',
         'Recusal Hate Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_035.png',
-        'Diabolos Girls, Stefanie': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_081.png',
-        'Diabolos Madonna, Mabel': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_074.png',
-        'Diabolos Girls, Ivanka': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_068.png',
+        'Diabolos Girls, Stefanie': 'picture/stefani.jpg',
+        'Diabolos Madonna, Mabel': 'picture/mabel.jpg',
+        'Diabolos Girls, Ivanka': 'picture/ivanka.jpg',
 
         // Triggers - Dark States (Bruce)
         'Critical Trigger (Dark States)': 'https://namu.wiki/file/dsd02_011.png',
@@ -189,8 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sylvan Horned Beast, Winnsapooh': 'picture/winnsapooh.jpg',
         'Sylvan Horned Beast, Gabregg': 'picture/gabregg.jpg',
         'Sylvan Horned Beast, Bojalcorn': 'picture/bojalcorn.jpg',
-        'Spiritual Body Condensation': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_053.png',
-        'In the Dim Darkness, the Frozen Resentment': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_048.png',
+        'Spiritual Body Condensation': 'picture/spirit.jpg',
+        'In the Dim Darkness, the Frozen Resentment': 'picture/dark.jpg',
 
         // Triggers - Stoicheia (Magnolia)
         'Critical Trigger (Stoicheia)': 'https://namu.wiki/file/dsd04_011.png',
