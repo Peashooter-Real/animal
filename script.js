@@ -755,6 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let longPressTimer;
         let isLongPress = false;
         const longPressDuration = 1500; // 1.5 seconds
+        let lastClickTime = 0;
 
         const startLongPress = (e) => {
             isLongPress = false;
@@ -839,6 +840,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('click', (e) => {
+            const currentTime = new Date().getTime();
+            const tapGap = currentTime - lastClickTime;
+            
+            // Double click/tap for skill viewing
+            if (tapGap < 350 && tapGap > 0) {
+                openSkillViewer(card);
+                lastClickTime = 0; // Reset
+                return;
+            }
+            lastClickTime = currentTime;
+
             if (isLongPress) {
                 isLongPress = false;
                 return;
@@ -917,8 +929,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (card.classList.contains('opponent-card')) return;
                         // Prevent backrow from attacking
                         if (card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc_back_')) {
-                            alert("Backrow units cannot attack!");
-                            return;
+                            // Bug Fix: Check for Magnolia Elder or temporary backrow attack abilities
+                            if (!isMagnoliaElderSkillActive() && card.dataset.canAttackFromBack !== "true") {
+                                alert("Backrow units cannot attack!");
+                                return;
+                            }
                         }
                         attackingCard = card;
                         card.classList.add('attacking-glow');
@@ -1319,6 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const attackerZone = attackerParentCircle.dataset.zone || '';
         const isAttackerBackRow = attackerZone.includes('back');
         const isElderActive = isMagnoliaElderSkillActive();
+        const isGrade4Elder = attacker.dataset.name.includes('Magnolia Elder') && parseInt(attacker.dataset.grade) === 4;
 
         if (isAttackerBackRow && !isElderActive) {
             // Checking for temporary back-column attack ability (Magnolia King skill)
@@ -1328,6 +1344,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 attackingCard = null;
                 return;
             }
+        }
+
+        // Auto-assign Triple Drive to G4 Magnolia Elder
+        if (attackerParentCircle.classList.contains('vc') && isGrade4Elder) {
+            attacker.dataset.tripleDrive = "true";
         }
 
         let targetId = target.id;
@@ -3052,7 +3073,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        const playOrderBtn = document.getElementById('play-order-btn');
+        if (playOrderBtn) {
+            const isOrder = card.dataset.skill && card.dataset.skill.includes('[Order]');
+            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+
+            if (isOrder && inHand && isMyTurn) {
+                playOrderBtn.classList.remove('hidden');
+                playOrderBtn.onclick = () => {
+                    playOrder(card);
+                    skillViewer.classList.add('hidden');
+                };
+            } else {
+                playOrderBtn.classList.add('hidden');
+            }
+        }
+
         skillViewer.classList.remove('hidden');
+    }
+
+    async function playOrder(card) {
+        if (orderPlayedThisTurn) {
+            alert("คุณเล่น Order ไปแล้วในเทิร์นนี้!");
+            return;
+        }
+
+        const confirmPlay = await vgConfirm(`Play Order: ${card.dataset.name}?`);
+        if (!confirmPlay) return;
+
+        // Activate core skill effect
+        await activateCardSkill(card);
+
+        // Move to drop zone
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        if (dropZone) {
+            dropZone.appendChild(card);
+            sendMoveData(card);
+            updateHandCount();
+            updateDropCount();
+            orderPlayedThisTurn = true;
+            alert(`Played Order: ${card.dataset.name}`);
+        }
     }
 
     async function activateCardSkill(card) {
@@ -3567,7 +3628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attackData.isVanguardAttacker) {
                 currentAttackData = { ...attackData, opponentShield: 0 };
                 const grade = parseInt(attackData.vanguardGrade || "0");
-                let checks = grade >= 3 ? 2 : 1;
+                let checks = grade >= 4 ? 3 : (grade >= 3 ? 2 : 1);
                 if (attackData.tripleDrive) checks = 3;
                 driveCheck(checks, attackData.totalCritical);
             } else {
@@ -3622,7 +3683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (attackData.isVanguardAttacker) {
             const grade = parseInt(attackData.vanguardGrade || "0");
-            let checks = grade >= 3 ? 2 : 1;
+            let checks = grade >= 4 ? 3 : (grade >= 3 ? 2 : 1);
             if (attackData.tripleDrive) checks = 3;
             driveCheck(checks, attackData.totalCritical, data.isPG); // Pass PG to driveCheck
         } else {
