@@ -288,7 +288,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Triggers - Dragon Empire
         'Critical Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_011.png',
         'Draw Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_012.png',
-        'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png'
+        'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png',
+
+        // Keter Sanctuary Deck
+        'Wingul Brave': 'picture/wingul_brave.jpg',
+        'Little Sage, Maron': 'picture/maron.jpg',
+        'Blaster Blade': 'picture/blaster_blade.jpg',
+        'Majesty Lord Blaster': 'picture/majesty.jpg',
+        'Blaster Dark': 'picture/blaster_dark.jpg',
+        'Knight of Inheritance, Emmeline': 'picture/emmeline.jpg',
+        'Palladium Zeal Dragon (PG)': 'picture/palladium.jpg',
+        'Ordeal Dragon': 'picture/ordeal.jpg',
+        'Knight of Old Fate, Cordiela': 'picture/cordiela.jpg',
+        'Painkiller Angel': 'picture/painkiller.jpg',
+        'Departure Towards the Dawn': 'picture/departure_dawn.jpg',
+
+        'Critical Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_010.png',
+        'Front Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_012.png',
+        'Heal Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_013.png',
+        'Light Dragon Deity of Honors, Amartinoa': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_004.png'
     };
 
     // --- Deck Definitions ---
@@ -398,6 +416,31 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Dragontree Deity of Resurgence, Dragveda', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random())
     };
+
+    const majestyDeck = {
+        rideDeck: [
+            { name: 'Wingul Brave', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]:When this unit is rode upon, if you went second, draw a card.' },
+            { name: 'Little Sage, Maron', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]:When this unit is rode upon by a grade 2 with "Blaster" in its card name, look at the top seven cards of your deck, choose up to one grade 2 with "Blaster" in its card name from among them, reveal it and put it into your hand, and shuffle your deck. If you did not reveal a card, choose a "Wingal Brave" from your soul, and you may call it to (RC).\n[CONT](RC):During your turn, if you have three or more units, this unit gets [Power] +2000.' },
+            { name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]:When this unit is placed on (VC), [COST][Counter-Blast 1], choose one of your opponent\'s rear-guards, and retire it. If you did not retire, draw a card.\n[AUTO]:When this unit is placed on (RC), [COST][Counter-Blast 1], choose one of your opponent\'s grade 2 or greater rear-guards, and retire it.' },
+            { name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC):If your soul has a "Blaster Blade" and a "Blaster Dark", this unit gets [Power] +2000/[Critical] +1. (Active on opponent\'s turn too)\n[AUTO](VC):When this unit attacks a vanguard, perform all of the following. (You can choose to perform only one)\n・[COST][Put a "Blaster Blade" from your (RC) into your soul], choose one of your opponent\'s rear-guards, and retire it.\n・[COST][Put a "Blaster Dark" from your (RC) into your soul], and this unit gets drive +1 until end of turn.' }
+        ],
+        mainDeck: [
+            ...Array(3).fill({ name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC):If your soul has a "Blaster Blade" and a "Blaster Dark", this unit gets [Power] +2000/[Critical] +1. (Active on opponent\'s turn too)\n[AUTO](VC):When this unit attacks a vanguard, perform all of the following. (You can choose to perform only one)\n・[COST][Put a "Blaster Blade" from your (RC) into your soul], choose one of your opponent\'s rear-guards, and retire it.\n・[COST][Put a "Blaster Dark" from your (RC) into your soul], and this unit gets drive +1 until end of turn.' }),
+            ...Array(3).fill({ name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]:When this unit is placed on (VC), [COST][Counter-Blast 1], choose one of your opponent\'s rear-guards, and retire it. If you did not retire, draw a card.\n[AUTO]:When this unit is placed on (RC), [COST][Counter-Blast 1], choose one of your opponent\'s grade 2 or greater rear-guards, and retire it.' }),
+            ...Array(4).fill({ name: 'Blaster Dark', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](VC/RC): เมื่อลงสนาม [CB1 & SB1] เลือกทิ้งเรียร์การ์ดคู่แข่งแถวหลัง 1 ใบ' }),
+            ...Array(4).fill({ name: 'Knight of Inheritance, Emmeline', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อโจมตี หากแวนการ์ดมีคำว่า "Blaster", พลัง +5000' }),
+            ...Array(4).fill({ name: 'Palladium Zeal Dragon (PG)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
+            ...Array(4).fill({ name: 'Ordeal Dragon', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้บูสท์ให้ยูนิทที่ชื่อ "Blaster" พลัง +5000' }),
+            ...Array(4).fill({ name: 'Knight of Old Fate, Cordiela', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): หากแวนการ์ดมีชื่อ "Majesty" สามารถป้องกันจากแนวหลังได้ (โล่ 5000)' }),
+            ...Array(2).fill({ name: 'Painkiller Angel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อจบการต่อสู้ที่ยูนิทนี้บูสท์ คุณสามารถ [นำการ์ดนี้เข้าสู่โซล] และจั่วการ์ด 1 ใบ' }),
+            ...Array(2).fill({ name: 'Departure Towards the Dawn', grade: 1, power: 0, shield: 0, skill: '[Order]: จ่าย [SB1] ดูกองการ์ดแล้วเลือก "Blaster" 1 ใบ ขึ้นมือ' }),
+            ...Array(8).fill({ name: 'Critical Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(3).fill({ name: 'Front Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Light Dragon Deity of Honors, Amartinoa', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
+    };
+
 
     let currentDeck = bruceDeck;
 
@@ -3664,10 +3707,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lobbyContent = document.querySelector('.lobby-content');
                     if (lobbyContent) lobbyContent.classList.add('effect-match-found');
 
-                    const deckNameLookup = { bruce: 'bruce', magnolia: 'magnolia', nirvana: 'nirvana' };
+                    const deckNameLookup = { bruce: 'bruce', magnolia: 'magnolia', nirvana: 'nirvana', majesty: 'majesty' };
                     let currentDeckName = 'bruce';
                     if (currentDeck === magnoliaDeck) currentDeckName = 'magnolia';
                     else if (currentDeck === nirvanaJhevaDeck) currentDeckName = 'nirvana';
+                    else if (currentDeck === majestyDeck) currentDeckName = 'majesty';
 
                     setTimeout(() => {
                         setupConnection();
@@ -5199,6 +5243,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
     else if (deckChoice === 'nirvana') currentDeck = nirvanaJhevaDeck;
+    else if (deckChoice === 'majesty') currentDeck = majestyDeck;
 
     if (role === 'host') {
         initPeer(customId);
