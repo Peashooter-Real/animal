@@ -35,11 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
             document.body.appendChild(overlay);
 
-            document.getElementById('vg-confirm-yes').onclick = () => {
+            overlay.querySelector('#vg-confirm-yes').onclick = () => {
                 overlay.remove();
                 resolve(true);
             };
-            document.getElementById('vg-confirm-no').onclick = () => {
+            overlay.querySelector('#vg-confirm-no').onclick = () => {
                 overlay.remove();
                 resolve(false);
             };
@@ -315,15 +315,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Strike Equip Dragon, Stragallio', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากบนมือ ถ้าแวนมีชื่อ "Nirvana" [ทิ้งการ์ด 1 ใบ] ค้นหาการ์ดที่มีความสามารถ [overDress] หรือ "Trickstar" 1 ใบขึ้นมือและสับกอง\n[AUTO]: เมื่อตกอยู่ในสถานะ originalDress [CB1] เลือก "Trickstar" จากดรอบคอลลง (RC)' }),
             ...Array(3).fill({ name: 'Sword Equip Dragon, Galondight', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกนำไปซ้อนใต้ร่าง X-overDress เลือกยูนิทที่ซ้อนทับ พลัง+5000 จนจบเทิร์น (ถ้าเป็น Garou Vairina พลัง+5000 แทนที่จะเป็น +5000)' }),
             ...Array(4).fill({ name: 'Mirror Reflection Equip, Mirrors Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Graillumirror"\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือก "Vairina" 2 ใบจากดรอบมาซ้อนใต้การ์ดนี้\n[AUTO](RC): เมื่อโจมตี พลัง+10000 จากนั้น [ทิ้งการ์ด Vairina ที่ซ้อนอยู่ 1 ใบ] เลือก "จั่วการ์ด 1 ใบ" หรือ "CC1"' }),
-            ...Array(3).fill({ name: 'Jeweled Sword Equip, Garou Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Galondight"\n[CONT](RC): หากอยู่ในสถานะ X-overDress พลัง+10000 และเมื่อยูนิทนี้โจมตี คู่แข่งต้องคอลการ์ดจากบนมือลง (GC) ครั้งละ 2 ใบขึ้นไป' }),
-            ...Array(1).fill({ name: 'Sturdy Wall Equip, Vils Vairina', grade: 2, power: 10000, shield: 10000, skill: 'X-overDress: "Trickstar" & <Prayer Dragon>\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือกการ์ดที่มี X-overDress จากดรอบ 1 ใบขึ้นมือ\n[CONT](RC/GC): หากอยู่ในสถานะ X-overDress พลัง+5000/Shield+10000 และไม่ถูกเลือกโดยสกิลคู่แข่ง' }),
-            ...Array(2).fill({ name: 'Brilliant Equip, Bram Vairina', grade: 3, power: 13000, skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[CONT](RC): ในเทิร์นคุณ หากอยู่ในสถานะ X-overDress พลัง+10000 และถ้าแวนคู่แข่งเกรด 3 ขึ้นไป พลัง+10000\n[AUTO](RC)[1/turn]: เมื่อโจมตีฮิตแวนการ์ด หากอยู่ในสถานะ X-overDress [SB1] เลือก 1 แถวตั้ง และรีไทร์ยูนิทคู่แข่งทั้งหมดในแถวนั้น' }),
+            ...Array(2).fill({ name: 'Jeweled Sword Equip, Garou Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Galondight"\n[CONT](RC): หากอยู่ในสถานะ X-overDress พลัง+10000 และเมื่อยูนิทนี้โจมตี คู่แข่งต้องคอลการ์ดจากบนมือลง (GC) ครั้งละ 2 ใบขึ้นไป' }),
+            ...Array(1).fill({ name: 'Flaring Cannon Equip, Baur Vairina', grade: 2, power: 10000, shield: 5000, skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[ACT](RC): หากอยู่ในสถานะ X-overDress [SB2] เลือกเรียร์การ์ดคู่แข่ง 1 ใบและรีไทร์\n[AUTO](RC): เมื่อโจมตีแวนการ์ดในสถานะ X-overDress พลัง+2000 ต่อช่อง RC ที่ว่างของคู่แข่ง และถ้าคู่แข่งมีเรียร์การ์ด 1 ใบหรือน้อยกว่า [CB1] ยูนิทนี้ Drive-1 และทำการ Drive Check' }),
+            ...Array(2).fill({ name: 'Vairina Arcs', grade: 2, power: 10000, shield: 5000, skill: '[overDress]-"Trickstar"\n[AUTO]: เมื่อลง (RC) ในสถานะ overDress [CB1] จั่วการ์ด 2 ใบและพลัง+5000' }),
             ...Array(3).fill({ name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: 'Persona Ride: Front row +10000' }),
 
             ...Array(7).fill({ name: 'Critical Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(4).fill({ name: 'Draw Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Heal Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
-            { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+            { name: 'Dragontree Deity of Resurgence, Dragveda', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random())
     };
 
@@ -520,48 +520,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resolveAbilityQueue(queue) {
-        if (!queue || queue.length === 0) return;
+        return new Promise(resolveAll => {
+            if (!queue || queue.length === 0) {
+                resolveAll();
+                return;
+            }
 
-        if (queue.length === 1) {
-            queue[0].resolve(() => { });
-            return;
-        }
+            if (queue.length === 1) {
+                queue[0].resolve(() => {
+                    resolveAll();
+                });
+                return;
+            }
 
-        viewerTitle.textContent = "Select ability resolution order";
-        viewerGrid.innerHTML = '';
-        zoneViewer.classList.remove('hidden');
+            viewerTitle.textContent = "Select ability resolution order";
+            viewerGrid.innerHTML = '';
+            zoneViewer.classList.remove('hidden');
 
-        queue.forEach((ability, index) => {
-            const tile = document.createElement('div');
-            tile.className = 'card';
-            tile.style.position = 'relative';
-            tile.style.cursor = 'pointer';
-            tile.style.display = 'flex';
-            tile.style.flexDirection = 'column';
-            tile.style.justifyContent = 'center';
-            tile.style.alignItems = 'center';
-            tile.style.textAlign = 'center';
-            tile.style.padding = '10px';
-            tile.style.background = 'rgba(255, 42, 109, 0.1)';
-            tile.style.border = '2px solid var(--accent-vanguard)';
+            queue.forEach((ability, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'card';
+                tile.style.position = 'relative';
+                tile.style.cursor = 'pointer';
+                tile.style.display = 'flex';
+                tile.style.flexDirection = 'column';
+                tile.style.justifyContent = 'center';
+                tile.style.alignItems = 'center';
+                tile.style.textAlign = 'center';
+                tile.style.padding = '10px';
+                tile.style.background = 'rgba(255, 42, 109, 0.1)';
+                tile.style.border = '2px solid var(--accent-vanguard)';
 
-            tile.innerHTML = `
+                tile.innerHTML = `
                 <div style="font-weight:bold; color:white; margin-bottom:5px; font-size:0.9rem;">${ability.name}</div>
                 <div style="font-size:0.65rem; color:#aaa;">${ability.description}</div>
             `;
 
-            tile.onclick = () => {
-                zoneViewer.classList.add('hidden');
-                ability.resolve(() => {
-                    const nextQueue = queue.filter((_, i) => i !== index);
-                    setTimeout(() => resolveAbilityQueue(nextQueue), 300);
-                });
-            };
-            viewerGrid.appendChild(tile);
+                tile.onclick = () => {
+                    zoneViewer.classList.add('hidden');
+                    ability.resolve(() => {
+                        const nextQueue = queue.filter((_, i) => i !== index);
+                        // Using thenable or async recursion
+                        resolveAbilityQueue(nextQueue).then(resolveAll);
+                    });
+                };
+                viewerGrid.appendChild(tile);
+            });
         });
     }
 
-    function checkRideAbilities(oldVanguard, newCard) {
+    async function checkRideAbilities(oldVanguard, newCard) {
         const queue = [];
         const oldName = (oldVanguard.dataset.name || "").toLowerCase();
         const newName = (newCard.dataset.name || "").toLowerCase();
@@ -763,7 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`Ability Queue built: ${queue.length} items.`);
         if (queue.length > 0) {
-            resolveAbilityQueue(queue);
+            return await resolveAbilityQueue(queue);
         }
     }
     function findCounterTrigger(type) {
@@ -1375,7 +1383,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Heal failed (your damage must be >= opponent's damage).");
             }
         } else if (triggerType === 'Over') {
-            if (!isDamageCheck) drawCard(true);
+            if (!isDamageCheck) {
+                drawCard(true);
+                // Nation specific OT additional effects (Drive Check only)
+                const otName = cardData.name;
+                if (otName.includes('Gallmageveld')) {
+                    // Dark States: [CONT]: In your turn, all your vanguards get [Power]+10000/[Critical]+1 until the end of the game.
+                    window.otDarkStatesActive = true;
+                    alert("Dark States OT: All your Vanguards get +10000 Power and +1 Critical for the rest of the game!");
+                    updateAllStaticBonuses();
+                } else if (otName.includes('Blessfavor')) {
+                    // Stoicheia: Draw 1, Front row +10000, Heal 1 (standard heal rules), select 1 unit get +1 Crit
+                    window.otStoicheiaActive = true;
+                    updateAllStaticBonuses();
+
+                    // Heal 1
+                    const myDamage = document.querySelectorAll('.my-side .damage-zone .card').length;
+                    const oppDamageCardCount = parseInt(document.getElementById('opp-damage-count-num')?.textContent || "0");
+                    if (myDamage > 0 && myDamage >= oppDamageCardCount) {
+                        const damageZone = document.querySelector('.my-side .damage-zone');
+                        const cardToHeal = damageZone.querySelector('.card');
+                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        dropZone.appendChild(cardToHeal);
+                        cardToHeal.classList.remove('rest');
+                        sendMoveData(cardToHeal);
+                        updateDropCount();
+                        alert("Stoicheia OT: Heal 1 successful!");
+                    }
+
+                    // Critical +1 (Step 3 - following power/draw/heal)
+                    pendingCriticalIncrease = 1;
+                    targetingType = 'critical';
+                    alert("Stoicheia OT: Select 1 unit to receive +1 Critical.");
+                } else if (otName.includes('Dragveda')) {
+                    // Dragon Empire: Stand your VG
+                    const vg = document.querySelector('.my-side .circle.vc .card');
+                    if (vg) {
+                        vg.classList.remove('rest');
+                        vg.style.transform = 'none';
+                        sendMoveData(vg);
+                        alert("Dragon Empire OT: Stand your Vanguard!");
+                    }
+                }
+            }
         }
 
         pendingPowerIncrease = powerIncrease;
@@ -1579,6 +1629,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // --- Garou Vairina [AUTO](RC) ---
+            if (attacker.dataset.name.includes('Garou Vairina')) {
+                if (attacker.dataset.isXoverDress === "true") {
+                    totalPower += 10000; // Static bonus should already be added by applyStaticBonuses, but let's be sure or just log it
+                    // The static bonus is added in applyStaticBonuses, so totalPower is handles by syncPowerDisplay
+                    attacker.dataset.guardRestrictCount = "2";
+                    alert("Garou Vairina: X-overDress Attack! Guard Restrict: 2+ cards from hand.");
+                }
+            }
+
+            // --- Baur Vairina Attack ---
+            if (attacker.dataset.name.includes('Baur Vairina') && attacker.dataset.isXoverDress === "true") {
+                const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card').length;
+                const openRC = 5 - oppRGs;
+                const baurPwr = openRC * 2000;
+                attacker.dataset.power = parseInt(attacker.dataset.power) + baurPwr;
+                attacker.dataset.baurPwrAdded = baurPwr;
+                totalPower += baurPwr;
+                syncPowerDisplay(attacker);
+                alert(`Baur Vairina: X-overDress Attack! พลัง +${baurPwr} (ช่องว่าง: ${openRC})`);
+
+                if (oppRGs <= 1) {
+                    if (await vgConfirm("Baur Vairina: [CB1] ทำการ Drive Check (Drive -1)?")) {
+                        if (payCounterBlast(1)) {
+                            attacker.dataset.drive = "1"; // G2 usually 0, so Drive-1 of something? 
+                            // Actually "performs drive checks" usually means it gets drive -1 of its current?
+                            // Vanguard G2 normally has zero. But this skill gives it drive checks.
+                            // I'll set drive to 1.
+                            attacker.dataset.baurDriveCheck = "true";
+                            alert("Baur Vairina: ทำการ Drive Check 1 ครั้ง!");
+                        }
+                    }
+                }
+            }
+
             // --- Mirrors Vairina [AUTO](RC) ---
             if (attacker.dataset.name.includes('Mirrors Vairina')) {
                 if (attacker.dataset.isXoverDress === "true") {
@@ -1619,12 +1704,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
-            }
-
-            // --- Garou Vairina [CONT](RC) Guard Restrict ---
-            if (attacker.dataset.name.includes('Garou Vairina') && attacker.dataset.isXoverDress === "true") {
-                alert("Garou Vairina: คู่แข่งต้อง Guard ครั้งละ 2 ใบขึ้นไป!");
-                attacker.dataset.guardRestrictCount = "2";
             }
 
             // Existing attack-time skills...
@@ -1798,6 +1877,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
             }
+            if (window.currentIncomingAttack && window.currentIncomingAttack.guardRestrictCount > 0) {
+                const currentGuardCount = Array.from(zone.querySelectorAll('.card')).length;
+                if (currentGuardCount + 1 < window.currentIncomingAttack.guardRestrictCount) {
+                    alert(`GUARD RESTRICT! คุณต้องคอลการ์ดอย่างน้อย ${window.currentIncomingAttack.guardRestrictCount} ใบเพื่อการ์ด!`);
+                    return false;
+                }
+            }
+
+            // --- Trigger Shield Buff ---
+            const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+            const oppVGGrade = oppVG ? parseInt(oppVG.dataset.grade || "0") : 0;
+            if (oppVGGrade >= 3) {
+                const triggerType = card.dataset.trigger || "";
+                if (triggerType === "Draw") {
+                    card.dataset.shield = "10000";
+                    alert(`Draw Trigger: Shield +5000! (กลายเป็น 10000)`);
+                } else if (triggerType === "Front") {
+                    card.dataset.shield = "20000";
+                    alert(`Front Trigger: Shield +5000! (กลายเป็น 20000)`);
+                }
+            }
 
             // Perfect Guard Logic: Discard cost
             const isPG = (card.dataset.name && card.dataset.name.includes('Perfect Guard')) || card.dataset.isPG === "true";
@@ -1889,8 +1989,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyStaticBonuses(card);
 
                 sendMoveData(card);
-                handleRideAbilities(card);
-                checkDropAbilities(card); // Goildoat Drop Skill
+                await handleRideAbilities(card);
+                await checkDropAbilities(card); // Goildoat Drop Skill
                 updatePhaseUI(true);
                 return true;
             }
@@ -1943,6 +2043,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("You can only call units from hand during the Main Phase!");
                     return false;
                 }
+
+                const skill = card.dataset.skill || "";
+                const isOD = skill.includes('[overDress]');
+                const isXOD = skill.includes('[XoverDress]');
+
+                if (isOD || isXOD) {
+                    const choice = await vgConfirm(`${card.dataset.name}: คุณต้องการคอลปกติ หรือ Dress (ซ้อนทับยูนิท)? (กด CONFIRM เพื่อ Dress / CANCEL เพื่อคอลปกติ)`);
+                    if (choice) {
+                        if (isXOD) await performXoverDress(card);
+                        else await performOverDress(card);
+                        return true;
+                    }
+                }
+
                 if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
                 zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
@@ -2055,6 +2169,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.shield = parseInt(card.dataset.shield || "5000") - 5000;
                 card.dataset.burstBonusApplied = "false";
             }
+        }
+
+        // --- Dark States OT Rest of Game Effect (Your Turn Only) ---
+        if (window.otDarkStatesActive && isMyTurn && zone === 'vc') {
+            if (card.dataset.otDarkStatesActiveBuff !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.critical = parseInt(card.dataset.critical || 1) + 1;
+                card.dataset.otDarkStatesActiveBuff = "true";
+            }
+        } else if (card.dataset.otDarkStatesActiveBuff === "true") {
+            card.dataset.power = parseInt(card.dataset.power) - 10000;
+            card.dataset.critical = parseInt(card.dataset.critical || 2) - 1;
+            card.dataset.otDarkStatesActiveBuff = "false";
+        }
+
+        // --- Stoicheia OT Front Row +10000 (Until end of turn) ---
+        if (window.otStoicheiaActive && isMyTurn && isFrontRow) {
+            if (card.dataset.otStoicheiaBuff !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.otStoicheiaBuff = "true";
+            }
+        } else if (card.dataset.otStoicheiaBuff === "true") {
+            card.dataset.power = parseInt(card.dataset.power) - 10000;
+            card.dataset.otStoicheiaBuff = "false";
+        }
+
+        // --- Galondight / Vairina Arcs Turn-End Buffs ---
+        if (card.dataset.turnEndBuffActive === "true" && isMyTurn) {
+            const val = parseInt(card.dataset.turnEndBuffPower || "0");
+            if (card.dataset.turnEndBuffApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + val;
+                card.dataset.turnEndBuffApplied = "true";
+            }
+        } else if (card.dataset.turnEndBuffApplied === "true") {
+            const val = parseInt(card.dataset.turnEndBuffPower || "0");
+            card.dataset.power = parseInt(card.dataset.power) - val;
+            card.dataset.turnEndBuffApplied = "false";
+            card.dataset.turnEndBuffActive = "false";
+            card.dataset.turnEndBuffPower = "0";
         }
 
         // 4. Final Rush Static Bonus - Only for owner
@@ -2190,24 +2343,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.charisOrderBuff = "false";
         }
 
-        // 12. Bram Vairina [CONT] X-overDress +10000/20000 Power
-        if (name.includes('Bram Vairina') && card.dataset.isXoverDress === "true" && isMyTurn) {
-            const oppVg = document.querySelector('.opponent-side .circle.vc .card');
-            const oppVgGrade = oppVg ? parseInt(oppVg.dataset.grade || "0") : 0;
-            let pwr = 10000;
-            if (oppVgGrade >= 3) pwr = 20000;
-
-            if (card.dataset.bramXoverBuff !== pwr.toString()) {
-                const oldPwr = parseInt(card.dataset.bramXoverBuff || "0");
-                card.dataset.power = (parseInt(card.dataset.power) - oldPwr) + pwr;
-                card.dataset.bramXoverBuff = pwr.toString();
-            }
-        } else if (card.dataset.bramXoverBuff && card.dataset.bramXoverBuff !== "0") {
-            const oldPwr = parseInt(card.dataset.bramXoverBuff);
-            card.dataset.power = parseInt(card.dataset.power) - oldPwr;
-            card.dataset.bramXoverBuff = "0";
-        }
-
         // 6. Nirvana Jheva Ride Line Column Bonus (+5000 if Prayer Dragon in column)
         const isRinoOrReiyu = name.includes('Rino') || name.includes('Reiyu');
         if (isRinoOrReiyu && isMyTurn) {
@@ -2321,17 +2456,29 @@ document.addEventListener('DOMContentLoaded', () => {
     async function processInletPulse(units) {
         for (const unit of units) {
             if (await vgConfirm(`Inlet Pulse Dragon: [AUTO](RC) จ่าย [คอสต์: เข้าโซล] เพื่อจั่วการ์ด 1 ใบ?`)) {
-                soulPool.push(unit);
-                unit.remove();
-                updateSoulUI();
-                updateDropCount();
-                drawCard(true);
+                const parent = unit.parentElement;
+                if (parent && parent.classList.contains('circle')) {
+                    soulPool.push(unit);
+                    // Use a more robust way to clear the circle while keeping labels
+                    const circleLabel = parent.querySelector('.circle-label')?.textContent || (parent.classList.contains('vc') ? 'V' : 'R');
+                    parent.innerHTML = `<div class="glow-ring"></div><span class="circle-label">${circleLabel}</span>`;
+                    if (parent.classList.contains('vc')) {
+                        parent.innerHTML += `<div id="soul-counter" class="soul-badge">Soul: ${soulPool.length}</div>`;
+                        const newSoulCounter = parent.querySelector('#soul-counter');
+                        newSoulCounter.addEventListener('click', handleSoulView);
+                    }
 
-                sendData({
-                    type: 'moveCard',
-                    cardId: unit.id,
-                    zone: 'soul'
-                });
+                    updateSoulUI();
+                    drawCard(true);
+                    alert("Inlet Pulse Dragon: เข้าสู่โซลแล้ว! จั่วการ์ด 1 ใบ");
+                    sendMoveData(unit); // This sends the disappearance
+                    
+                    sendData({
+                        type: 'moveCard',
+                        cardId: unit.id,
+                        zone: 'soul'
+                    });
+                }
             }
         }
     }
@@ -2408,7 +2555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1200);
     }
 
-    function handleRideAbilities(newVanguard) {
+    async function handleRideAbilities(newVanguard) {
         if (!newVanguard || soulPool.length === 0) {
             console.log("Ride Ability Check Skipped: Soul empty or no unit.");
             return;
@@ -2416,7 +2563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // The card just ridden over is the last one added to soulPool in validateAndMoveCard
         const oldVanguard = soulPool[soulPool.length - 1];
         console.log(`Ride Triggered: ${oldVanguard.dataset.name} -> ${newVanguard.dataset.name}`);
-        checkRideAbilities(oldVanguard, newVanguard);
+        await checkRideAbilities(oldVanguard, newVanguard);
     }
 
 
@@ -2616,26 +2763,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const deckIdx = deckPool.findLastIndex(c => c.name === cardName);
                 if (deckIdx !== -1) {
                     const cardData = deckPool.splice(deckIdx, 1)[0];
-                    const realCard = createCardElement(cardData);
-
                     zoneViewer.classList.add('hidden');
                     viewerGrid.removeEventListener('click', selectionHandler);
                     updateDeckCounter();
 
-                    alert("Select a Rear-guard Circle to call.");
-                    document.body.classList.add('targeting-mode');
+                    const card = createCardElement(cardData);
+                    alert(`เรียก ${cardData.name}! โปรดเลือกช่อง RC ที่ว่างอยู่`);
 
-                    const callHandler = (ev) => {
+                    document.body.classList.add('targeting-mode');
+                    const call = (ev) => {
                         const circle = ev.target.closest('.circle.rc');
                         if (circle && !circle.querySelector('.card')) {
                             ev.stopPropagation();
-                            circle.appendChild(realCard);
-                            sendMoveData(realCard);
+                            circle.appendChild(card);
+                            sendMoveData(card);
                             document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', callHandler, true);
+                            document.removeEventListener('click', call, true);
+
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
                         }
                     };
-                    document.addEventListener('click', callHandler, true);
+                    document.addEventListener('click', call, true);
                 }
             }
         };
@@ -2669,7 +2818,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
-            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed'];
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck'];
             flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
             let changed = false;
@@ -2828,6 +2977,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         soulCharge(1);
                         promptCallMultipleFromSoul(1, "RC ที่ว่างอยู่", (c) => c.dataset.name.includes("Diabolos") && parseInt(c.dataset.grade) <= 3 && !c.dataset.trigger);
                     }
+                }
+            }
+        }
+
+        // --- Vairina Arcs [overDress] On-place ---
+        if (name.includes('Vairina Arcs') && card.dataset.isOverDress === "true") {
+            if (await vgConfirm("Vairina Arcs: [overDress] เมื่อวางบน (RC) [CB1] เพื่อจั่วการ์ด 2 ใบและพลัง+5000?")) {
+                if (payCounterBlast(1)) {
+                    drawCard(true);
+                    drawCard(true);
+                    card.dataset.turnEndBuffPower = "5000";
+                    card.dataset.turnEndBuffActive = "true";
+                    applyStaticBonuses(card);
+                    alert("Vairina Arcs: จั่วการ์ด 2 ใบ และพลัง+5000 (จนจบเทิร์น)!");
                 }
             }
         }
@@ -3321,6 +3484,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhaseIndex = 0;
         hasRiddenThisTurn = false;
         hasDiscardedThisTurn = false;
+
+        // Reset "Until end of turn" flags
+        window.otStoicheiaActive = false;
+        document.querySelectorAll('.my-side .circle .card').forEach(c => {
+            if (c.dataset.turnEndBuffActive === "true") {
+                // applyStaticBonuses will handle the removal when isMyTurn flips or during this call
+                c.dataset.turnEndBuffActive = "false";
+            }
+            applyStaticBonuses(c);
+        });
+
         updatePhaseUI(false);
         sendData({ type: 'nextTurn', currentTurn: currentTurn });
     });
@@ -3499,6 +3673,61 @@ document.addEventListener('DOMContentLoaded', () => {
         skillViewer.classList.remove('hidden');
     }
 
+    async function performOverDress(odCard) {
+        const materialName = "Trickstar";
+        alert(`overDress: เลือก ${materialName} จากสนาม`);
+        document.body.classList.add('targeting-mode');
+        const mat = await new Promise(resolve => {
+            const listener = (e) => {
+                const target = e.target.closest('.circle.rc .card:not(.opponent-card)');
+                if (target && target.dataset.name.includes(materialName)) {
+                    e.stopPropagation();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', listener, true);
+                    resolve(target);
+                }
+            };
+            document.addEventListener('click', listener, true);
+        });
+
+        alert("เลือกช่อง RC เพื่อคอลยูนิท overDress");
+        document.body.classList.add('targeting-mode');
+        const circle = await new Promise(resolve => {
+            const listener = (ev) => {
+                const targetCircle = ev.target.closest('.circle.rc');
+                if (targetCircle) {
+                    ev.stopPropagation();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', listener, true);
+                    resolve(targetCircle);
+                }
+            };
+            document.addEventListener('click', listener, true);
+        });
+
+        odCard.originalDress = [{
+            name: mat.dataset.name,
+            grade: mat.dataset.grade,
+            power: mat.dataset.power,
+            shield: mat.dataset.shield,
+            skill: mat.dataset.skill
+        }];
+        soulPool.push(mat);
+        mat.remove();
+
+        circle.innerHTML = '';
+        circle.appendChild(odCard);
+        odCard.classList.remove('rest');
+        odCard.dataset.isOverDress = "true";
+        applyStaticBonuses(odCard);
+        sendMoveData(odCard);
+        updateSoulUI();
+        updateHandCount();
+
+        checkOnPlaceAbilities(odCard);
+        alert(`${odCard.dataset.name} overDress สำเร็จ!`);
+    }
+
     async function performXoverDress(vairinaCard) {
         const skill = vairinaCard.dataset.skill || "";
         let material1Name = "Trickstar";
@@ -3507,6 +3736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (skill.includes('"Trickstar" & "Graillumirror"')) material2Name = "Graillumirror";
         else if (skill.includes('"Trickstar" & "Galondight"')) material2Name = "Galondight";
         else if (skill.includes('"Trickstar" & <Prayer Dragon>')) material2Name = "Equip Dragon";
+        else material2Name = "Equip Dragon"; // Fallback for Baur/Bram
 
         alert(`X-overDress: เลือก ${material1Name} และ ${material2Name} จากสนาม`);
 
@@ -3532,7 +3762,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mat2 = await new Promise(resolve => {
             const listener = (e) => {
                 const target = e.target.closest('.circle.rc .card:not(.opponent-card)');
-                if (target && (target.dataset.name.includes(material2Name) || (material2Name === "Equip Dragon" && target.dataset.name.includes("Equip Dragon")))) {
+                if (target && (target.dataset.name.includes(material2Name) || target.dataset.name.includes("Equip Dragon"))) {
                     if (target === mat1) {
                         alert("เลือกซ้ำไม่ได้!");
                         return;
@@ -3576,7 +3806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         mats.forEach(m => {
-            soulPool.push(m); // Still keep in soul for general SC/SB interaction if needed
+            soulPool.push(m);
             m.remove();
         });
 
@@ -3591,13 +3821,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`${vairinaCard.dataset.name} X-overDress สำเร็จ!`);
 
-        // Mirrors Vairina On-Place
-        if (vairinaCard.dataset.name.includes('Mirrors Vairina')) {
-            if (await vgConfirm("Mirrors Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือก 'Vairina' 2 ใบจากดรอบมาซ้อนใต้?")) {
-                promptDressMultipleFromDrop(vairinaCard, 2, (c) => c.dataset.name.includes("Vairina"));
+        // --- OriginalDress Triggers (When becoming material) ---
+        for (const mData of vairinaCard.originalDress) {
+            if (mData.name.includes('Stragallio')) {
+                if (await vgConfirm("Stragallio: [AUTO] เมื่อกลายเป็นการ์ดซ้อน (originalDress) [CB1] เพื่อคอล Trickstar จากดรอบ?")) {
+                    if (payCounterBlast(1)) {
+                        promptCallFromDrop(1, (c) => c.dataset.name.includes("Trickstar"));
+                    }
+                }
+            }
+            if (mData.name.includes('Galondight')) {
+                // [AUTO]: When this card becomes an originalDress, power +5000, 
+                // and if the outerDress is "Garou Vairina", it gets another [Power] +5000.
+                let bonus = 5000;
+                if (vairinaCard.dataset.name.includes('Garou Vairina')) bonus = 10000;
+                vairinaCard.dataset.turnEndBuffPower = (parseInt(vairinaCard.dataset.turnEndBuffPower || "0") + bonus).toString();
+                vairinaCard.dataset.turnEndBuffActive = "true";
+                applyStaticBonuses(vairinaCard);
+                alert(`Galondight (Material): มอบพลังให้ ${vairinaCard.dataset.name} +${bonus} (จนจบเทิร์น)!`);
             }
         }
 
+        // --- On-Place & Dresser Skills ---
         // Vils Vairina On-Place
         if (vairinaCard.dataset.name.includes('Vils Vairina')) {
             if (await vgConfirm("Vils Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือกการ์ด X-overDress 1 ใบจากดรอบขึ้นมือ?")) {
@@ -3605,24 +3850,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Trigger "When becomes Original Dress" skills
-        for (const m of mats) {
-            const mName = m.dataset.name;
-            const mSkill = m.dataset.skill;
-            if (mName.includes('Stragallio')) {
-                if (await vgConfirm("Stragallio: [AUTO] เมื่อเป็น originalDress [CB1] คอล Trickstar จากดรอบ?")) {
-                    if (payCounterBlast(1)) {
-                        promptCallFromDrop(1, (c) => c.dataset.name.includes('Trickstar'));
-                    }
-                }
-            } else if (mName.includes('Galondight')) {
-                const bonus = 5000;
-                const totalBonus = vairinaCard.dataset.name.includes('Garou Vairina') ? 10000 : 5000;
-                vairinaCard.dataset.power = parseInt(vairinaCard.dataset.power) + totalBonus;
-                syncPowerDisplay(vairinaCard);
-                alert(`Galondight: มอบพลังให้ ${vairinaCard.dataset.name} +${totalBonus}!`);
+        // Mirrors Vairina On-Place
+        if (vairinaCard.dataset.name.includes('Mirrors Vairina')) {
+            if (await vgConfirm("Mirrors Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือก 'Vairina' 2 ใบจากดรอบมาซ้อนใต้?")) {
+                promptDressMultipleFromDrop(vairinaCard, 2, (c) => c.dataset.name.includes("Vairina"));
             }
         }
+
+
+        // Material skills already triggered above
     }
 
     function promptDressMultipleFromDrop(vairinaCard, maxCount, filterFn, count = 0) {
@@ -3714,6 +3950,29 @@ document.addEventListener('DOMContentLoaded', () => {
     async function activateCardSkill(card) {
         const name = card.dataset.name;
         const isJhevaOrGrail = name.includes('Nirvana Jheva') || name.includes('Graillumirror');
+        // --- Baur Vairina [ACT] ---
+        if (name.includes('Baur Vairina') && card.dataset.isXoverDress === "true") {
+            if (await vgConfirm("Baur Vairina: [ACT] [SB2] รีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
+                if (paySoulBlast(2)) {
+                    alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
+                    document.body.classList.add('targeting-mode');
+                    const retireHander = (e) => {
+                        const target = e.target.closest('.opponent-side .circle.rc .card');
+                        if (target) {
+                            e.stopPropagation();
+                            // Retire it
+                            const oppDrop = document.querySelector('.opponent-side .drop-zone');
+                            oppDrop.appendChild(target);
+                            sendMoveData(target);
+                            alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', retireHander, true);
+                        }
+                    };
+                    document.addEventListener('click', retireHander, true);
+                }
+            }
+        }
         if (isJhevaOrGrail && card.parentElement.classList.contains('vc')) {
             const skillName = name.includes('Nirvana') ? 'Nirvana Jheva' : 'Graillumirror';
             if (await vgConfirm(`${skillName}: [ACT][ทิ้งการ์ด 1 ใบ] คอล Trickstar และ Prayer Dragon จาก Drop?`)) {
@@ -4414,8 +4673,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attackData.tripleDrive) checks = 3;
             driveCheck(checks, attackData.totalCritical, data.isPG); // Pass PG to driveCheck
         } else {
-            // Recalculate Rearguard attack hit immediately
             const attacker = document.getElementById(attackData.attackerId);
+            if (attacker && attacker.dataset.baurDriveCheck === "true") {
+                driveCheck(1, attackData.totalCritical, data.isPG);
+            }
+            // Recalculate Rearguard attack hit immediately
             const target = document.getElementById('opp-' + attackData.targetId);
             if (attacker && target) {
                 let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
@@ -4515,20 +4777,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Baur Vairina Reset ---
+        if (attacker.dataset.baurPwrAdded && attacker.dataset.baurPwrAdded !== "0") {
+            const pwrAdded = parseInt(attacker.dataset.baurPwrAdded);
+            attacker.dataset.power = parseInt(attacker.dataset.power) - pwrAdded;
+            attacker.dataset.baurPwrAdded = "0";
+            attacker.dataset.baurDriveCheck = "false";
+            syncPowerDisplay(attacker);
+        }
+
         // --- Mirrors Vairina Reset ---
         if (attacker.dataset.mirrorsPowerAdded === "true") {
             attacker.dataset.power = parseInt(attacker.dataset.power) - 10000;
             attacker.dataset.mirrorsPowerAdded = "false";
             syncPowerDisplay(attacker);
-        }
-
-        // --- Bram Vairina On-Hit ---
-        if (attackData.isHit && attackData.isTargetVanguard && name.includes('Bram Vairina') && attacker.dataset.isXoverDress === "true") {
-            if (await vgConfirm("Bram Vairina: [AUTO] เมื่อโจมตีฮิตแวนการ์ด! [SB1] เลือก 1 แถวตั้ง และรีไทร์ยูนิทคู่แข่งทั้งหมดในแถวนั้น?")) {
-                if (paySoulBlast(1)) {
-                    await promptRetireColumn();
-                }
-            }
         }
 
         // Reset temporary flags
@@ -4550,38 +4812,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toTurn > 0) alert(`Counter Charge ${toTurn}!`);
     }
 
-    async function checkDropAbilities(newVanguard) {
-        const vgName = (newVanguard.dataset.name || "").toLowerCase();
-        if (!vgName.includes('magnolia')) return;
-
-        const dropZone = document.querySelector('.my-side .drop-zone');
-        const cardsInDrop = Array.from(dropZone.querySelectorAll('.card'));
-
-        for (const card of cardsInDrop) {
-            const name = card.dataset.name;
-            if (name.includes('Goildoat')) {
-                // [AUTO]Drop: When your vanguard with "Magnolia" in its card name is placed during your ride phase...
-                // ...if your soul does not have a "Sylvan Horned Beast, Goildoat"...
-                const hasGoildoatInSoul = soulPool.some(c => c.dataset.name.includes('Goildoat'));
-                if (!hasGoildoatInSoul) {
-                    if (await vgConfirm(`Goildoat (Drop): [AUTO] เมื่อไรด์ Magnolia จ่าย [คอสต์: เข้าโซล] เพื่อให้ VG พลัง+5000?`)) {
-                        // Move to Soul
-                        soulPool.push(card);
-                        card.remove();
-                        updateSoulUI();
-                        updateDropCount();
-
-                        // VG Power +5000
-                        newVanguard.dataset.power = parseInt(newVanguard.dataset.power) + 5000;
-                        syncPowerDisplay(newVanguard);
-                        alert("Goildoat: เข้าสู่โซลแล้ว! แวนการ์ดพลัง +5000");
-                        sendMoveData(card);
-                        break; // Typically 1 per instance
-                    }
-                }
-            }
-        }
-    }
 
     function resolveRemoteAttack(data) {
         const attackData = data.attackData;
@@ -4951,26 +5181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function processInletPulse(units) {
-        for (const unit of units) {
-            if (await vgConfirm(`Inlet Pulse Dragon: เช็คแล้วมีการโจมตี 4 ครั้ง (รวม: ${turnAttackCount}) จ่ายคอสต์นำยูนิทนี้เข้าโซล เพื่อจั่วการ์ด 1 ใบ?`)) {
-                const parent = unit.parentElement;
-                if (parent && parent.classList.contains('circle')) {
-                    soulPool.push(unit);
-                    parent.innerHTML = parent.classList.contains('vc') ? '' : ''; // Card is moved
-                    // Re-add label if circle
-                    if (parent.classList.contains('vc')) parent.innerHTML = '<div class="glow-ring"></div><span class="circle-label">V</span><div id="soul-counter" class="soul-badge hidden">Soul: 0</div>';
-                    else parent.innerHTML = '<div class="glow-ring"></div><span class="circle-label">R</span>';
-
-                    updateSoulUI();
-                    drawCard(true);
-                    alert("Inlet Pulse Dragon: เข้าสู่โซลและจั่วการ์ด 1 ใบ");
-                    sendMoveData(unit); // Sync disappearance
-                }
-            }
-        }
-    }
-
+    // inlet pulse logic moved up
     function checkBruceBattleAbility() {
         if (!isMyTurn) return;
         const vanguard = document.querySelector('.my-side .circle.vc .card');
