@@ -1,5 +1,50 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    window.alert = function (msg) {
+        const box = document.createElement('div');
+        box.className = 'vanguard-alert-box fade-in';
+        box.innerHTML = `
+        <div class="vanguard-alert-content">
+            <h3 style="color:var(--accent-vanguard); margin-bottom:10px; font-family:'Orbitron', sans-serif; text-shadow:0 0 5px var(--accent-vanguard);">SYSTEM NOTICE</h3>
+            <p style="color: white; font-size: 1.1rem;">${msg}</p>
+        </div>
+    `;
+        document.body.appendChild(box);
+        setTimeout(() => {
+            box.classList.remove('fade-in');
+            box.classList.add('fade-out');
+            setTimeout(() => box.remove(), 500);
+        }, 3500);
+    };
+
+    window.vgConfirm = function (msg) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'column-selection-overlay glass-panel';
+            overlay.innerHTML = `
+            <div class="mobile-guard-box" style="width: 90%; max-width: 450px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
+                <h3 style="color: var(--accent-vanguard); margin-bottom: 20px; font-size: 1.4rem; text-shadow:0 0 10px #f00;">ACTION REQUIRED</h3>
+                <p style="color: white; font-size: 1.2rem; margin-bottom: 30px; font-family: sans-serif;">${msg}</p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 1rem; background: var(--accent-vanguard); border: none; font-size: 1.1rem; color: #fff;">CONFIRM</button>
+                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 1rem; background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; font-size: 1.1rem;">CANCEL</button>
+                </div>
+            </div>
+        `;
+            document.body.appendChild(overlay);
+
+            document.getElementById('vg-confirm-yes').onclick = () => {
+                overlay.remove();
+                resolve(true);
+            };
+            document.getElementById('vg-confirm-no').onclick = () => {
+                overlay.remove();
+                resolve(false);
+            };
+        });
+    };
+
+
 
     let alertContainer = document.getElementById('vanguard-alert-container');
     if (!alertContainer) {
@@ -189,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos Madonna, Megan': 'picture/megan.jpg',
         'Diabolos Boys, Eden': 'picture/eden.jpg',
         'Diabolos Buckler, Jamil': 'picture/jamil.jpg',
-        'Recusal Hate Dragon (Perfect Guard)': 'picture/',
+        'Recusal Hate Dragon (Perfect Guard)': 'picture/recusal.jpg',
         'Diabolos Girls, Stefanie': 'picture/stefani.jpg',
         'Diabolos Madonna, Mabel': 'picture/mabel.jpg',
         'Diabolos Girls, Ivanka': 'picture/ivanka.jpg',
@@ -226,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png',
 
         // Nirvana Jheva Deck
-        'Sunrise Egg': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_015.png',
+        'Sunrise Egg': 'picture/0nir.jpg',
         'Heart-pounding Blaze Maiden, Rino': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_013.png',
         'Snuggling Blaze Maiden, Reiyu': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_006.png',
         'Chakrabarthi Pheonix Dragon, Nirvana Jheva': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_001.png',
@@ -3569,7 +3614,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 'iceServers': [
                     { 'urls': 'stun:stun.l.google.com:19302' },
                     { 'urls': 'stun:stun1.l.google.com:19302' },
-                    { 'urls': 'stun:stun2.l.google.com:19302' }
+                    { 'urls': 'stun:stun2.l.google.com:19302' },
+                    { 'urls': 'stun:stun3.l.google.com:19302' },
+                    { 'urls': 'stun:stun4.l.google.com:19302' },
+                    { 'urls': 'stun:global.stun.twilio.com:3478' }
                 ]
             }
         };
@@ -5255,7 +5303,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             el.classList.remove('zone-highlight');
             if (draggedCard) {
-                await validateAndMoveCard(draggedCard, el);
+                await await validateAndMoveCard(draggedCard, el);
                 draggedCard = null;
             }
         });
