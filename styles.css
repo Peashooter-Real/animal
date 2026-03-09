@@ -1485,6 +1485,60 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   .hand-cards {
     gap: -20px;
   }
+
+  /* Lobby Mobile Fixes */
+  .lobby-container {
+    padding: 1rem 0.5rem;
+    align-items: flex-start;
+  }
+
+  .lobby-content {
+    padding: 1.5rem 1rem;
+    width: 98%;
+  }
+
+  .lobby-logo {
+    font-size: 1.6rem;
+  }
+
+  .deck-cards {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .deck-card {
+    width: calc(50% - 0.5rem);
+    min-width: 140px;
+    padding: 0.8rem;
+  }
+
+  .deck-art {
+    height: 100px !important;
+  }
+
+  .deck-title {
+    font-size: 0.85rem;
+  }
+
+  .join-input-group {
+    flex-direction: column;
+  }
+
+  .lobby-box {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .deck-card {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .id-text {
+    font-size: 0.9rem;
+    word-break: break-all;
+  }
 }
 
 /* Landscape Mobile Fix */
