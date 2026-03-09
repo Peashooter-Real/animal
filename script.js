@@ -422,19 +422,19 @@ document.addEventListener('DOMContentLoaded', () => {
         rideDeck: [
             { name: 'Wingul Brave', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
             { name: 'Little Sage, Maron', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดยเกรด 2 ที่มีคำว่า "Blaster" ดูการ์ด 7 ใบจากบนสุดของกอง เลือกเกรด 2 ที่มีคำว่า "Blaster" ไม่เกิน 1 ใบขึ้นมือและสับกอง หากไม่ได้นำการ์ดขึ้นมือ สามารถเรียก "Wingul Brave" 1 ใบจากโซลคอลลง (RC)\n[CONT](RC): ในเทิร์นของคุณ หากคุณมียูนิท 3 ใบขึ้นไป ยูนิทนี้ได้รับพลัง+2000' },
-            { name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (VC) [คอสต์][Counter-Blast 1] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ หากไม่ได้รับรีไทร์ จั่วการ์ด 1 ใบ\n[AUTO]: เมื่อวางบน (RC) [คอสต์][Counter-Blast 1] เลือกรีไทร์เรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบ' },
-            { name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): หากในโซลมี "Blaster Blade" และ "Blaster Dark" ยูนิทนี้ได้รับ พลัง+2000/คริติคอล+1 (ทำงานในเทิร์นคู่แข่งด้วย)\n[AUTO](VC): เมื่อโจมตีแวนการ์ด จะทำความสามารถดังต่อไปนี้ทั้งหมด (สามารถเลือกทำแค่อย่างใดอย่างหนึ่งได้)\n・[คอสต์][นำ "Blaster Blade" จาก (RC) ของคุณเข้าสู่โซล] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ\n・[คอสต์][นำ "Blaster Dark" จาก (RC) ของคุณเข้าสู่โซล] ยูนิทนี้ได้รับไดร์ฟ+1 จนจบเทิร์น' }
+            { name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (VC) [CB1] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ หากไม่รีไทร์ จั่วการ์ด 1 ใบ\n[AUTO]: เมื่อวางบน (RC) [CB1] เลือกรีไทร์เรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบ' },
+            { name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): หากในโซลมี "Blaster Blade" และ "Blaster Dark" ยูนิทนี้ได้รับ พลัง+2000/คริติคอล+1 (ทำงานในเทิร์นคู่แข่งด้วย)\n[AUTO](VC): เมื่อโจมตีแวนการ์ด สามารถเลือกทำอย่างใดอย่างหนึ่งดังนี้\n・[นำ "Blaster Blade" จาก (RC) เข้าโซล] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ และยูนิทนี้พลัง +10000\n・[นำ "Blaster Dark" จาก (RC) เข้าโซล] ยูนิทนี้ได้รับพลัง +10000/ไดร์ฟ+1 จนจบเทิร์น' }
         ],
         mainDeck: [
-            ...Array(3).fill({ name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): หากในโซลมี "Blaster Blade" และ "Blaster Dark" ยูนิทนี้ได้รับ พลัง+2000/คริติคอล+1 (ทำงานในเทิร์นคู่แข่งด้วย)\n[AUTO](VC): เมื่อโจมตีแวนการ์ด จะทำความสามารถดังต่อไปนี้ทั้งหมด (สามารถเลือกทำแค่อย่างใดอย่างหนึ่งได้)\n・[คอสต์][นำ "Blaster Blade" จาก (RC) ของคุณเข้าสู่โซล] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ\n・[คอสต์][นำ "Blaster Dark" จาก (RC) ของคุณเข้าสู่โซล] ยูนิทนี้ได้รับไดร์ฟ+1 จนจบเทิร์น' }),
-            ...Array(3).fill({ name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (VC) [คอสต์][Counter-Blast 1] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ หากไม่ได้รับรีไทร์ จั่วการ์ด 1 ใบ\n[AUTO]: เมื่อวางบน (RC) [คอสต์][Counter-Blast 1] เลือกรีไทร์เรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบ' }),
-            ...Array(4).fill({ name: 'Blaster Dark', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](VC/RC): เมื่อลงสนาม [CB1 & SB1] เลือกทิ้งเรียร์การ์ดคู่แข่งแถวหลัง 1 ใบ' }),
-            ...Array(4).fill({ name: 'Knight of Inheritance, Emmeline', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อโจมตี หากแวนการ์ดมีคำว่า "Blaster", พลัง +5000' }),
+            ...Array(3).fill({ name: 'Majesty Lord Blaster', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): หากในโซลมี "Blaster Blade" และ "Blaster Dark" ยูนิทนี้ได้รับ พลัง+2000/คริติคอล+1 (ทำงานในเทิร์นคู่แข่งด้วย)\n[AUTO](VC): เมื่อโจมตีแวนการ์ด สามารถเลือกทำอย่างใดอย่างหนึ่งดังนี้\n・[นำ "Blaster Blade" จาก (RC) เข้าโซล] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ และยูนิทนี้พลัง +10000\n・[นำ "Blaster Dark" จาก (RC) เข้าโซล] ยูนิทนี้ได้รับพลัง +10000/ไดร์ฟ+1 จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Blaster Blade', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (VC) [CB1] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ หากไม่รีไทร์ จั่วการ์ด 1 ใบ\n[AUTO]: เมื่อวางบน (RC) [CB1] เลือกรีไทร์เรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบ' }),
+            ...Array(4).fill({ name: 'Blaster Dark', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](VC/RC): [CB1 & Retire 1 another RG] เลือกรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ และยูนิทนี้ได้รับไดร์ฟ+1 จนจบเทิร์น\n[CONT](RC): ในเทิร์นของคุณ หากมีเรียร์การ์ดของคุณถูกรีไทร์ในเทิร์นนี้ พลัง+5000' }),
+            ...Array(4).fill({ name: 'Knight of Inheritance, Emmeline', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อลง (RC) จากบนมือ [SB1] ดู 5 ใบ เลือก "Blaster" 1 ใบ คอลลง (RC) หรือนำขึ้นมือแล้วทิ้งการ์ด 1 ใบ\n[AUTO](RC): เมื่อยูนิทที่มีชื่อ "Blaster" ของคุณโจมตี ยูนิทนี้พลัง +5000 จนจบเทิร์น' }),
             ...Array(4).fill({ name: 'Palladium Zeal Dragon (PG)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
-            ...Array(4).fill({ name: 'Ordeal Dragon', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้บูสท์ให้ยูนิทที่ชื่อ "Blaster" พลัง +5000' }),
-            ...Array(4).fill({ name: 'Knight of Old Fate, Cordiela', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): หากแวนการ์ดมีชื่อ "Majesty" สามารถป้องกันจากแนวหลังได้ (โล่ 5000)' }),
-            ...Array(2).fill({ name: 'Painkiller Angel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อจบการต่อสู้ที่ยูนิทนี้บูสท์ คุณสามารถ [นำการ์ดนี้เข้าสู่โซล] และจั่วการ์ด 1 ใบ' }),
-            ...Array(2).fill({ name: 'Departure Towards the Dawn', grade: 1, power: 0, shield: 0, skill: '[Order]: จ่าย [SB1] ดูกองการ์ดแล้วเลือก "Blaster" 1 ใบ ขึ้นมือ' }),
+            ...Array(4).fill({ name: 'Ordeal Dragon', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): ในเทิร์นของคุณ หากมี "Blaster Blade" และ "Blaster Dark" ในโซล พลัง+5000\n[AUTO](RC): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตีหรือบูสต์ [นำยูนิทนี้เข้าโซล] ดูการ์ด 7 ใบจากบนกอง เลือก "Blaster" 1 ใบขึ้นมือและสับกอง' }),
+            ...Array(4).fill({ name: 'Knight of Old Fate, Cordiela', grade: 1, power: 8000, shield: 5000, skill: '[CONT] Back Row Center (RC): หากแวนการ์ดคือ "Majesty Lord Blaster" จะได้รับ\n・[AUTO](RC): เมื่อบูสต์เสร็จ [CB1] คอล Blade และ Dark จากโซลลงคอลัมน์เดียวกัน\n・[CONT](RC): หากแวนคู่แข่ง G3+ เรียร์การ์ด G2 ทั้งหมดของคุณได้รับ "Boost"' }),
+            ...Array(2).fill({ name: 'Painkiller Angel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อจบการต่อสู้ที่ยูนิทนี้บูสต์ [SB1 & Retire ตัวเอง] จั่วการ์ด 1 ใบ' }),
+            ...Array(2).fill({ name: 'Departure Towards the Dawn', grade: 1, power: 0, shield: 0, skill: '[Order]: [CB1] ดูการ์ด 5 ใบจากบนกอง เลือก "Blaster" 1 ใบขึ้นมือและสับกอง' }),
             ...Array(8).fill({ name: 'Critical Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(3).fill({ name: 'Front Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
             ...Array(4).fill({ name: 'Heal Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
@@ -2408,7 +2408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Little Sage, Maron [CONT] (+2000 Power if 3+ units) ---
         if (name.includes('Little Sage, Maron') && zone.startsWith('rc')) {
             const unitCount = document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').length;
-            if (unitCount >= 3) {
+            if (isMyTurn && unitCount >= 3) {
                 if (card.dataset.maronBonusApplied !== "true") {
                     card.dataset.power = parseInt(card.dataset.power) + 2000;
                     card.dataset.maronBonusApplied = "true";
@@ -2419,21 +2419,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Knight of Old Fate, Cordiela [CONT] (+5000 Shield if Majesty VG + G2 Boost) ---
-        if (name.includes('Cordiela') && zone.startsWith('rc')) {
+        // --- Knight of Old Fate, Cordiela [CONT] (Back Row Center Effects) ---
+        if (name.includes('Cordiela')) {
             const vgNode = document.querySelector('.my-side .circle.vc .card');
             const isMajesty = vgNode && vgNode.dataset.name.includes('Majesty');
+            const isBackCenter = zone === 'rc_back_center';
 
-            if (isMajesty) {
-                if (card.dataset.cordielaBonusApplied !== "true") {
-                    card.dataset.shield = parseInt(card.dataset.shield || "5000") + 5000;
-                    card.dataset.cordielaBonusApplied = "true";
-                }
-
-                // G2 Boost if Opp G3+ and in Back Row Center
+            if (isMajesty && isBackCenter) {
+                // G2 Boost if Opp G3+
                 const oppVG = document.querySelector('.opponent-side .circle.vc .card');
                 const oppG3Plus = oppVG && parseInt(oppVG.dataset.grade) >= 3;
-                if (zone === 'rc_back_center' && oppG3Plus) {
+                if (oppG3Plus) {
                     document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').forEach(u => {
                         if (parseInt(u.dataset.grade) === 2) {
                             u.dataset.canBoost = "true";
@@ -2441,11 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             } else {
-                if (card.dataset.cordielaBonusApplied === "true") {
-                    card.dataset.shield = parseInt(card.dataset.shield || "10000") - 5000;
-                    card.dataset.cordielaBonusApplied = "false";
-                }
-                // Remove Boost from G2s if condition lost
+                // Reset state (remove Boost from G2s if condition lost)
                 document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').forEach(u => {
                     if (parseInt(u.dataset.grade) === 2) {
                         delete u.dataset.canBoost;
@@ -4655,58 +4647,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Departure Towards the Dawn [Order] ---
         if (name.includes('Departure Towards the Dawn')) {
-            if (await vgConfirm("Departure Towards the Dawn: [CB1] ดู 5 ใบ เลือก 'RevolForm' ขึ้นมือ หรือเลือกเกรด 2 ลงสนาม?")) {
+            if (await vgConfirm("Departure Towards the Dawn: [CB1] ดู 5 ใบ เลือก 'Blaster' 1 ใบขึ้นมือ?")) {
                 if (payCounterBlast(1)) {
                     const top5 = deckPool.slice(0, 5);
                     openViewer("Departure Towards the Dawn: Top 5", top5);
-                    const sel = async (e) => {
+                    const sel = (e) => {
                         const clicked = e.target.closest('.card');
                         if (clicked && clicked.parentElement === viewerGrid) {
                             const cName = clicked.dataset.name;
-                            const grade = parseInt(clicked.dataset.grade);
-                            const isRevolForm = cName.includes('RevolForm');
-
-                            viewerGrid.removeEventListener('click', sel);
-                            zoneViewer.classList.add('hidden');
-
-                            const id = clicked.dataset.originalId;
-                            const originalIdx = deckPool.findIndex(c => c.id === id);
-                            const chosenData = deckPool.splice(originalIdx, 1)[0];
-                            deckPool.sort(() => 0.5 - Math.random());
-                            updateDeckCounter();
-
-                            if (isRevolForm) {
-                                if (await vgConfirm(`พบ ${cName}! ต้องการนำขึ้นมือหรือไม่? (หากไม่นำขึ้นมือ จะพยายามคอลลงสนามแทนถ้าเกรด <= 2)`)) {
-                                    const chosenElem = createCardElement(chosenData);
-                                    playerHand.appendChild(chosenElem);
-                                    updateHandSpacing();
-                                    sendMoveData(chosenElem);
-                                    alert(`นำ ${cName} ขึ้นมือ!`);
-                                    return;
-                                }
-                            }
-
-                            if (grade <= 2) {
-                                alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${cName}`);
+                            if (cName.includes('Blaster')) {
+                                viewerGrid.removeEventListener('click', sel);
+                                zoneViewer.classList.add('hidden');
+                                
+                                const id = clicked.dataset.originalId;
+                                const originalIdx = deckPool.findIndex(c => c.id === id);
+                                const chosenData = deckPool.splice(originalIdx, 1)[0];
+                                
                                 const chosenElem = createCardElement(chosenData);
-                                document.body.classList.add('targeting-mode');
-                                const callH = (ev) => {
-                                    const circ = ev.target.closest('.circle.rc');
-                                    if (circ && !circ.querySelector('.card')) {
-                                        ev.stopPropagation();
-                                        circ.appendChild(chosenElem);
-                                        applyStaticBonuses(chosenElem);
-                                        sendMoveData(chosenElem);
-                                        checkOnPlaceAbilities(chosenElem);
-                                        document.body.classList.remove('targeting-mode');
-                                        document.removeEventListener('click', callH, true);
-                                    }
-                                };
-                                document.addEventListener('click', callH, true);
-                            } else {
-                                alert("ไม่สามารถนำการ์ดนี้ขึ้นมือหรือคอลลงสนามได้ (เงื่อนไขไม่ตรง)");
-                                deckPool.push(chosenData);
+                                playerHand.appendChild(chosenElem);
+                                updateHandSpacing();
+                                sendMoveData(chosenElem);
+                                alert(`นำ ${cName} ขึ้นมือ!`);
+                                
                                 deckPool.sort(() => 0.5 - Math.random());
+                                updateDeckCounter();
                             }
                         }
                     };
