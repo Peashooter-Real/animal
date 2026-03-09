@@ -1,21 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 
+    let alertContainer = document.getElementById('vanguard-alert-container');
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = 'vanguard-alert-container';
+        alertContainer.style.position = 'fixed';
+        alertContainer.style.top = '10%';
+        alertContainer.style.left = '50%';
+        alertContainer.style.transform = 'translateX(-50%)';
+        alertContainer.style.display = 'flex';
+        alertContainer.style.flexDirection = 'column';
+        alertContainer.style.gap = '8px';
+        alertContainer.style.zIndex = '999999';
+        alertContainer.style.pointerEvents = 'none';
+        alertContainer.style.alignItems = 'center';
+        document.body.appendChild(alertContainer);
+    }
+
     window.alert = function (msg) {
         const box = document.createElement('div');
         box.className = 'vanguard-alert-box fade-in';
+        box.style.position = 'static';
+        box.style.transform = 'none';
+        box.style.width = 'fit-content';
+        box.style.maxWidth = '90vw';
+        box.style.padding = '8px 15px';
+        box.style.boxShadow = '0 0 15px rgba(255, 42, 109, 0.4)';
         box.innerHTML = `
         <div class="vanguard-alert-content" style="text-align: center;">
-            <h3 style="color:var(--accent-vanguard); margin-bottom:10px; font-family:'Orbitron', sans-serif; text-shadow:0 0 5px var(--accent-vanguard);">SYSTEM NOTICE</h3>
-            <p style="color: white; font-size: 1.1rem;">${msg}</p>
+            <p style="color: white; font-size: 0.95rem; margin: 0; text-shadow: 0 0 3px black;">${msg}</p>
         </div>
     `;
-        document.body.appendChild(box);
+        alertContainer.appendChild(box);
         setTimeout(() => {
             box.classList.remove('fade-in');
             box.classList.add('fade-out');
             setTimeout(() => box.remove(), 500);
-        }, 3500);
+        }, 2000); // Shorter duration
     };
 
     window.vgConfirm = function (msg) {
@@ -24,12 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.className = 'column-selection-overlay glass-panel';
             overlay.style.zIndex = '99999';
             overlay.innerHTML = `
-            <div class="mobile-guard-box vg-confirm-box" style="width: 90%; max-width: 450px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
-                <h3 style="color: var(--accent-vanguard); margin-bottom: 20px; font-size: 1.4rem; text-shadow:0 0 10px #f00;">ACTION REQUIRED</h3>
-                <p style="color: white; font-size: 1.2rem; margin-bottom: 30px; font-family: sans-serif;">${msg}</p>
-                <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 1rem; background: var(--accent-vanguard); border: none; font-size: 1.1rem; color: #fff; cursor:pointer;">CONFIRM</button>
-                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 1rem; background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; font-size: 1.1rem; cursor:pointer;">CANCEL</button>
+            <div class="mobile-guard-box vg-confirm-box" style="width: 90%; max-width: 400px; text-align: center; padding: 1.5rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 15px; box-shadow: 0 0 20px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
+                <h3 style="color: var(--accent-vanguard); margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; text-shadow:0 0 5px #f00;">ACTION REQUIRED</h3>
+                <p style="color: white; font-size: 1rem; margin-bottom: 20px; font-family: sans-serif;">${msg}</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 0.8rem; background: var(--accent-vanguard); border: none; font-size: 1rem; color: #fff; cursor:pointer;">CONFIRM</button>
+                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 0.8rem; background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; font-size: 1rem; cursor:pointer;">CANCEL</button>
                 </div>
             </div>
         `;
@@ -90,11 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const oppDropCountNum = document.getElementById('opp-drop-count-num');
     const oppDamageCountNum = document.getElementById('opp-damage-count-num');
     const oppSoulBadge = document.getElementById('opp-soul-counter');
+    window.oppSoulPool = [];
     if (oppSoulBadge) {
         oppSoulBadge.addEventListener('click', (e) => {
             e.stopPropagation();
-            const countStr = oppSoulBadge.textContent.split(': ')[1] || "0";
-            alert(`Opponent's Soul count: ${countStr}`);
+            if (!window.oppSoulPool || window.oppSoulPool.length === 0) {
+                alert("Opponent's Soul is empty.");
+                return;
+            }
+            openViewer("Opponent's Soul", window.oppSoulPool.map(c => createCardElement(c)));
         });
     }
     const oppViewDropBtn = document.getElementById('opp-view-drop-btn');
@@ -163,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos Madonna, Megan': 'picture/megan.jpg',
         'Diabolos Boys, Eden': 'picture/eden.jpg',
         'Diabolos Buckler, Jamil': 'picture/jamil.jpg',
-        'Recusal Hate Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_035.png',
+        'Recusal Hate Dragon (Perfect Guard)': 'picture/',
         'Diabolos Girls, Stefanie': 'picture/stefani.jpg',
         'Diabolos Madonna, Mabel': 'picture/mabel.jpg',
         'Diabolos Girls, Ivanka': 'picture/ivanka.jpg',
@@ -277,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Grade 3 (Listed as G3 by user, but Winnsapooh is G1 base with reduction)
             ...Array(3).fill({ name: 'Blue Artillery Dragon, Inlet Pulse Dragon', grade: 3, power: 13000, skill: '[AUTO](RC): เมื่อจบเทิร์นของคุณ หากมีการโจมตี 4 ครั้งขึ้นไปในเทิร์นนี้ [คอสต์][นำยูนิทนี้เข้าสู่โซล] จั่วการ์ด 1 ใบ' }),
+            ...Array(3).fill({ name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true, skill: '[AUTO](VC): เมื่อจบการโจมตีแบทเทิลที่ยูนิทนี้โจมตี [คอสต์][Counter-Blast 1] เลือกเรียร์การ์ดของคุณ 1 ใบจนจบเทิร์นยูนิทนั้นสามารถโจมตีจากแถวหลังได้และได้รับพลัง +5000 หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกได้ 3 ใบแทน 1 ใบ' }),
             ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 1, power: 8000, shield: 5000, skill: '[CONT]Deck/Hand: หากมีแวนการ์ด "Sylvan Horned Beast" เกรด 2 ขึ้นไปที่ไม่ใช่ชื่อตัวมันเอง การ์ดนี้เกรด -1\n[CONT](RC): หากแวนการ์ด "Magnolia" ถูกวางในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +10000' }),
 
             // Grade 2
@@ -318,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(2).fill({ name: 'Jeweled Sword Equip, Garou Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Galondight"\n[CONT](RC): หากอยู่ในสถานะ X-overDress พลัง+10000 และเมื่อยูนิทนี้โจมตี คู่แข่งต้องคอลการ์ดจากบนมือลง (GC) ครั้งละ 2 ใบขึ้นไป' }),
             ...Array(1).fill({ name: 'Flaring Cannon Equip, Baur Vairina', grade: 2, power: 10000, shield: 5000, skill: '[XoverDress]-One "Trickstar" and one <Prayer Dragon> unit\n[ACT](RC): หากอยู่ในสถานะ X-overDress [SB2] เลือกเรียร์การ์ดคู่แข่ง 1 ใบและรีไทร์\n[AUTO](RC): เมื่อโจมตีแวนการ์ดในสถานะ X-overDress พลัง+2000 ต่อช่อง RC ที่ว่างของคู่แข่ง และถ้าคู่แข่งมีเรียร์การ์ด 1 ใบหรือน้อยกว่า [CB1] ยูนิทนี้ Drive-1 และทำการ Drive Check' }),
             ...Array(2).fill({ name: 'Vairina Arcs', grade: 2, power: 10000, shield: 5000, skill: '[overDress]-"Trickstar"\n[AUTO]: เมื่อลง (RC) ในสถานะ overDress [CB1] จั่วการ์ด 2 ใบและพลัง+5000' }),
-            ...Array(3).fill({ name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: 'Persona Ride: Front row +10000' }),
+            ...Array(3).fill({ name: 'Chakrabarthi Pheonix Dragon, Nirvana Jheva', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: [ทิ้งการ์ด 1 ใบ] เลือก "Trickstar" 1 ใบ และ <Prayer Dragon> 1 ใบจากดรอบคอลลง (RC)\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบที่อยู่ในสถานะ [XoverDress] และ Stand ยูนิทนั้น' }),
 
             ...Array(7).fill({ name: 'Critical Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(4).fill({ name: 'Draw Trigger (Dragon Empire)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
@@ -367,6 +394,13 @@ document.addEventListener('DOMContentLoaded', () => {
             drop: myDrop,
             hand: myHand,
             soul: mySoul,
+            soulCards: soulPool.map(c => ({
+                name: c.dataset.name,
+                grade: c.dataset.grade,
+                power: c.dataset.power,
+                shield: c.dataset.shield,
+                skill: c.dataset.skill
+            })),
             deck: myDeck
         });
     }
@@ -1056,7 +1090,9 @@ document.addEventListener('DOMContentLoaded', () => {
             shield: card.dataset.shield,
             basePower: card.dataset.basePower,
             baseCritical: card.dataset.baseCritical,
-            skill: card.dataset.skill // Send skill text to opponent
+            skill: card.dataset.skill, // Send skill text to opponent
+            isOD: card.dataset.isOverDress === "true",
+            isXOD: card.dataset.isXoverDress === "true"
         });
     }
 
@@ -1940,6 +1976,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            if (zone.classList.contains('drop-zone') || zone.dataset.zone === 'drop') {
+                if (card.unitSoul && card.unitSoul.length > 0) {
+                    card.unitSoul.forEach(m => {
+                        zone.appendChild(m);
+                        sendMoveData(m);
+                    });
+                    card.unitSoul = [];
+                }
+            }
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
@@ -2044,9 +2089,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
 
-                const skill = card.dataset.skill || "";
-                const isOD = skill.includes('[overDress]');
-                const isXOD = skill.includes('[XoverDress]');
+                const skillLC = (card.dataset.skill || "").toLowerCase();
+                const isVairina = (card.dataset.name || "").includes("Vairina");
+                const isOD = isVairina && skillLC.includes('overdress') && !skillLC.includes('x-overdress') && !skillLC.includes('xoverdress');
+                const isXOD = isVairina && (skillLC.includes('x-overdress') || skillLC.includes('xoverdress'));
 
                 if (isOD || isXOD) {
                     const choice = await vgConfirm(`${card.dataset.name}: คุณต้องการคอลปกติ หรือ Dress (ซ้อนทับยูนิท)? (กด CONFIRM เพื่อ Dress / CANCEL เพื่อคอลปกติ)`);
@@ -2059,9 +2105,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
-                zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
-                zone.innerHTML = '';
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                zone.querySelectorAll('.card:not(.opponent-card)').forEach(c => {
+                    // Drop Materials first
+                    if (c.unitSoul && c.unitSoul.length > 0) {
+                        c.unitSoul.forEach(m => {
+                            dropZone.appendChild(m);
+                            sendMoveData(m);
+                        });
+                        c.unitSoul = [];
+                    }
+                    dropZone.appendChild(c);
+                    c.classList.remove('rest');
+                    c.style.transform = 'none';
+                    sendMoveData(c);
+                });
+
                 zone.appendChild(card);
+                updateDropCount();
 
                 applyStaticBonuses(card);
                 checkOnPlaceAbilities(card);
@@ -2472,7 +2533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawCard(true);
                     alert("Inlet Pulse Dragon: เข้าสู่โซลแล้ว! จั่วการ์ด 1 ใบ");
                     sendMoveData(unit); // This sends the disappearance
-                    
+
                     sendData({
                         type: 'moveCard',
                         cardId: unit.id,
@@ -3626,8 +3687,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const isMyCard = !card.classList.contains('opponent-card');
             const isOnField = card.parentElement && card.parentElement.classList.contains('circle');
             const hasAct = card.dataset.skill && card.dataset.skill.includes('[ACT]');
+            const isMainPhase = phases[currentPhaseIndex] === 'main';
 
-            if (isMyCard && isOnField && hasAct && isMyTurn) {
+            if (isMyCard && isOnField && hasAct && isMyTurn && isMainPhase) {
                 activateBtn.classList.remove('hidden');
                 activateBtn.onclick = () => {
                     activateCardSkill(card);
@@ -3656,14 +3718,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const xoverBtn = document.getElementById('x-overdress-btn');
         if (xoverBtn) {
-            const skill = card.dataset.skill || "";
-            const isVairina = name.includes('Vairina');
+            const skillLC = (card.dataset.skill || "").toLowerCase();
             const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
-            if (isVairina && inHand && isMyTurn) {
+            const isMainPhase = phases[currentPhaseIndex] === 'main';
+            const isVairina = (card.dataset.name || "").includes("Vairina");
+            const isXOD = isVairina && (skillLC.includes('x-overdress') || skillLC.includes('xoverdress'));
+            const isOD = isVairina && skillLC.includes('overdress') && !isXOD;
+
+            if (inHand && isMyTurn && isMainPhase && (isXOD || isOD)) {
                 xoverBtn.classList.remove('hidden');
+                xoverBtn.textContent = isXOD ? "Perform X-overDress" : "Perform overDress";
                 xoverBtn.onclick = () => {
                     skillViewer.classList.add('hidden');
-                    performXoverDress(card);
+                    if (isXOD) performXoverDress(card);
+                    else performOverDress(card);
                 };
             } else {
                 xoverBtn.classList.add('hidden');
@@ -3712,13 +3780,35 @@ document.addEventListener('DOMContentLoaded', () => {
             shield: mat.dataset.shield,
             skill: mat.dataset.skill
         }];
-        soulPool.push(mat);
+
+        odCard.unitSoul = [mat];
         mat.remove();
 
         circle.innerHTML = '';
         circle.appendChild(odCard);
         odCard.classList.remove('rest');
         odCard.dataset.isOverDress = "true";
+
+        let badge = odCard.querySelector('.dress-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'dress-badge';
+            badge.style.position = 'absolute';
+            badge.style.bottom = '-8px';
+            badge.style.left = '50%';
+            badge.style.transform = 'translateX(-50%)';
+            badge.style.backgroundColor = '#9333ea';
+            badge.style.color = '#fff';
+            badge.style.padding = '2px 6px';
+            badge.style.borderRadius = '8px';
+            badge.style.fontSize = '0.65rem';
+            badge.style.fontWeight = 'bold';
+            badge.style.zIndex = '5';
+            badge.style.pointerEvents = 'none';
+            odCard.appendChild(badge);
+        }
+        badge.textContent = 'OD';
+
         applyStaticBonuses(odCard);
         sendMoveData(odCard);
         updateSoulUI();
@@ -3729,14 +3819,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function performXoverDress(vairinaCard) {
-        const skill = vairinaCard.dataset.skill || "";
+        const skillLC = (vairinaCard.dataset.skill || "").toLowerCase();
         let material1Name = "Trickstar";
-        let material2Name = "Prayer Dragon"; // Default
+        let material2Name = "Equip Dragon"; // Default
 
-        if (skill.includes('"Trickstar" & "Graillumirror"')) material2Name = "Graillumirror";
-        else if (skill.includes('"Trickstar" & "Galondight"')) material2Name = "Galondight";
-        else if (skill.includes('"Trickstar" & <Prayer Dragon>')) material2Name = "Equip Dragon";
-        else material2Name = "Equip Dragon"; // Fallback for Baur/Bram
+        if (skillLC.includes('graillumirror')) material2Name = "Graillumirror";
+        else if (skillLC.includes('galondight')) material2Name = "Galondight";
+        else material2Name = "Equip Dragon"; // Fallback for Baur/Stragallio etc.
 
         alert(`X-overDress: เลือก ${material1Name} และ ${material2Name} จากสนาม`);
 
@@ -3805,8 +3894,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
+        vairinaCard.unitSoul = mats;
         mats.forEach(m => {
-            soulPool.push(m);
             m.remove();
         });
 
@@ -3814,6 +3903,27 @@ document.addEventListener('DOMContentLoaded', () => {
         circle.appendChild(vairinaCard);
         vairinaCard.classList.remove('rest');
         vairinaCard.dataset.isXoverDress = "true";
+
+        let badge = vairinaCard.querySelector('.dress-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'dress-badge';
+            badge.style.position = 'absolute';
+            badge.style.bottom = '-8px';
+            badge.style.left = '50%';
+            badge.style.transform = 'translateX(-50%)';
+            badge.style.backgroundColor = '#e11d48';
+            badge.style.color = '#fff';
+            badge.style.padding = '2px 6px';
+            badge.style.borderRadius = '8px';
+            badge.style.fontSize = '0.65rem';
+            badge.style.fontWeight = 'bold';
+            badge.style.zIndex = '5';
+            badge.style.pointerEvents = 'none';
+            vairinaCard.appendChild(badge);
+        }
+        badge.textContent = 'X-OD';
+
         applyStaticBonuses(vairinaCard);
         sendMoveData(vairinaCard);
         updateSoulUI();
@@ -3887,7 +3997,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         skill: originalCard.dataset.skill
                     });
 
-                    soulPool.push(originalCard); // Simulating originalDress via soul pool
+                    if (!vairinaCard.unitSoul) vairinaCard.unitSoul = [];
+                    vairinaCard.unitSoul.push(originalCard);
                     originalCard.remove();
                     updateSoulUI();
                     updateDropCount();
@@ -4234,8 +4345,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.soul > 0) {
                         oppSoulBadge.classList.remove('hidden');
                         oppSoulBadge.textContent = `Soul: ${data.soul}`;
+                        window.oppSoulPool = data.soulCards || [];
                     } else {
                         oppSoulBadge.classList.add('hidden');
+                        window.oppSoulPool = [];
                     }
                 }
                 break;
@@ -4381,6 +4494,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                     const dropZone = document.querySelector('.my-side .drop-zone');
+
+                    // Drop Materials first
+                    if (card.unitSoul && card.unitSoul.length > 0) {
+                        card.unitSoul.forEach(m => {
+                            dropZone.appendChild(m);
+                            sendMoveData(m);
+                        });
+                        card.unitSoul = [];
+                    }
+
                     dropZone.appendChild(card);
                     card.classList.remove('rest');
                     sendMoveData(card);
@@ -4966,6 +5089,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.isFaceDown) card.classList.add('face-down');
             else card.classList.remove('face-down');
+
+            // Set OD / X-OD badges
+            if (data.isOD || data.isXOD) {
+                let badge = card.querySelector('.dress-badge');
+                if (!badge) {
+                    badge = document.createElement('div');
+                    badge.className = 'dress-badge';
+                    badge.style.position = 'absolute';
+                    badge.style.bottom = '-8px';
+                    badge.style.left = '50%';
+                    badge.style.transform = 'translateX(-50%)';
+                    badge.style.color = '#fff';
+                    badge.style.padding = '2px 6px';
+                    badge.style.borderRadius = '8px';
+                    badge.style.fontSize = '0.65rem';
+                    badge.style.fontWeight = 'bold';
+                    badge.style.zIndex = '5';
+                    badge.style.pointerEvents = 'none';
+                    card.appendChild(badge);
+                }
+                badge.style.backgroundColor = data.isXOD ? '#e11d48' : '#9333ea';
+                badge.textContent = data.isXOD ? 'X-OD' : 'OD';
+            } else {
+                const badge = card.querySelector('.dress-badge');
+                if (badge) badge.remove();
+            }
 
             updateDropCount();
         }
