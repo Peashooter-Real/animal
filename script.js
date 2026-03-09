@@ -146,6 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let isOpponentFinalBurst = false;
     let turnAttackCount = 0;
     let orderPlayedThisTurn = false;
+    let myRpsChoice = null;
+    let oppRpsChoice = null;
+    let hasConfirmedMulligan = false;
+    let oppConfirmedMulligan = false;
+    let rpsResolved = false;
 
     // --- Card Image Database ---
     const cardImages = {
@@ -178,12 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sylvan Horned Beast Emperor, Magnolia Elder': 'picture/grade4_magnolia.jpg',
         'Blue Artillery Dragon, Inlet Pulse Dragon': 'picture/fly.jpg',
         'Sylvan Horned Beast, Giunosla': 'picture/giunosla.jpg',
-        'Sylvan Horned Beast, Enpix': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_063.png',
+        'Sylvan Horned Beast, Enpix': 'picture/enpix.jpg',
         'Sylvan Horned Beast, Goildoat': 'picture/golidoat.jpg',
-        'Sylvan Horned Beast, Alpin': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_084.png',
-        'Sylvan Horned Beast, Winnsapooh': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt04/d-bt04_088.png',
-        'Sylvan Horned Beast, Gabregg': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_015.png',
-        'Sylvan Horned Beast, Bojalcorn': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_043.png',
+        'Sylvan Horned Beast, Alpin': 'picture/alpin.jpg',
+        'Sylvan Horned Beast, Winnsapooh': 'picture/winnsapooh.jpg',
+        'Sylvan Horned Beast, Gabregg': 'picture/gabregg.jpg',
+        'Sylvan Horned Beast, Bojalcorn': 'picture/bojalcorn.jpg',
         'Spiritual Body Condensation': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_053.png',
         'In the Dim Darkness, the Frozen Resentment': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt02/d-bt02_048.png',
 
@@ -263,8 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(1).fill({ name: 'Sylvan Horned Beast, Alpin', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อโจมตี VG ถ้าแวนการ์ดคือ Magnolia พลัง+5000 ต่อ G2 ทุก 2 ใบ ถ้า+10000 ขึ้นไป จบการต่อสู้ [Bind] CC1/SC1' }),
 
             // Grade 1
-            ...Array(4).fill({ name: 'Spiritual Body Condensation', grade: 1, power: 0, shield: 0, skill: '[Order]: [SB1] เลือกการ์ด 1 ใบจากดรอปโซนคอลลง R และได้รับพลัง +5000 ในเทิร์นนั้น' }),
-            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, shield: 0, skill: '[Order]: [CB1] จั่วการ์ด 1 ใบ และเลือกการ์ด 1 ใบจากดรอปโซนเข้าสู่โซล' }),
+            ...Array(4).fill({ name: 'Spiritual Body Condensation', grade: 1, power: 0, shield: 0, skill: '[Order]: [SB1] เลือกการ์ดเกรดไม่เกินแวนการ์ด 1 ใบจากดรอปโซนคอลลง (RC) และใบนั้นได้รับพลัง +5000 จนจบเทิร์น' }),
+            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, shield: 0, skill: '[Order]: [SB1] ดูการ์ด 3 ใบจากบนสุดของกอง เลือก 1 ใบเพื่อทิ้ง สับกอง จากนั้นเลือกการ์ดเกรดไม่เกินแวนการ์ด 1 ใบจากดรอปโซนคอลลง (RC)' }),
             ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
 
             // Triggers
@@ -797,6 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 } else {
                     const isElderActive = isMagnoliaElderSkillActive();
+                    const isFromVC = parent.classList.contains('vc');
                     const isInterceptable = isGrade2FrontRow || (isElderActive && isOnField && !isFromVC);
                     if (!inHand && !isInterceptable) {
                         e.preventDefault();
@@ -887,6 +893,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // TAP TO MOVE (Mobile Friendly)
             const canSelect = (isMyTurn && currentPhase !== 'battle') || isGuarding;
             if (canSelect && !card.classList.contains('opponent-card')) {
+                // If a card is already selected and we tap a card ON THE FIELD, assume we want to place it in that circle, 
+                // so don't steal the selection. Let it bubble to the zone listener.
+                if (selectedCard && selectedCard !== card && card.parentElement && card.parentElement.classList.contains('circle')) {
+                    return; // Let the event bubble to the circle listener
+                }
+
                 if (selectedCard) selectedCard.classList.remove('card-selected');
 
                 if (selectedCard === card) {
@@ -1189,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     const cardInHand = createCardElement(cardData);
                     playerHand.appendChild(cardInHand);
+                    updateHandSpacing();
                     updateHandCount();
                     sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
                 }
@@ -1554,8 +1567,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFromVC = oldParent && oldParent.classList.contains('vc');
 
         // 0. Vanguard Movement Restriction
-        if (isFromVC && (zone.classList.contains('rc') || zone.dataset.zone === 'hand')) {
-            alert("Vanguard cannot be moved to Rear-guard circle or Hand!");
+        if (isFromVC && (zone.classList.contains('rc') || zone.dataset.zone === 'hand' || zone.classList.contains('drop-zone'))) {
+            alert("Vanguard cannot be moved to Rear-guard circle, Hand, or Drop Zone!");
             return false;
         }
 
@@ -1584,6 +1597,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isGuarding) {
                 alert("You can only move cards to the Guard Circle when defending an attack!");
                 return false;
+            }
+
+            if (isFromField && !isFromHand) {
+                const isGrade2FrontRow = card.dataset.grade == "2" && oldParent && oldParent.dataset.zone && oldParent.dataset.zone.startsWith('rc_front_');
+                const isElderActive = isMagnoliaElderSkillActive();
+                const isInterceptable = isGrade2FrontRow || (isElderActive && !isFromVC);
+                if (!isInterceptable) {
+                    alert("Only Grade 2 Rear-guards in the Front Row (or units with intercept skills) can Intercept!");
+                    return false;
+                }
             }
 
             // --- Guard Restrict Check ---
@@ -1836,18 +1859,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Final Burst Bonus (+10000 to front row on owner's turn)
-        if (isFinalBurst && isFrontRow && isMyTurn) {
-            if (card.dataset.burstFrontBuffApplied !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 10000;
-                card.dataset.burstFrontBuffApplied = "true";
-            }
-        } else {
-            if (card.dataset.burstFrontBuffApplied === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 10000;
-                card.dataset.burstFrontBuffApplied = "false";
-            }
-        }
+        // 2. Final Burst Action (Handled directly via Skills, not generic Front Buff anymore)
+        // Kept empty to maintain comment numbering and logic separation.
 
         // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield) - Only for owner
         if (isFinalBurst && name.includes('Jamil')) {
@@ -2375,15 +2388,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Implement Bruce's start of battle phase ability here
         console.log("Checking Bruce's Battle Phase ability...");
         if (isFinalRush && !isFinalBurst) {
-            if (await vgConfirm("Bruce: Enter Final Burst? (Cost: CB1, SB1)")) {
-                if (payCounterBlast(1) && paySoulBlast(1)) {
-                    isFinalBurst = true;
-                    alert("Bruce: FINAL BURST activated! All front row units get +10000 Power!");
-                    updateFinalRushStaticBonuses(true); // Apply bonuses immediately
-                    sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
-                } else {
-                    alert("Could not pay cost for Final Burst.");
-                }
+            if (await vgConfirm("Bruce: Enter Final Burst? (Also activates Persona Ride!)")) {
+                isFinalBurst = true;
+                personaRideActive = true; // Final Burst includes Persona Ride
+                alert("Bruce: FINAL BURST activated!");
+                updateFinalRushStaticBonuses(true);
+                sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true, isPersona: true });
             }
         }
     }
@@ -2574,6 +2584,214 @@ document.addEventListener('DOMContentLoaded', () => {
         viewerGrid.addEventListener('click', sel);
     }
 
+    function promptCallFromDrop(maxCount, filterFn = null, powerBonus = 0) {
+        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(node => {
+            return {
+                name: node.dataset.name,
+                grade: node.dataset.grade,
+                power: node.dataset.power,
+                shield: node.dataset.shield,
+                skill: node.dataset.skill,
+                id: node.id,
+                node: node // Keep reference
+            };
+        });
+
+        const displayCards = filterFn ? dropCards.filter(c => {
+            // Re-create a temp element or simulated data for filterFn
+            const temp = document.createElement('div');
+            temp.dataset.grade = c.grade;
+            temp.dataset.name = c.name;
+            return filterFn(temp);
+        }) : dropCards;
+
+        if (displayCards.length === 0) {
+            alert("No valid cards in Drop Zone to call!");
+            return;
+        }
+
+        openViewer("Choose from Drop Zone", displayCards.map(c => c.node));
+
+        const selectFromDrop = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                viewerGrid.removeEventListener('click', selectFromDrop);
+                const originalId = clicked.dataset.originalId;
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                const originalCard = document.getElementById(originalId);
+
+                if (originalCard && originalCard.parentElement === dropZone) {
+                    zoneViewer.classList.add('hidden');
+                    alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${originalCard.dataset.name}`);
+                    document.body.classList.add('targeting-mode');
+
+                    const callListener = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(originalCard);
+                            originalCard.classList.remove('rest');
+
+                            if (powerBonus > 0) {
+                                originalCard.dataset.power = parseInt(originalCard.dataset.power) + powerBonus;
+                                syncPowerDisplay(originalCard);
+                                alert(`${originalCard.dataset.name} gets +${powerBonus} Power!`);
+                            }
+
+                            applyStaticBonuses(originalCard);
+                            sendMoveData(originalCard);
+                            updateDropCount();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callListener, true);
+                        }
+                    };
+                    document.addEventListener('click', callListener, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selectFromDrop);
+    }
+
+    // --- Rock Paper Scissors ---
+    function startRPS() {
+        const overlay = document.getElementById('rps-overlay');
+        const options = document.getElementById('rps-options');
+        const status = document.getElementById('rps-status');
+
+        overlay.classList.remove('hidden');
+        options.classList.remove('hidden');
+        status.textContent = "Choose your move!";
+
+        document.querySelectorAll('.rps-btn').forEach(btn => {
+            btn.onclick = () => {
+                myRpsChoice = btn.dataset.choice;
+                options.classList.add('hidden');
+                status.textContent = "Waiting for Rival's choice...";
+                sendData({ type: 'rpsChoice', choice: myRpsChoice });
+                checkRpsResult();
+            };
+        });
+    }
+
+    function checkRpsResult() {
+        if (!myRpsChoice || !oppRpsChoice) return;
+
+        const resultText = document.getElementById('rps-result-text');
+        const myPickDisplay = document.getElementById('my-rps-pick');
+        const oppPickDisplay = document.getElementById('opp-rps-pick');
+        const rpsResultUI = document.getElementById('rps-result');
+        const status = document.getElementById('rps-status');
+
+        status.textContent = "RESULTS";
+        rpsResultUI.classList.remove('hidden');
+
+        const symbols = { rock: '✊', paper: '✋', scissors: '✌️' };
+        myPickDisplay.textContent = symbols[myRpsChoice];
+        oppPickDisplay.textContent = symbols[oppRpsChoice];
+
+        let result = ""; // tie, win, lose
+        if (myRpsChoice === oppRpsChoice) {
+            result = "tie";
+            resultText.textContent = "IT'S A TIE! REPLAYING...";
+            setTimeout(() => {
+                myRpsChoice = null;
+                oppRpsChoice = null;
+                rpsResultUI.classList.add('hidden');
+                startRPS();
+            }, 2000);
+        } else if (
+            (myRpsChoice === 'rock' && oppRpsChoice === 'scissors') ||
+            (myRpsChoice === 'paper' && oppRpsChoice === 'rock') ||
+            (myRpsChoice === 'scissors' && oppRpsChoice === 'paper')
+        ) {
+            result = "win";
+            resultText.textContent = "YOU WIN! YOU GO FIRST.";
+            isFirstPlayer = true;
+            isMyTurn = true;
+            setTimeout(() => startMulligan(), 2500);
+        } else {
+            result = "lose";
+            resultText.textContent = "YOU LOSE! YOU GO SECOND.";
+            isFirstPlayer = false;
+            isMyTurn = false;
+            setTimeout(() => startMulligan(), 2500);
+        }
+    }
+
+    // --- Mulligan ---
+    function startMulligan() {
+        document.getElementById('rps-overlay').classList.add('hidden');
+        const overlay = document.getElementById('mulligan-overlay');
+        const grid = document.getElementById('mulligan-grid');
+        overlay.classList.remove('hidden');
+        grid.innerHTML = '';
+
+        // Draw initial 5
+        deckPool = [...currentDeck.mainDeck];
+        deckPool.sort(() => 0.5 - Math.random());
+        const initialHand = deckPool.splice(0, 5);
+
+        initialHand.forEach(cardData => {
+            const cardElem = createCardElement(cardData);
+            cardElem.classList.add('mulligan-card');
+            cardElem.onclick = () => cardElem.classList.toggle('to-mulligan');
+            grid.appendChild(cardElem);
+        });
+
+        document.getElementById('confirm-mulligan-btn').onclick = () => {
+            const toReturn = Array.from(grid.querySelectorAll('.card.to-mulligan'));
+            const keep = Array.from(grid.querySelectorAll('.card:not(.to-mulligan)'));
+
+            // Return to deck
+            toReturn.forEach(node => {
+                deckPool.push(JSON.parse(node.dataset.cardData));
+            });
+            deckPool.sort(() => 0.5 - Math.random());
+            updateDeckCounter();
+
+            // Clear hand area and grid
+            playerHand.innerHTML = '';
+
+            // Draw new cards
+            const newCardsCount = toReturn.length;
+            const finalCards = keep.map(node => JSON.parse(node.dataset.cardData));
+
+            for (let i = 0; i < newCardsCount; i++) {
+                finalCards.push(deckPool.shift());
+            }
+
+            finalCards.forEach(c => {
+                const node = createCardElement(c);
+                playerHand.appendChild(node);
+            });
+
+            overlay.classList.add('hidden');
+            hasConfirmedMulligan = true;
+            sendData({ type: 'mulliganReady' });
+            checkGameStart();
+        };
+    }
+
+    function checkGameStart() {
+        if (hasConfirmedMulligan && oppConfirmedMulligan) {
+            alert("Both players ready! GAME START!");
+            updateHandCount();
+            updateHandSpacing();
+            updatePhaseUI(false);
+
+            // Starter skill check if second player
+            if (!isFirstPlayer) {
+                const starter = document.querySelector('.my-side .circle.vc .card');
+                if (starter && starter.dataset.grade == "0") {
+                    alert("You go second! Draw 1 card via starter ability.");
+                    drawCard();
+                }
+            }
+        } else {
+            alert("Waiting for Rival to finish Mulligan...");
+        }
+    }
+
     // --- Game Navigation ---
     function updatePhaseUI(broadcast = true) {
         phaseSteps.forEach((step, index) => {
@@ -2586,8 +2804,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         // Determine if it's my turn
-        // Determine if it's my turn: Host starts (Odd turns), Guest follows (Even turns)
-        isMyTurn = (currentTurn % 2 !== 0 && isHost) || (currentTurn % 2 === 0 && !isHost);
+        // Determine if it's my turn: First player starts (Odd turns), Second player follows (Even turns)
+        isMyTurn = (currentTurn % 2 !== 0 && isFirstPlayer) || (currentTurn % 2 === 0 && !isFirstPlayer);
 
         // Reset power/critical at the start of ANY turn's stand phase
         if (currentPhaseIndex === 0) { // Stand phase
@@ -2793,10 +3011,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isHost) {
             networkInfo.textContent = 'Online (Host)';
-            initGame();
         } else {
             networkInfo.textContent = 'Online (Guest)';
         }
+        initGame();
 
         // Primary game data listener
         conn.on('data', handleIncomingData);
@@ -2954,6 +3172,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("เงื่อนไขไม่ครบ: ต้องมี Magnolia บนแวนการ์ดและแวนการ์ดคู่แข่งต้องเกรด 3 ขึ้นไป");
             }
         }
+
+        // --- Spiritual Body Condensation [Order] ---
+        if (name.includes('Spiritual Body Condensation')) {
+            if (await vgConfirm("Spiritual Body Condensation: [SB1] คอล 1 ใบจากดรอปและ +5000?")) {
+                if (paySoulBlast(1)) {
+                    promptCallFromDrop(1, (c) => {
+                        const vg = document.querySelector('.my-side .circle.vc .card');
+                        const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
+                        return parseInt(c.dataset.grade) <= vgGrade;
+                    }, 5000);
+                }
+            }
+        }
+
+        // --- In the Dim Darkness, the Frozen Resentment [Order] ---
+        if (name.includes('In the Dim Darkness')) {
+            if (await vgConfirm("In the Dim Darkness: [SB1] ดู 3 ใบจากกองทิ้ง 1 แล้วคอลจากดรอป?")) {
+                if (paySoulBlast(1)) {
+                    const topCards = deckPool.slice(0, 3);
+                    if (topCards.length > 0) {
+                        openViewer("Choose a card to discard", topCards);
+                        const discardSelector = async (e) => {
+                            const clickedNode = e.target.closest('.card');
+                            if (clickedNode && clickedNode.parentElement === viewerGrid) {
+                                viewerGrid.removeEventListener('click', discardSelector);
+                                const originalId = clickedNode.dataset.originalId;
+                                const originalIdx = deckPool.findIndex(c => c.id === originalId);
+                                if (originalIdx !== -1) {
+                                    const discarded = deckPool.splice(originalIdx, 1)[0];
+                                    deckPool.sort(() => 0.5 - Math.random());
+                                    updateDeckCounter();
+                                    const dropZone = document.querySelector('.my-side .drop-zone');
+                                    const discardedElem = createCardElement(discarded);
+                                    dropZone.appendChild(discardedElem);
+                                    sendMoveData(discardedElem);
+                                    updateDropCount();
+                                    zoneViewer.classList.add('hidden');
+                                    alert("Discarded card and shuffled deck. Now choose a card to call from drop.");
+                                    promptCallFromDrop(1, (c) => {
+                                        const vg = document.querySelector('.my-side .circle.vc .card');
+                                        const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
+                                        return parseInt(c.dataset.grade) <= vgGrade;
+                                    }, 0);
+                                }
+                            }
+                        };
+                        viewerGrid.addEventListener('click', discardSelector);
+                    } else {
+                        alert("Deck is empty!");
+                    }
+                }
+            }
+        }
     }
 
     if (closeSkillBtn) {
@@ -3013,6 +3284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'bruceStatus':
                 isOpponentFinalRush = data.isFinalRush;
                 isOpponentFinalBurst = data.isFinalBurst;
+                isOpponentPersonaRide = data.isPersona || false;
                 updateStatusUI();
                 updateAllStaticBonuses();
                 break;
@@ -3021,6 +3293,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Host is Magnolia, Guest keeps Bruce (or whatever they picked)
                 }
                 console.log("Host deck info received:", data.deck);
+                break;
+            case 'rpsChoice':
+                oppRpsChoice = data.choice;
+                checkRpsResult();
+                break;
+            case 'mulliganReady':
+                oppConfirmedMulligan = true;
+                checkGameStart();
                 break;
             case 'syncSoulCount':
                 if (oppSoulBadge) {
@@ -3666,15 +3946,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (starter) {
             const starterCard = createCardElement(starter);
             vanguardCircle.appendChild(starterCard);
-            sendMoveData(starterCard); // Sync starter to opponent
+            sendMoveData(starterCard);
         }
 
         currentDeck.rideDeck.filter(c => c.grade > 0)
             .sort((a, b) => b.grade - a.grade)
             .forEach(c => rideDeckZone.appendChild(createCardElement(c)));
 
-        for (let i = 0; i < 5; i++) drawCard(true);
-        updatePhaseUI();
+        // Start RPS sequence instead of drawing 5
+        startRPS();
     }
 
     // --- URL Parameters Orchestration ---
@@ -3713,7 +3993,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         sendData({ type: 'guestJoin' });
                         setupConnection();
-                        initGame();
                     }, 1000);
                 });
 

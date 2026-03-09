@@ -258,6 +258,41 @@
         </div>
     </div>
 
+    <!-- Rock Paper Scissors Overlay -->
+    <div id="rps-overlay" class="modal-overlay hidden">
+        <div class="modal-content rps-content">
+            <h2 class="rps-title">ROCK PAPER SCISSORS</h2>
+            <p id="rps-status">Waiting for Rival...</p>
+            <div id="rps-options" class="rps-options hidden">
+                <button class="rps-btn" data-choice="rock">✊ ROCK</button>
+                <button class="rps-btn" data-choice="paper">✋ PAPER</button>
+                <button class="rps-btn" data-choice="scissors">✌️ SCISSORS</button>
+            </div>
+            <div id="rps-result" class="rps-result hidden">
+                <div class="rps-compare">
+                    <div class="rps-pick" id="my-rps-pick">?</div>
+                    <div class="vs-text">VS</div>
+                    <div class="rps-pick" id="opp-rps-pick">?</div>
+                </div>
+                <p id="rps-result-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mulligan Overlay -->
+    <div id="mulligan-overlay" class="modal-overlay hidden">
+        <div class="modal-content mulligan-content">
+            <h2 class="mulligan-title">MULLIGAN PHASE</h2>
+            <p>Select cards to return to deck, then draw replacement.</p>
+            <div id="mulligan-grid" class="hand-cards mulligan-grid">
+                <!-- Cards to be selected -->
+            </div>
+            <div class="mulligan-actions">
+                <button id="confirm-mulligan-btn" class="glass-btn highlight-btn">CONFIRM MULLIGAN</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
