@@ -3963,6 +3963,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkRpsResult();
             };
         });
+
+        // Check if opponent already sent their choice
+        checkRpsResult();
     }
 
     function checkRpsResult() {
@@ -3985,9 +3988,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (myRpsChoice === oppRpsChoice) {
             result = "tie";
             resultText.textContent = "IT'S A TIE! REPLAYING...";
+
+            // Clear choices immediately to avoid race condition where 
+            // the next choice arrives before the timeout clears the old ones
+            myRpsChoice = null;
+            oppRpsChoice = null;
+
             setTimeout(() => {
-                myRpsChoice = null;
-                oppRpsChoice = null;
                 rpsResultUI.classList.add('hidden');
                 startRPS();
             }, 2000);
@@ -4290,11 +4297,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (currentDeck === nirvanaJhevaDeck) currentDeckName = 'nirvana';
                     else if (currentDeck === majestyDeck) currentDeckName = 'majesty';
 
-                    setTimeout(() => {
-                        setupConnection();
-                        // Sync deck info
-                        sendData({ type: 'hostAck', deck: currentDeckName });
-                    }, 1000); // 1s effect duration
+                    // Start game immediately to avoid losing messages during the 1s delay
+                    setupConnection();
+                    // Sync deck info
+                    sendData({ type: 'hostAck', deck: currentDeckName });
                 }
             };
 
