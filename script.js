@@ -1537,6 +1537,12 @@ document.addEventListener('DOMContentLoaded', () => {
         await handleEndOfBattle(attacker, currentAttackData);
         currentAttackData = null;
         pendingCriticalIncrease = 0;
+
+        // Bug Fix: Reset guard waiting flags after battle resolution
+        setTimeout(() => {
+            isWaitingForGuard = false;
+            currentAttackResolving = false;
+        }, 500);
     }
 
     function driveCheck(count, crit, isOpponentPG = false) {
@@ -2507,7 +2513,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const getCol = (z) => {
                         if (z.includes('left')) return 'left';
                         if (z.includes('right')) return 'right';
-                        if (z.includes('center')) return 'center';
+                        if (z.includes('center') || z === 'vc') return 'center';
                         return 'none';
                     };
 
@@ -3066,69 +3072,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!blade && !dark) return;
 
-        // Choose Blade to Retire 1
-        if (blade) {
-            if (await vgConfirm("Majesty Skill: นำ 'Blaster Blade' เข้าโซลเพื่อรีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
+        let options = [];
+        if (blade && dark) options.push("Both (Retire & Drive+1)");
+        if (blade) options.push("Blaster Blade (Retire 1)");
+        if (dark) options.push("Blaster Dark (Drive +1)");
+        options.push("None");
+
+        const msg = "Majesty Lord Blaster: เลือกความสามารถที่ต้องการใช้งาน (นำยูนิทเข้าโซล)";
+        const choice = await vgConfirm(`${msg}\n\n${options.join(" | ")}\n\n(กด CONFIRM เพื่อเลือก / CANCEL เพื่อข้าม)`);
+
+        if (!choice) return;
+
+        // Since vgConfirm is binary, let's use a simpler sequential flow if they confirmed
+        const useBoth = blade && dark && await vgConfirm("เลือกใช้งาน 'ทั้งคู่' (Blade และ Dark) ใช่หรือไม่?");
+
+        if (useBoth) {
+            // Process both
+            [blade, dark].forEach(c => {
+                const circle = c.parentElement;
+                if (circle) circle.removeChild(c);
+                soulPool.push(c);
+                sendMoveData(c);
+            });
+            updateSoulUI();
+            vanguard.dataset.power = parseInt(vanguard.dataset.power) + 20000;
+            vanguard.dataset.majestyDriveBuff = "true";
+            syncPowerDisplay(vanguard);
+            alert("Majesty: นำ Blade & Darkเข้าโซล! (Power +20000, Drive +1)");
+
+            // Retire prompt
+            await majestyRetireLogic(vanguard);
+        } else {
+            const useBlade = blade && await vgConfirm("เลือกใช้งานเฉพาะ 'Blaster Blade' (Retire 1) ใช่หรือไม่?");
+            if (useBlade) {
                 const circle = blade.parentElement;
                 if (circle) circle.removeChild(blade);
                 soulPool.push(blade);
                 updateSoulUI();
                 sendMoveData(blade);
-
-                // +10000 Power
                 vanguard.dataset.power = parseInt(vanguard.dataset.power) + 10000;
                 syncPowerDisplay(vanguard);
-
-                // Prompt retire
-                const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
-                const validTargets = oppRGs.filter(c => !isCardResistant(c));
-                if (validTargets.length > 0) {
-                    alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolve => {
-                        const h = (e) => {
-                            const t = e.target.closest('.opponent-side .circle.rc .card');
-                            if (t) {
-                                if (isCardResistant(t)) {
-                                    alert("ยูนิทนี้มี Resist! เลือกไม่ได้");
-                                    return;
-                                }
-                                e.stopPropagation();
-                                document.querySelector('.opponent-side .drop-zone').appendChild(t);
-                                sendData({ type: 'forceRetire', cardId: t.id.replace('opp-', '') });
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', h, true);
-                                applyStaticBonuses(vanguard);
-                                resolve();
-                            }
-                        };
-                        document.addEventListener('click', h, true);
-                    });
-                    return; // Prevent showing second prompt immediately if user is targeting
-                } else {
-                    alert("คู่แข่งไม่มีเรียร์การ์ดให้รีไทร์!");
-                    applyStaticBonuses(vanguard);
-                }
-            }
-        }
-
-        // Choose Dark for Drive +1
-        if (dark) {
-            if (await vgConfirm("Majesty Skill: นำ 'Blaster Dark' เข้าโซลเพื่อได้รับ ไดรฟ์ +1 (จนจบเทิร์น) และพลัง+10000?")) {
+                await majestyRetireLogic(vanguard);
+            } else if (dark && await vgConfirm("เลือกใช้งานเฉพาะ 'Blaster Dark' (Drive +1) ใช่หรือไม่?")) {
                 const circle = dark.parentElement;
                 if (circle) circle.removeChild(dark);
                 soulPool.push(dark);
                 updateSoulUI();
                 sendMoveData(dark);
-
-                // +10000 Power
                 vanguard.dataset.power = parseInt(vanguard.dataset.power) + 10000;
-                syncPowerDisplay(vanguard);
-
                 vanguard.dataset.majestyDriveBuff = "true";
-                alert("Majesty Lord Blaster ได้รับ Drive +1 และ Power +10000!");
-                applyStaticBonuses(vanguard);
+                syncPowerDisplay(vanguard);
+                alert("Majesty: ได้รับ Drive +1 และ Power +10000!");
             }
+        }
+        updateAllStaticBonuses(); // Ensure +2k/+1crit CONT ability is checked
+    }
+
+    async function majestyRetireLogic(vanguard) {
+        const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
+        const validTargets = oppRGs.filter(c => !isCardResistant(c));
+        if (validTargets.length > 0) {
+            alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
+            document.body.classList.add('targeting-mode');
+            await new Promise(resolve => {
+                const h = (e) => {
+                    const t = e.target.closest('.opponent-side .circle.rc .card');
+                    if (t) {
+                        if (isCardResistant(t)) {
+                            alert("ยูนิทนี้มี Resist! เลือกไม่ได้");
+                            return;
+                        }
+                        e.stopPropagation();
+                        document.querySelector('.opponent-side .drop-zone').appendChild(t);
+                        sendData({ type: 'forceRetire', cardId: t.id.replace('opp-', '') });
+                        document.body.classList.remove('targeting-mode');
+                        document.removeEventListener('click', h, true);
+                        applyStaticBonuses(vanguard);
+                        resolve();
+                    }
+                };
+                document.addEventListener('click', h, true);
+            });
+        } else {
+            alert("คู่แข่งไม่มีเรียร์การ์ดให้รีไทร์!");
+            applyStaticBonuses(vanguard);
         }
     }
 
@@ -6644,9 +6671,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (booster && booster.dataset.name.includes('Cordiela') && booster.parentElement.dataset.zone === 'rc_back_center') {
                 const vgNode = document.querySelector('.my-side .circle.vc .card');
                 if (vgNode && vgNode.dataset.name.includes('Majesty')) {
-                    if (await vgConfirm("Cordiela: [CB1] คอล Blade & Dark จากโซลลงคอลัมน์เดียวกัน?")) {
+                    if (await vgConfirm("Cordiela: [CB1] คอล Blade และ Dark จากโซลลงคอลัมน์เดียวกัน?")) {
                         if (payCounterBlast(1)) {
-                            alert("เลือกคอลัมน์ที่ต้องการคอล (ซ้ายหรือขวา)");
+                            const hasBlade = soulPool.some(c => c.dataset.name.includes('Blaster Blade'));
+                            const hasDark = soulPool.some(c => c.dataset.name.includes('Blaster Dark'));
+
+                            let mode = "both";
+                            if (hasBlade && hasDark) {
+                                if (!await vgConfirm("ยืนยันคอล 'ทั้งสองใบ' ใช่หรือไม่? (กด CANCEL เพื่อเลือกเพียงใบเดียว)")) {
+                                    mode = await vgConfirm("คอลเฉพาะ 'Blaster Blade' ใช่หรือไม่? (กด CANCEL เพื่อคอล Blaster Dark)") ? "blade" : "dark";
+                                }
+                            }
+
+                            alert(`เลือกคอลัมน์ที่ต้องการคอล ${mode === "both" ? "(ซ้ายหรือขวา)" : "ยูนิท"}`);
                             showColumnSelection((col) => {
                                 if (!col || col === 'center') return;
                                 const fZone = col === 'left' ? 'rc_front_left' : 'rc_front_right';
@@ -6654,30 +6691,43 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const fCirc = document.querySelector(`.my-side .circle[data-zone="${fZone}"]`);
                                 const bCirc = document.querySelector(`.my-side .circle[data-zone="${bZone}"]`);
 
-                                if (fCirc.querySelector('.card') || bCirc.querySelector('.card')) {
+                                if (mode === "both" && (fCirc.querySelector('.card') || bCirc.querySelector('.card'))) {
                                     alert("คอลัมน์นี้ไม่ว่าง! ไม่สามารถคอลได้ทั้งสองใบ");
                                     return;
                                 }
 
-                                const bladeIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Blade'));
-                                if (bladeIdx !== -1) {
-                                    const c = soulPool.splice(bladeIdx, 1)[0];
-                                    fCirc.appendChild(c);
-                                    c.classList.remove('rest');
-                                    applyStaticBonuses(c);
-                                    sendMoveData(c);
+                                if (mode === "both" || mode === "blade") {
+                                    const bladeIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Blade'));
+                                    if (bladeIdx !== -1) {
+                                        if (fCirc.querySelector('.card')) {
+                                            alert("ช่องหน้าไม่ว่าง! คอลไม่ได้");
+                                        } else {
+                                            const c = soulPool.splice(bladeIdx, 1)[0];
+                                            fCirc.appendChild(c);
+                                            c.classList.remove('rest');
+                                            applyStaticBonuses(c);
+                                            sendMoveData(c);
+                                        }
+                                    }
                                 }
 
-                                const darkIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Dark'));
-                                if (darkIdx !== -1) {
-                                    const c = soulPool.splice(darkIdx, 1)[0];
-                                    bCirc.appendChild(c);
-                                    c.classList.remove('rest');
-                                    applyStaticBonuses(c);
-                                    sendMoveData(c);
+                                if (mode === "both" || mode === "dark") {
+                                    const darkIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Dark'));
+                                    if (darkIdx !== -1) {
+                                        if (bCirc.querySelector('.card')) {
+                                            alert("ช่องหลังไม่ว่าง! คอลไม่ได้");
+                                        } else {
+                                            const c = soulPool.splice(darkIdx, 1)[0];
+                                            bCirc.appendChild(c);
+                                            c.classList.remove('rest');
+                                            applyStaticBonuses(c);
+                                            sendMoveData(c);
+                                        }
+                                    }
                                 }
                                 updateSoulUI();
-                                alert("Cordiela: คอล Blaster Blade & Blaster Dark สำเร็จ!");
+                                updateAllStaticBonuses();
+                                alert(`Cordiela: การคอลเสร็จสิ้น! (${mode})`);
                             });
                         }
                     }
