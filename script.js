@@ -1198,12 +1198,28 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
-    function sendMoveData(card) {
+    function sendMoveData(card, explicitZone) {
+        if (!card) return;
+        let pZone = explicitZone;
+        if (!pZone) {
+            if (card.parentElement && card.parentElement.dataset && card.parentElement.dataset.zone) {
+                pZone = card.parentElement.dataset.zone;
+            } else if (soulPool.includes(card)) {
+                pZone = 'soul';
+            } else if (deckPool.includes(card)) {
+                pZone = 'deck';
+            } else if (card.parentElement && card.parentElement.id) {
+                pZone = card.parentElement.id;
+            } else {
+                pZone = 'unknown';
+            }
+        }
+
         sendData({
             type: 'moveCard',
             cardId: card.id,
             cardName: card.dataset.name,
-            zone: card.parentElement.dataset.zone,
+            zone: pZone,
             isRest: card.classList.contains('rest'),
             isFaceDown: card.classList.contains('face-down'),
             grade: card.dataset.grade,
@@ -2742,22 +2758,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (validTargets.length > 0) {
                     alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
                     document.body.classList.add('targeting-mode');
-                    const h = (e) => {
-                        const t = e.target.closest('.opponent-side .circle.rc .card');
-                        if (t) {
-                            if (isCardResistant(t)) {
-                                alert("ยูนิทนี้มี Resist! เลือกไม่ได้");
-                                return;
+                    await new Promise(resolve => {
+                        const h = (e) => {
+                            const t = e.target.closest('.opponent-side .circle.rc .card');
+                            if (t) {
+                                if (isCardResistant(t)) {
+                                    alert("ยูนิทนี้มี Resist! เลือกไม่ได้");
+                                    return;
+                                }
+                                e.stopPropagation();
+                                document.querySelector('.opponent-side .drop-zone').appendChild(t);
+                                sendData({ type: 'forceRetire', cardId: t.id.replace('opp-', '') });
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', h, true);
+                                applyStaticBonuses(vanguard);
+                                resolve();
                             }
-                            e.stopPropagation();
-                            document.querySelector('.opponent-side .drop-zone').appendChild(t);
-                            sendMoveData(t);
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', h, true);
-                            applyStaticBonuses(vanguard);
-                        }
-                    };
-                    document.addEventListener('click', h, true);
+                        };
+                        document.addEventListener('click', h, true);
+                    });
                     return; // Prevent showing second prompt immediately if user is targeting
                 } else {
                     alert("คู่แข่งไม่มีเรียร์การ์ดให้รีไทร์!");
@@ -2825,7 +2844,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         const name = card.dataset.name || "";
-        if (name.includes('Enpix') || card.dataset.resist === "true") return true;
+        if (name.includes('Trickstar') || name.includes('Enpix') || card.dataset.resist === "true") return true;
         return false;
     }
 
@@ -4750,7 +4769,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Retire it
                             const oppDrop = document.querySelector('.opponent-side .drop-zone');
                             oppDrop.appendChild(target);
-                            sendMoveData(target);
+                            sendData({ type: 'forceRetire', cardId: target.id.replace('opp-', '') });
                             alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
                             document.body.classList.remove('targeting-mode');
                             document.removeEventListener('click', retireHander, true);
@@ -5095,6 +5114,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 isOpponentPersonaRide = true;
                 alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
                 updateAllStaticBonuses();
+                break;
+            case 'forceRetire':
+                const frCard = document.getElementById(data.cardId);
+                if (frCard) {
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    dropZone.appendChild(frCard);
+                    frCard.classList.remove('rest', 'face-down');
+                    window.myRGRetiredThisTurn = true;
+                    updateDropCount();
+                    updateAllStaticBonuses();
+                    alert(`ยูนิทของคุณถูกรีไทร์โดยสกิลของคู่แข่ง!`);
+                }
                 break;
             case 'retireColumn':
                 retireMyColumn(data.column);
@@ -5618,8 +5649,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
 
                                 const bladeIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Blade'));
-                                const darkIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Dark'));
-
                                 if (bladeIdx !== -1) {
                                     const c = soulPool.splice(bladeIdx, 1)[0];
                                     fCirc.appendChild(c);
@@ -5627,6 +5656,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     applyStaticBonuses(c);
                                     sendMoveData(c);
                                 }
+                                
+                                const darkIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Dark'));
                                 if (darkIdx !== -1) {
                                     const c = soulPool.splice(darkIdx, 1)[0];
                                     bCirc.appendChild(c);
@@ -5890,8 +5921,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Handle Vanguard replacement
-            if (data.zone === 'vc') {
+            // Handle Vanguard replacement or OverDress replacement clears circle first
+            if (data.zone === 'vc' || (targetZone.classList.contains('circle') && (data.isOD || data.isXOD))) {
                 targetZone.querySelectorAll('.card').forEach(c => c.remove());
             }
 
