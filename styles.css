@@ -1644,7 +1644,7 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   background-image: var(--card-art-url, none);
   background-size: cover;
   background-position: center;
-  opacity: 0.2;
+  opacity: 0.25;
   /* ลางนิดนึง */
   z-index: -1;
 }
