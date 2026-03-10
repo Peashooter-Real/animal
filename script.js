@@ -293,22 +293,22 @@ document.addEventListener('DOMContentLoaded', () => {
         'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png',
 
         // Keter Sanctuary Deck
-        'Wingul Brave': 'picture/wingul_brave.jpg',
-        'Little Sage, Maron': 'picture/maron.jpg',
-        'Blaster Blade': 'picture/blaster_blade.jpg',
-        'Majesty Lord Blaster': 'picture/majesty.jpg',
-        'Blaster Dark': 'picture/blaster_dark.jpg',
-        'Knight of Inheritance, Emmeline': 'picture/emmeline.jpg',
-        'Palladium Zeal Dragon (PG)': 'picture/palladium.jpg',
-        'Ordeal Dragon': 'picture/ordeal.jpg',
-        'Knight of Old Fate, Cordiela': 'picture/cordiela.jpg',
-        'Painkiller Angel': 'picture/painkiller.jpg',
-        'Departure Towards the Dawn': 'picture/departure_dawn.jpg',
+        'Wingul Brave': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/wingul_brave_animal_1773138953273.png',
+        'Little Sage, Maron': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/maron_animal_1773138967184.png',
+        'Blaster Blade': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/blaster_blade_animal_1773138984463.png',
+        'Majesty Lord Blaster': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/majesty_lord_blaster_animal_1773139018727.png',
+        'Blaster Dark': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/blaster_dark_animal_1773139002245.png',
+        'Knight of Inheritance, Emmeline': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/emmeline_animal_1773139035491.png',
+        'Palladium Zeal Dragon (PG)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/palladium_zeal_dragon_animal_1773139051984.png',
+        'Ordeal Dragon': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/ordeal_dragon_animal_1773139069745.png',
+        'Knight of Old Fate, Cordiela': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/cordiela_animal_1773139088810.png',
+        'Painkiller Angel': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/painkiller_angel_animal_1773139110010.png',
+        'Departure Towards the Dawn': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/departure_dawn_animal_1773139126986.png',
 
-        'Critical Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_010.png',
-        'Front Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_012.png',
-        'Heal Trigger (Keter)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt03/d-bt03_013.png',
-        'Light Dragon Deity of Honors, Amartinoa': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_004.png'
+        'Critical Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/critical_trigger_keter_animal_1773139142112.png',
+        'Front Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/front_trigger_keter_animal_1773139160555.png',
+        'Heal Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/heal_trigger_keter_animal_1773139174967.png',
+        'Light Dragon Deity of Honors, Amartinoa': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/amartinoa_animal_1773139195547.png'
     };
 
     // --- Deck Definitions ---
@@ -979,6 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cardName = (cardData.name || "").trim();
         const artUrl = cardData.imageUrl || cardImages[cardName] || '';
+        card.dataset.imageUrl = artUrl; // Store for other viewers
         const artStyle = artUrl ? `style="background-image: url('${artUrl}'); background-size: cover; background-position: center;"` : '';
         const artDisplay = artUrl ? '' : artText;
 
@@ -1565,8 +1566,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Heal failed (your damage must be >= opponent's damage).");
             }
         } else if (triggerType === 'Over') {
+            drawCard(true); // Draw 1 card for revealing Over Trigger (Drive or Damage)
             if (!isDamageCheck) {
-                drawCard(true);
                 // Nation specific OT additional effects (Drive Check only)
                 const otName = cardData.name;
                 if (otName.includes('Gallmageveld')) {
@@ -1608,7 +1609,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else if (otName.includes('Amartinoa')) {
                     window.otKeterActive = true;
-                    alert("Keter Sanctuary OT: All your Rear-guards perform drive checks until end of turn!");
+                    alert("Keter Sanctuary OT: All your Rear-guards perform drive checks for the rest of the game!");
                 }
             }
         }
@@ -2117,12 +2118,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const oppVGGrade = oppVG ? parseInt(oppVG.dataset.grade || "0") : 0;
             if (oppVGGrade >= 3) {
                 const triggerType = card.dataset.trigger || "";
+                let shieldBonus = 0;
                 if (triggerType === "Draw") {
+                    shieldBonus = 5000;
                     card.dataset.shield = "10000";
-                    alert(`Draw Trigger: Shield +5000! (กลายเป็น 10000)`);
                 } else if (triggerType === "Front") {
+                    shieldBonus = 5000;
                     card.dataset.shield = "20000";
-                    alert(`Front Trigger: Shield +5000! (กลายเป็น 20000)`);
+                }
+
+                if (shieldBonus > 0) {
+                    const shieldSpan = card.querySelector('.card-shield');
+                    if (shieldSpan) shieldSpan.innerHTML = `🛡️${card.dataset.shield}`;
+                    alert(`${triggerType} Trigger: Shield +${shieldBonus}! (กลายเป็น ${card.dataset.shield})`);
                 }
             }
 
@@ -4100,7 +4108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             turnAttackCount = 0;
             orderPlayedThisTurn = false;
             window.myRGRetiredThisTurn = false;
-            window.otKeterActive = false; // Reset Amartinoa effect
+            // window.otKeterActive = false; // REMOVED: Amartinoa effect is permanent for the rest of the game once activated.
 
             // State expiration check
             if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -4118,6 +4126,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pendingPowerIncrease = 0;
             pendingCriticalIncrease = 0;
+            isWaitingForGuard = false;
+            const statusText = document.getElementById('game-status-text');
+            if (statusText) statusText.textContent = "Network Ready";
             document.body.classList.remove('targeting-mode');
         }
 
@@ -4338,6 +4349,14 @@ document.addEventListener('DOMContentLoaded', () => {
         skillCardPower.textContent = `Power: ${card.dataset.power}`;
         skillCardShield.textContent = `Shield: ${card.dataset.shield}`;
         skillText.textContent = card.dataset.skill;
+
+        // Apply background image to modal
+        const modal = skillViewer.querySelector('.skill-modal');
+        if (modal) {
+            const url = card.dataset.imageUrl;
+            if (url) modal.style.setProperty('--card-art-url', `url('${url}')`);
+            else modal.style.removeProperty('--card-art-url');
+        }
 
         // Show Activate button if it's an [ACT] skill on my field
         const activateBtn = document.getElementById('activate-skill-btn');
@@ -5899,7 +5918,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle Soul move - just remove from field
         if (mappedZone === 'soul') {
-            const card = document.getElementById(`opp-${data.cardId}`);
+            const cardId = data.cardId;
+            const card = document.getElementById(cardId) || document.getElementById(`opp-${cardId}`);
             if (card) {
                 card.classList.add('effect-retired');
                 setTimeout(() => card.remove(), 500);
@@ -5912,7 +5932,21 @@ document.addEventListener('DOMContentLoaded', () => {
             oppSide.querySelector(`.${mappedZone}`);
 
         if (targetZone) {
-            let cardId = `opp-${data.cardId}`;
+            let cardId = data.cardId.startsWith('opp-') ? data.cardId : `opp-${data.cardId}`;
+            // If the card is already on our side but not as an opponent card (it's our card moved by opponent)
+            const myCard = document.getElementById(data.cardId);
+            if (myCard && !myCard.classList.contains('opponent-card') && data.cardId.startsWith('opp-')) {
+                // The opponent is moving our card (likely a retire or cost)
+                // But wait, if they say 'opp-card-1', and our card is 'card-1'...
+                // Usually if they send 'opp-X', they are talking about OUR card X.
+                const realId = data.cardId.substring(4);
+                const actualCard = document.getElementById(realId);
+                if (actualCard) {
+                    targetZone.appendChild(actualCard);
+                    return;
+                }
+            }
+
             let card = document.getElementById(cardId);
 
             if (!card) {
