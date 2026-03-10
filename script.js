@@ -293,22 +293,22 @@ document.addEventListener('DOMContentLoaded', () => {
         'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png',
 
         // Keter Sanctuary Deck
-        'Wingul Brave': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/wingul_brave_animal_1773138953273.png',
-        'Little Sage, Maron': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/maron_animal_1773138967184.png',
-        'Blaster Blade': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/blaster_blade_animal_1773138984463.png',
-        'Majesty Lord Blaster': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/majesty_lord_blaster_animal_1773139018727.png',
-        'Blaster Dark': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/blaster_dark_animal_1773139002245.png',
-        'Knight of Inheritance, Emmeline': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/emmeline_animal_1773139035491.png',
-        'Palladium Zeal Dragon (PG)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/palladium_zeal_dragon_animal_1773139051984.png',
-        'Ordeal Dragon': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/ordeal_dragon_animal_1773139069745.png',
-        'Knight of Old Fate, Cordiela': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/cordiela_animal_1773139088810.png',
-        'Painkiller Angel': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/painkiller_angel_animal_1773139110010.png',
-        'Departure Towards the Dawn': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/departure_dawn_animal_1773139126986.png',
+        'Wingul Brave': 'majes/wingul_brave.png',
+        'Little Sage, Maron': 'majes/maron.png',
+        'Blaster Blade': 'majes/blaster_blade.png',
+        'Majesty Lord Blaster': 'majes/majesty_lord_blaster.png',
+        'Blaster Dark': 'majes/blaster_dark.png',
+        'Knight of Inheritance, Emmeline': 'majes/emmeline.png',
+        'Palladium Zeal Dragon (PG)': 'majes/palladium_zeal.png',
+        'Ordeal Dragon': 'majes/ordeal_dragon.png',
+        'Knight of Old Fate, Cordiela': 'majes/cordiela.png',
+        'Painkiller Angel': 'majes/painkiller_angel.png',
+        'Departure Towards the Dawn': 'majes/departure_dawn.png',
 
-        'Critical Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/critical_trigger_keter_animal_1773139142112.png',
-        'Front Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/front_trigger_keter_animal_1773139160555.png',
-        'Heal Trigger (Keter)': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/heal_trigger_keter_animal_1773139174967.png',
-        'Light Dragon Deity of Honors, Amartinoa': 'C:/Users/User/.gemini/antigravity/brain/7c864529-5a05-4fa4-8d77-139954b5b541/amartinoa_animal_1773139195547.png'
+        'Critical Trigger (Keter)': 'majes/critical_keter.png',
+        'Front Trigger (Keter)': 'majes/front_keter.png',
+        'Heal Trigger (Keter)': 'majes/heal_keter.png',
+        'Light Dragon Deity of Honors, Amartinoa': 'majes/amartinoa.png'
     };
 
     // --- Deck Definitions ---
