@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMyTurn = false;
     let gameStarted = false; // Add flag to track if game has actually begun
     let isGuarding = false; // Add guard checking state
+    let isWaitingForGuard = false;
     let pendingPowerIncrease = 0;
     let pendingCriticalIncrease = 0;
     let targetingType = null; // 'power' or 'critical' or 'both'
@@ -367,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Grade 3 (Listed as G3 by user, but Winnsapooh is G1 base with reduction)
             ...Array(3).fill({ name: 'Blue Artillery Dragon, Inlet Pulse Dragon', grade: 3, power: 13000, skill: '[AUTO](RC): เมื่อจบเทิร์นของคุณ หากมีการโจมตี 4 ครั้งขึ้นไปในเทิร์นนี้ [คอสต์][นำยูนิทนี้เข้าสู่โซล] จั่วการ์ด 1 ใบ' }),
-            ...Array(3).fill({ name: 'Sylvan Horned Beast King, Magnolia', grade: 3, power: 13000, persona: true, skill: '[AUTO](VC): เมื่อจบการโจมตีแบทเทิลที่ยูนิทนี้โจมตี [คอสต์][Counter-Blast 1] เลือกเรียร์การ์ดของคุณ 1 ใบจนจบเทิร์นยูนิทนั้นสามารถโจมตีจากแถวหลังได้และได้รับพลัง +5000 หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกได้ 3 ใบแทน 1 ใบ' }),
             ...Array(2).fill({ name: 'Sylvan Horned Beast, Winnsapooh', grade: 3, power: 13000, skill: '[CONT]Deck/Hand: หากมีแวนการ์ด "Sylvan Horned Beast" เกรด 2 ขึ้นไปที่ไม่ใช่ชื่อตัวมันเอง การ์ดนี้เกรด -1\n[CONT](RC): หากแวนการ์ด "Magnolia" ถูกวางในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +10000' }),
 
             // Grade 2
@@ -1418,7 +1418,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 attackHitCheck(crit, isOpponentPG);
             }
             // Reset resolve lock
-            setTimeout(() => { currentAttackResolving = false; }, 2000);
+            setTimeout(() => {
+                currentAttackResolving = false;
+                isWaitingForGuard = false;
+            }, 2000);
             return;
         }
 
@@ -1582,6 +1585,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         sendMoveData(vg);
                         alert("Dragon Empire OT: Stand your Vanguard!");
                     }
+                } else if (otName.includes('Amartinoa')) {
+                    window.otKeterActive = true;
+                    alert("Keter Sanctuary OT: All your Rear-guards perform drive checks until end of turn!");
                 }
             }
         }
@@ -1607,6 +1613,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isOpponentCard || !isTargetOnField) {
             alert("Invalid Target! You can only attack opponent's units on the field.");
+            return;
+        }
+
+        if (isWaitingForGuard) {
+            alert("กรุณารอให้ฝั่งคู่แข่งเลือกว่าจะป้องกัน (Guard) ให้เสร็จก่อนจึงจะสามารถโจมตีครั้งต่อไปได้");
+            attacker.classList.remove('attacking-glow');
+            attackingCard = null;
             return;
         }
 
@@ -1796,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const gabregg = otherCircle.querySelector('.card:not(.opponent-card)');
                     if (gabregg && gabregg.dataset.name.includes('Gabregg')) {
                         if (await vgConfirm(`Gabregg: ยูนิทในแถวเดียวกันโจมตี จ่าย [SB1] เพื่อรับ Power+10000 และมอบ Guard Restrict?`)) {
-                            if (paySoulBlast(1)) {
+                            if (await paySoulBlast(1)) {
                                 gabregg.dataset.power = parseInt(gabregg.dataset.power) + 10000;
                                 alert("Gabregg: Power +10000 applied!");
                                 syncPowerDisplay(gabregg);
@@ -2004,6 +2017,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const statusText = document.getElementById('game-status-text');
             if (statusText) statusText.textContent = "Waiting for opponent to guard...";
+            isWaitingForGuard = true;
         }
     }
 
@@ -2074,13 +2088,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
             }
-            if (window.currentIncomingAttack && window.currentIncomingAttack.guardRestrictCount > 0) {
-                const currentGuardCount = Array.from(zone.querySelectorAll('.card')).length;
-                if (currentGuardCount + 1 < window.currentIncomingAttack.guardRestrictCount) {
-                    alert(`GUARD RESTRICT! คุณต้องคอลการ์ดอย่างน้อย ${window.currentIncomingAttack.guardRestrictCount} ใบเพื่อการ์ด!`);
-                    return false;
-                }
-            }
+
 
             // --- Trigger Shield Buff ---
             const oppVG = document.querySelector('.opponent-side .circle.vc .card');
@@ -2832,32 +2840,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function processInletPulse(units) {
-        for (const unit of units) {
-            if (await vgConfirm(`Inlet Pulse Dragon: [AUTO](RC) จ่าย [คอสต์: เข้าโซล] เพื่อจั่วการ์ด 1 ใบ?`)) {
-                const parent = unit.parentElement;
-                if (parent && parent.classList.contains('circle')) {
-                    soulPool.push(unit);
-                    // Use a more robust way to clear the circle while keeping labels
-                    const circleLabel = parent.querySelector('.circle-label')?.textContent || (parent.classList.contains('vc') ? 'V' : 'R');
-                    parent.innerHTML = `<div class="glow-ring"></div><span class="circle-label">${circleLabel}</span>`;
-                    if (parent.classList.contains('vc')) {
-                        parent.innerHTML += `<div id="soul-counter" class="soul-badge">Soul: ${soulPool.length}</div>`;
-                        const newSoulCounter = parent.querySelector('#soul-counter');
-                        newSoulCounter.addEventListener('click', handleSoulView);
+        const queue = units.map(unit => {
+            return {
+                name: 'Inlet Pulse Dragon',
+                description: '[AUTO](RC) End of turn: Put into soul, draw 1 card.',
+                resolve: async (done) => {
+                    if (await vgConfirm(`Inlet Pulse Dragon: [AUTO](RC) เมื่อจบเทิร์นของคุณ หากมีการโจมตี 4 ครั้งขึ้นไปในเทิร์นนี้ [ต้นทุน][นำยูนิทนี้เข้าสู่โซล] จั่วการ์ด 1 ใบ?`)) {
+                        const parent = unit.parentElement;
+                        if (parent && parent.classList.contains('circle')) {
+                            soulPool.push(unit);
+                            // Avoid modifying parent.innerHTML directly to not destroy UI logic unexpectedly.
+                            unit.remove();
+                            // Update soul counter on VC
+                            const vc = document.querySelector('.my-side .circle.vc');
+                            if (vc) {
+                                let badge = vc.querySelector('#soul-counter');
+                                if (!badge) {
+                                    vc.insertAdjacentHTML('beforeend', `<div id="soul-counter" class="soul-badge">Soul: ${soulPool.length}</div>`);
+                                    vc.querySelector('#soul-counter').addEventListener('click', handleSoulView);
+                                } else {
+                                    badge.textContent = `Soul: ${soulPool.length}`;
+                                }
+                            }
+                            updateSoulUI();
+                            drawCard(true);
+                            alert("Inlet Pulse Dragon: สำเร็จ! จั่วการ์ด 1 ใบ");
+                            // Broadcast the move
+                            sendData({
+                                type: 'moveCard',
+                                cardId: unit.id,
+                                zone: 'soul'
+                            });
+                        }
                     }
-
-                    updateSoulUI();
-                    drawCard(true);
-                    alert("Inlet Pulse Dragon: เข้าสู่โซลแล้ว! จั่วการ์ด 1 ใบ");
-                    sendMoveData(unit); // This sends the disappearance
-
-                    sendData({
-                        type: 'moveCard',
-                        cardId: unit.id,
-                        zone: 'soul'
-                    });
+                    if (done) done();
                 }
-            }
+            };
+        });
+
+        if (queue.length > 0) {
+            await resolveAbilityQueue(queue);
         }
     }
 
@@ -2945,20 +2967,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function paySoulBlast(cost) {
+    async function paySoulBlast(cost) {
         if (soulPool.length < cost) {
             alert("Insufficient Soul for SB!");
             return false;
         }
-        for (let i = 0; i < cost; i++) {
-            const blasted = soulPool.shift(); // Blast oldest first
-            const dropZone = document.querySelector('.my-side .drop-zone');
-            dropZone.appendChild(blasted);
-            sendMoveData(blasted);
-        }
-        updateSoulUI();
-        updateDropCount();
-        return true;
+
+        return new Promise(resolve => {
+            openViewer(`Select ${cost} card(s) to Soul Blast`, soulPool);
+            let selectedCount = 0;
+            const chosenIndices = [];
+
+            const sel = (e) => {
+                const clicked = e.target.closest('.card');
+                if (clicked && clicked.parentElement === viewerGrid) {
+                    const originalId = clicked.dataset.originalId;
+                    const idx = soulPool.findIndex(c => c.id === originalId);
+                    if (idx !== -1 && !chosenIndices.includes(idx)) {
+                        chosenIndices.push(idx);
+                        clicked.style.opacity = '0.5';
+                        selectedCount++;
+                        if (selectedCount >= cost) {
+                            viewerGrid.removeEventListener('click', sel);
+                            zoneViewer.classList.add('hidden');
+
+                            chosenIndices.sort((a, b) => b - a);
+                            const dropZone = document.querySelector('.my-side .drop-zone');
+                            for (let i of chosenIndices) {
+                                const blasted = soulPool.splice(i, 1)[0];
+                                dropZone.appendChild(blasted);
+                                sendMoveData(blasted);
+                            }
+                            updateSoulUI();
+                            updateDropCount();
+                            resolve(true);
+                        }
+                    }
+                }
+            };
+            viewerGrid.addEventListener('click', sel);
+        });
     }
 
     function promptCallSteveVC() {
@@ -3277,14 +3325,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.createElement('div');
         overlay.className = 'column-selection-overlay glass-panel';
         overlay.innerHTML = `
-                <div style="background: rgba(10,10,20,0.9); border: 2px solid var(--accent-vanguard); border-radius: 20px; padding: 2rem; text-align: center;">
-                    <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00; margin-bottom: 20px;">SELECT COLUMN TO STAND</h2>
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="glass-btn column-btn" data-col="left">Left Column</button>
-                        <button class="glass-btn column-btn" data-col="right">Right Column</button>
-                        <button class="glass-btn column-btn" data-col="center">Center Column</button>
+                <div style="background: rgba(10,10,20,0.9); border: 2px solid var(--accent-vanguard); border-radius: 20px; padding: 1.5rem; text-align: center; width: 90%; max-width: 400px; box-sizing: border-box;">
+                    <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00; margin-bottom: 20px; font-size: 1.2rem;">SELECT COLUMN TO STAND</h2>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                        <button class="glass-btn column-btn" data-col="left" style="padding: 1rem; font-size: 1.1rem;">Left Column</button>
+                        <button class="glass-btn column-btn" data-col="center" style="padding: 1rem; font-size: 1.1rem;">Center Column</button>
+                        <button class="glass-btn column-btn" data-col="right" style="padding: 1rem; font-size: 1.1rem;">Right Column</button>
                     </div>
-                    <button id="cancel-col" class="glass-btn" style="width: 100%;">Cancel</button>
+                    <button id="cancel-col" class="glass-btn" style="width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid #555;">Cancel</button>
                 </div>
             `;
         overlay.id = 'col-selection-overlay';
@@ -3455,8 +3503,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Knight of Inheritance, Emmeline [AUTO] on (RC) from hand ---
         if (name.includes('Emmeline') && card.parentElement.classList.contains('rc') && card.dataset.fromHand === "true") {
-            if (await vgConfirm("Emmeline: [RC] [SB1] ดู 5 ใบ คอล 'Blaster' หรือเอาขึ้นมือแล้วทิ้ง 1?")) {
-                if (paySoulBlast(1)) {
+            if (await vgConfirm("Emmeline: [RC] [SB1] ดู 5 ใบ เลือก 'Blaster' เข้าช่องที่ว่าง 1 ใบ?")) {
+                if (await paySoulBlast(1)) {
                     const top5 = deckPool.slice(0, 5);
                     openViewer("Emmeline: Top 5 (Select 'Blaster' unit)", top5);
                     const sel = async (e) => {
@@ -4003,7 +4051,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Game Navigation ---
-    function updatePhaseUI(broadcast = true) {
+    async function updatePhaseUI(broadcast = true) {
         phaseSteps.forEach((step, index) => {
             step.classList.remove('active', 'passed');
             if (index < currentPhaseIndex) step.classList.add('passed');
@@ -4026,6 +4074,7 @@ document.addEventListener('DOMContentLoaded', () => {
             turnAttackCount = 0;
             orderPlayedThisTurn = false;
             window.myRGRetiredThisTurn = false;
+            window.otKeterActive = false; // Reset Amartinoa effect
 
             // State expiration check
             if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -4102,7 +4151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .filter(c => c.dataset.name.includes('Inlet Pulse Dragon'));
 
                 if (inletPluseUnits.length > 0 && turnAttackCount >= 4) {
-                    processInletPulse(inletPluseUnits);
+                    await processInletPulse(inletPluseUnits);
                 }
             }
         }
@@ -4112,14 +4161,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    nextPhaseBtn.addEventListener('click', () => {
+    nextPhaseBtn.addEventListener('click', async () => {
         if (currentPhaseIndex < phases.length - 1) {
             currentPhaseIndex++;
-            updatePhaseUI(true);
+            await updatePhaseUI(true);
         }
     });
 
-    nextTurnBtn.addEventListener('click', () => {
+    nextTurnBtn.addEventListener('click', async () => {
         currentTurn++;
         currentPhaseIndex = 0;
         hasRiddenThisTurn = false;
@@ -4135,7 +4184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             applyStaticBonuses(c);
         });
 
-        updatePhaseUI(false);
+        await updatePhaseUI(false);
         sendData({ type: 'nextTurn', currentTurn: currentTurn });
     });
 
@@ -4274,8 +4323,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isMyCard && isOnField && hasAct && isMyTurn && isMainPhase) {
                 activateBtn.classList.remove('hidden');
-                activateBtn.onclick = () => {
-                    activateCardSkill(card);
+                activateBtn.onclick = async () => {
+                    await activateCardSkill(card);
                     skillViewer.classList.add('hidden');
                 };
             } else {
@@ -4290,8 +4339,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOrder && inHand && isMyTurn) {
                 playOrderBtn.classList.remove('hidden');
-                playOrderBtn.onclick = () => {
-                    playOrder(card);
+                playOrderBtn.onclick = async () => {
+                    await playOrder(card);
                     skillViewer.classList.add('hidden');
                 };
             } else {
@@ -4311,10 +4360,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inHand && isMyTurn && isMainPhase && (isXOD || isOD)) {
                 xoverBtn.classList.remove('hidden');
                 xoverBtn.textContent = isXOD ? "Perform X-overDress" : "Perform overDress";
-                xoverBtn.onclick = () => {
+                xoverBtn.onclick = async () => {
                     skillViewer.classList.add('hidden');
-                    if (isXOD) performXoverDress(card);
-                    else performOverDress(card);
+                    if (isXOD) await performXoverDress(card);
+                    else await performOverDress(card);
                 };
             } else {
                 xoverBtn.classList.add('hidden');
@@ -4627,7 +4676,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirmPlay) return;
 
         // Activate core skill effect
-        await activateCardSkill(card);
+        const skillResult = await activateCardSkill(card);
+        if (skillResult === false) return;
 
         // Move to drop zone
         const dropZone = document.querySelector('.my-side .drop-zone');
@@ -4658,17 +4708,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (cName.includes('Blaster')) {
                                 viewerGrid.removeEventListener('click', sel);
                                 zoneViewer.classList.add('hidden');
-                                
+
                                 const id = clicked.dataset.originalId;
                                 const originalIdx = deckPool.findIndex(c => c.id === id);
                                 const chosenData = deckPool.splice(originalIdx, 1)[0];
-                                
+
                                 const chosenElem = createCardElement(chosenData);
                                 playerHand.appendChild(chosenElem);
                                 updateHandSpacing();
                                 sendMoveData(chosenElem);
                                 alert(`นำ ${cName} ขึ้นมือ!`);
-                                
+
                                 deckPool.sort(() => 0.5 - Math.random());
                                 updateDeckCounter();
                             }
@@ -4682,14 +4732,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         closeViewerBtn.removeEventListener('click', closeH);
                     };
                     closeViewerBtn.addEventListener('click', closeH);
-                }
-            }
+                    return true;
+                } else return false;
+            } else return false;
         }
 
         // --- Baur Vairina [ACT] ---
         if (name.includes('Baur Vairina') && card.dataset.isXoverDress === "true") {
             if (await vgConfirm("Baur Vairina: [ACT] [SB2] รีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
-                if (paySoulBlast(2)) {
+                if (await paySoulBlast(2)) {
                     alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
                     document.body.classList.add('targeting-mode');
                     const retireHander = (e) => {
@@ -4756,7 +4807,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Charis (VC) ACT ---
         if (name.includes('Charis') && card.parentElement.classList.contains('vc')) {
             if (await vgConfirm("Charis: [ACT](VC) [SB1] จั่ว 2 และทิ้งการ์ด?")) {
-                if (paySoulBlast(1)) {
+                if (await paySoulBlast(1)) {
                     drawCard(true);
                     drawCard(true);
 
@@ -4900,21 +4951,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Spiritual Body Condensation [Order] ---
         if (name.includes('Spiritual Body Condensation')) {
-            if (await vgConfirm("Spiritual Body Condensation: [SB1] คอล 1 ใบจากดรอปและ +5000?")) {
-                if (paySoulBlast(1)) {
+            if (await vgConfirm("Spiritual Body Condensation: [SB1] นำ 1 ใบจากดร็อปโซนลง (RC) ใบนั้นรับพลัง +5000?")) {
+                if (await paySoulBlast(1)) {
                     promptCallFromDrop(1, (c) => {
                         const vg = document.querySelector('.my-side .circle.vc .card');
                         const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
                         return parseInt(c.dataset.grade) <= vgGrade;
                     }, 5000);
-                }
-            }
+                    return true;
+                } else return false;
+            } else return false;
         }
 
         // --- In the Dim Darkness, the Frozen Resentment [Order] ---
         if (name.includes('In the Dim Darkness')) {
-            if (await vgConfirm("In the Dim Darkness: [SB1] ดู 3 ใบจากกองทิ้ง 1 แล้วคอลจากดรอป?")) {
-                if (paySoulBlast(1)) {
+            if (await vgConfirm("In the Dim Darkness: [SB1] ดู 3 ใบจากกองการ์ด นำ 1 ใบเข้ามือ นำ 1 ใบจากดร็อปลง (RC)?")) {
+                if (await paySoulBlast(1)) {
                     const topCards = deckPool.slice(0, 3);
                     if (topCards.length > 0) {
                         openViewer("Choose a card to discard", topCards);
@@ -5404,7 +5456,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
             }
-            setTimeout(() => { currentAttackResolving = false; }, 2000);
+            setTimeout(() => {
+                currentAttackResolving = false;
+                isWaitingForGuard = false;
+            }, 2000);
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
         }
@@ -5429,40 +5484,44 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const attacker = document.getElementById(attackData.attackerId);
             const driveAdded = attacker ? parseInt(attacker.dataset.driveAdded || "0") : 0;
-            if (attacker && (attacker.dataset.baurDriveCheck === "true" || driveAdded > 0)) {
-                driveCheck(driveAdded > 0 ? driveAdded : 1, attackData.totalCritical, data.isPG);
-            }
-            // Recalculate Rearguard attack hit immediately
-            const target = document.getElementById('opp-' + attackData.targetId);
-            if (attacker && target) {
-                let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
-                let targetDefPower = parseInt(target.dataset.power) + (data.totalShield || 0);
+            if (attacker && (attacker.dataset.baurDriveCheck === "true" || driveAdded > 0 || window.otKeterActive)) {
+                let rcChecks = driveAdded > 0 ? driveAdded : 1;
+                if (window.otKeterActive) rcChecks = Math.max(rcChecks, 1);
+                driveCheck(rcChecks, attackData.totalCritical, data.isPG);
+            } else {
+                // Recalculate Rearguard attack hit immediately
+                const target = document.getElementById('opp-' + attackData.targetId);
+                if (attacker && target) {
+                    let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
+                    let targetDefPower = parseInt(target.dataset.power) + (data.totalShield || 0);
 
-                let isHit = finalPower >= targetDefPower;
-                if (data.isPG) {
-                    alert("Perfect Guard nullified the Rear-guard attack!");
-                    isHit = false;
-                }
-
-                if (isHit) {
-                    // Eden On-Hit Retirement
-                    if (attackData.attackerName.includes('Eden') && isFinalRush) {
-                        setTimeout(async () => {
-                            if (await vgConfirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
-                                if (payCounterBlast(1)) {
-                                    sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
-                                    alert("Eden: Opponent is choosing a Rear-guard to retire.");
-                                }
-                            }
-                        }, 500);
+                    let isHit = finalPower >= targetDefPower;
+                    if (data.isPG) {
+                        alert("Perfect Guard nullified the Rear-guard attack!");
+                        isHit = false;
                     }
-                    triggerIvankaOnHitRC(attackData);
-                }
 
-                await handleEndOfBattle(attacker, attackData);
-                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
+                    if (isHit) {
+                        // Eden On-Hit Retirement
+                        if (attackData.attackerName.includes('Eden') && isFinalRush) {
+                            setTimeout(async () => {
+                                if (await vgConfirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
+                                    if (payCounterBlast(1)) {
+                                        sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
+                                        alert("Eden: Opponent is choosing a Rear-guard to retire.");
+                                    }
+                                }
+                            }, 500);
+                        }
+                        triggerIvankaOnHitRC(attackData);
+                    }
+
+                    await handleEndOfBattle(attacker, attackData);
+                    sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
+                    isWaitingForGuard = false;
+                }
+                currentAttackData = null;
             }
-            currentAttackData = null;
         }
     }
 
@@ -5476,7 +5535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const booster = document.getElementById(boosterId);
             if (booster && booster.dataset.name.includes('Painkiller Angel')) {
                 if (await vgConfirm("Painkiller Angel: [SB1 & Retire] จั่วการ์ด 1 ใบ?")) {
-                    if (paySoulBlast(1)) {
+                    if (await paySoulBlast(1)) {
                         const circle = booster.parentElement;
                         const dropZone = document.querySelector('.my-side .drop-zone');
                         if (circle) circle.removeChild(booster);
