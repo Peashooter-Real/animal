@@ -284,17 +284,17 @@ document.addEventListener('DOMContentLoaded', () => {
         'Light Dragon Deity of Honors, Amartinoa': 'majes/amartinoa.png',
 
         // Brandt Gate - Avantgarda
-        'Blue Deathster, Sora Period': 'picture/avantgarda/sora.png',
-        'Blue Deathster, "Dark Verdict" Findanis': 'picture/avantgarda/findanis.png',
-        'Blue Deathster, "Heavenly Death Ray" Stelvane': 'picture/avantgarda/stelvane.png',
-        'Blue Deathster, "Skyrender" Avantgarda': 'picture/avantgarda/avant_original.png',
-        'Blue Deathster, "Skyrendriver" Avantgarda Richter': 'picture/avantgarda/richter.png',
+        'Blue Deathster, Sora Period': 'picture/sora.png',
+        'Blue Deathster, "Dark Verdict" Findanis': 'picture/findanis.png',
+        'Blue Deathster, "Heavenly Death Ray" Stelvane': 'picture/stelvane.png',
+        'Blue Deathster, "Skyrender" Avantgarda': 'picture/avant_original.png',
+        'Blue Deathster, "Skyrendriver" Avantgarda Richter': 'picture/richter.png',
         'Shock Strategy: Death Winds': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_079.png',
         'Bomber Strategy: Dusting': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_080.png',
         'Disruption Strategy: Killshroud': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_081.png',
         'Ala Dargente': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_035.png',
         'Sickle Blade of Inquest, Habitable Zone': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_036.png',
-        'Blue Deathster, Asagi Milestone': 'picture/avantgarda/asagi.png',
+        'Blue Deathster, Asagi Milestone': 'picture/asagi.png',
         'Blue Deathster, Hanada Halfway': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_075.png',
         'Automated Strategy, Belstul (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_041.png',
 
