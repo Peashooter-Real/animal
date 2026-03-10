@@ -1,48 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    window.alert = function (msg) {
-        const box = document.createElement('div');
-        box.className = 'vanguard-alert-box fade-in';
-        box.innerHTML = `
-        <div class="vanguard-alert-content">
-            <h3 style="color:var(--accent-vanguard); margin-bottom:10px; font-family:'Orbitron', sans-serif; text-shadow:0 0 5px var(--accent-vanguard);">SYSTEM NOTICE</h3>
-            <p style="color: white; font-size: 1.1rem;">${msg}</p>
-        </div>
-    `;
-        document.body.appendChild(box);
-        setTimeout(() => {
-            box.classList.remove('fade-in');
-            box.classList.add('fade-out');
-            setTimeout(() => box.remove(), 500);
-        }, 3500);
-    };
 
-    window.vgConfirm = function (msg) {
-        return new Promise(resolve => {
-            const overlay = document.createElement('div');
-            overlay.className = 'column-selection-overlay glass-panel';
-            overlay.innerHTML = `
-            <div class="mobile-guard-box" style="width: 90%; max-width: 450px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
-                <h3 style="color: var(--accent-vanguard); margin-bottom: 20px; font-size: 1.4rem; text-shadow:0 0 10px #f00;">ACTION REQUIRED</h3>
-                <p style="color: white; font-size: 1.2rem; margin-bottom: 30px; font-family: sans-serif;">${msg}</p>
-                <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 1rem; background: var(--accent-vanguard); border: none; font-size: 1.1rem; color: #fff;">CONFIRM</button>
-                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 1rem; background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; font-size: 1.1rem;">CANCEL</button>
-                </div>
-            </div>
-        `;
-            document.body.appendChild(overlay);
 
-            document.getElementById('vg-confirm-yes').onclick = () => {
-                overlay.remove();
-                resolve(true);
-            };
-            document.getElementById('vg-confirm-no').onclick = () => {
-                overlay.remove();
-                resolve(false);
-            };
-        });
-    };
+
 
 
 
@@ -88,15 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.vgConfirm = function (msg) {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
-            overlay.className = 'column-selection-overlay glass-panel';
-            overlay.style.zIndex = '99999';
+            overlay.className = 'modal-overlay';
+            overlay.style.zIndex = '999999';
             overlay.innerHTML = `
-            <div class="mobile-guard-box vg-confirm-box" style="width: 90%; max-width: 400px; text-align: center; padding: 1.5rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 15px; box-shadow: 0 0 20px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
-                <h3 style="color: var(--accent-vanguard); margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; text-shadow:0 0 5px #f00;">ACTION REQUIRED</h3>
-                <p style="color: white; font-size: 1rem; margin-bottom: 20px; font-family: sans-serif;">${msg}</p>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 0.8rem; background: var(--accent-vanguard); border: none; font-size: 1rem; color: #fff; cursor:pointer;">CONFIRM</button>
-                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 0.8rem; background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; font-size: 1rem; cursor:pointer;">CANCEL</button>
+            <div class="modal-content glass-panel" style="width: 90%; max-width: 400px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
+                <h3 style="color: var(--accent-vanguard); margin-top: 0; margin-bottom: 15px; font-size: 1.3rem; text-shadow:0 0 10px #f00;">ACTION REQUIRED</h3>
+                <p style="color: white; font-size: 1.1rem; margin-bottom: 25px; font-family: sans-serif; line-height: 1.4;">${msg}</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="vg-confirm-yes" class="glass-btn highlight-btn" style="flex: 1; padding: 0.9rem; background: var(--accent-vanguard); border: none; font-size: 1rem; color: #fff; cursor:pointer; font-weight: bold;">CONFIRM</button>
+                    <button id="vg-confirm-no" class="glass-btn" style="flex: 1; padding: 0.9rem; background: rgba(255, 255, 255, 0.05); color: #aaa; border: 1px solid #444; font-size: 1rem; cursor:pointer;">CANCEL</button>
                 </div>
             </div>
         `;
@@ -3356,25 +3316,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showColumnSelection(callback) {
         const overlay = document.createElement('div');
-        overlay.className = 'column-selection-overlay glass-panel';
+        overlay.className = 'modal-overlay';
+        overlay.id = 'col-selection-overlay';
         overlay.innerHTML = `
-                <div style="background: rgba(10,10,20,0.9); border: 2px solid var(--accent-vanguard); border-radius: 20px; padding: 1.5rem; text-align: center; width: 90%; max-width: 400px; box-sizing: border-box;">
-                    <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00; margin-bottom: 20px; font-size: 1.2rem;">SELECT COLUMN TO STAND</h2>
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                        <button class="glass-btn column-btn" data-col="left" style="padding: 1rem; font-size: 1.1rem;">Left Column</button>
-                        <button class="glass-btn column-btn" data-col="center" style="padding: 1rem; font-size: 1.1rem;">Center Column</button>
-                        <button class="glass-btn column-btn" data-col="right" style="padding: 1rem; font-size: 1.1rem;">Right Column</button>
+                <div class="modal-content glass-panel" style="background: rgba(10,10,20,0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; padding: 2rem; text-align: center; width: 90%; max-width: 400px; box-sizing: border-box; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5);">
+                    <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00; margin-bottom: 25px; font-size: 1.4rem; font-family:'Orbitron', sans-serif;">SELECT COLUMN TO STAND</h2>
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                        <button class="glass-btn column-btn highlight-btn" data-col="left" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Left Column</button>
+                        <button class="glass-btn column-btn highlight-btn" data-col="center" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Center Column</button>
+                        <button class="glass-btn column-btn highlight-btn" data-col="right" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Right Column</button>
                     </div>
-                    <button id="cancel-col" class="glass-btn" style="width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid #555;">Cancel</button>
+                    <button id="cancel-col" class="glass-btn" style="width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #444; color: #aaa;">Cancel</button>
                 </div>
             `;
-        overlay.id = 'col-selection-overlay';
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0'; overlay.style.left = '0';
-        overlay.style.width = '100vw'; overlay.style.height = '100vh';
-        overlay.style.display = 'flex'; overlay.style.alignItems = 'center'; overlay.style.justifyContent = 'center';
-        overlay.style.zIndex = '10000'; overlay.style.background = 'rgba(0,0,0,0.8)';
-
         document.body.appendChild(overlay);
 
         overlay.querySelectorAll('.column-btn').forEach(btn => {
