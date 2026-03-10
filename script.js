@@ -1234,6 +1234,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function sendRemoveData(card) {
+        if (!card) return;
+        sendData({ type: 'removeCard', cardId: card.id });
+    }
+
     function drawCard(isInitial = false) {
         if (!isMyTurn && !isInitial) return;
         if (deckPool.length === 0) {
@@ -1437,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 currentAttackResolving = false;
                 isWaitingForGuard = false;
-            }, 2000);
+            }, 500);
             return;
         }
 
@@ -1686,13 +1691,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Knight of Inheritance, Emmeline [AUTO](RC) Trigger ---
         if (attacker.dataset.name.includes('Blaster')) {
-            document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').forEach(unit => {
-                if (unit.dataset.name.includes('Emmeline')) {
+            document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
+                const z = unit.parentElement.dataset.zone || "";
+                if (unit.dataset.name.includes('Emmeline') && z.startsWith('rc')) {
                     unit.dataset.emmelineAtkBonus = (parseInt(unit.dataset.emmelineAtkBonus || "0") + 5000).toString();
                     unit.dataset.power = (parseInt(unit.dataset.power) + 5000).toString();
                     syncPowerDisplay(unit);
                     sendMoveData(unit);
-                    alert("Emmeline: ยูนิท 'Blaster' โจมตี พลัง +5000!");
+                    alert("Emmeline: ยูนิต 'Blaster' โจมตี พลัง +5000!");
                 }
             });
         }
@@ -2045,6 +2051,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFromField = oldParent && oldParent.classList.contains('circle');
         const isFromVC = oldParent && oldParent.classList.contains('vc');
 
+        if (isFromHand) {
+            card.dataset.fromHand = "true";
+        } else if (isFromField) {
+            card.dataset.fromHand = "false";
+        }
+
         // 0. Vanguard Movement Restriction
         if (isFromVC && (zone.classList.contains('rc') || zone.dataset.zone === 'hand' || zone.classList.contains('drop-zone'))) {
             alert("Vanguard cannot be moved to Rear-guard circle, Hand, or Drop Zone!");
@@ -2076,12 +2088,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isGuarding) {
                 alert("You can only move cards to the Guard Circle when defending an attack!");
                 return false;
-            }
-
-            if (isFromHand) {
-                card.dataset.fromHand = "true";
-            } else {
-                card.dataset.fromHand = "false";
             }
 
             if (isFromField && !isFromHand) {
@@ -3521,8 +3527,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Knight of Inheritance, Emmeline [AUTO] on (RC) from hand ---
-        if (name.includes('Emmeline') && card.parentElement.classList.contains('rc') && card.dataset.fromHand === "true") {
-            if (await vgConfirm("Emmeline: [RC] [SB1] ดู 5 ใบ เลือก 'Blaster' เข้าช่องที่ว่าง 1 ใบ?")) {
+        const onRC = card.parentElement && card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc');
+        if (name.includes('Emmeline') && onRC && card.dataset.fromHand === "true") {
+            if (await vgConfirm("Emmeline: [RC] [SB1] ดู 5 ใบ เลือก 'Blaster' ลงช่อง Rear-guard 1 ใบ?")) {
                 if (await paySoulBlast(1)) {
                     const top5 = deckPool.slice(0, 5);
                     openViewer("Emmeline: Top 5 (Select 'Blaster' unit)", top5);
@@ -5051,6 +5058,13 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'moveCard':
                 syncRemoteMove(data);
                 break;
+            case 'removeCard':
+                const remCard = document.getElementById(`opp-${data.cardId}`);
+                if (remCard) {
+                    remCard.classList.add('effect-retired');
+                    setTimeout(() => remCard.remove(), 500);
+                }
+                break;
             case 'phaseChange':
                 currentPhaseIndex = data.phaseIndex;
                 isFirstPlayer = !data.isFirstPlayer;
@@ -5116,15 +5130,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateAllStaticBonuses();
                 break;
             case 'forceRetire':
-                const frCard = document.getElementById(data.cardId);
+                const frCard = document.getElementById(data.cardId) || document.getElementById(`opp-${data.cardId}`);
                 if (frCard) {
-                    const dropZone = document.querySelector('.my-side .drop-zone');
-                    dropZone.appendChild(frCard);
-                    frCard.classList.remove('rest', 'face-down');
-                    window.myRGRetiredThisTurn = true;
-                    updateDropCount();
-                    updateAllStaticBonuses();
-                    alert(`ยูนิทของคุณถูกรีไทร์โดยสกิลของคู่แข่ง!`);
+                    frCard.classList.add('effect-retired');
+                    setTimeout(() => {
+                        const side = frCard.classList.contains('opponent-card') ? '.opponent-side' : '.my-side';
+                        const dropZone = document.querySelector(`${side} .drop-zone`);
+                        if (dropZone) dropZone.appendChild(frCard);
+                        frCard.classList.remove('effect-retired', 'rest', 'face-down');
+                        if (!frCard.classList.contains('opponent-card')) window.myRGRetiredThisTurn = true;
+                        updateDropCount();
+                        updateAllStaticBonuses();
+                    }, 500);
+                    alert(`ยูนิทฝั่ง ${frCard.classList.contains('opponent-card') ? 'ตรงข้าม' : 'ของคุณ'} ถูกรีไทร์!`);
                 }
                 break;
             case 'retireColumn':
@@ -5490,7 +5508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 currentAttackResolving = false;
                 isWaitingForGuard = false;
-            }, 2000);
+            }, 500);
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
         }
@@ -5500,6 +5518,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const attackData = data.attackData;
         const totalShield = data.totalShield || 0;
         alert(`Opponent finished placing guards! (+${totalShield} Shield)`);
+
+        const statusText = document.getElementById('game-status-text');
+        if (statusText) statusText.textContent = "Network Ready";
 
         currentAttackData = {
             ...attackData,
@@ -5522,37 +5543,44 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Recalculate Rearguard attack hit immediately
                 const target = document.getElementById('opp-' + attackData.targetId);
-                if (attacker && target) {
-                    let finalPower = parseInt(attacker.dataset.power) + (attackData.boostPower || 0);
+                let finalPower = attacker ? parseInt(attacker.dataset.power) + (attackData.boostPower || 0) : parseInt(attackData.totalPower || "0");
+                let isHit = false;
+
+                if (target) {
                     let targetDefPower = parseInt(target.dataset.power) + (data.totalShield || 0);
-
-                    let isHit = finalPower >= targetDefPower;
-                    if (data.isPG) {
-                        alert("Perfect Guard nullified the Rear-guard attack!");
-                        isHit = false;
-                    }
-
-                    if (isHit) {
-                        // Eden On-Hit Retirement
-                        if (attackData.attackerName.includes('Eden') && isFinalRush) {
-                            setTimeout(async () => {
-                                if (await vgConfirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
-                                    if (payCounterBlast(1)) {
-                                        sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
-                                        alert("Eden: Opponent is choosing a Rear-guard to retire.");
-                                    }
-                                }
-                            }, 500);
-                        }
-                        triggerIvankaOnHitRC(attackData);
-                    }
-
-                    await handleEndOfBattle(attacker, attackData);
-                    sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
-                    isWaitingForGuard = false;
+                    isHit = finalPower >= targetDefPower;
+                } else {
+                    isHit = true;
                 }
-                currentAttackData = null;
+
+                if (data.isPG) {
+                    alert("Perfect Guard nullified the Rear-guard attack!");
+                    isHit = false;
+                }
+
+                if (isHit) {
+                    // Eden On-Hit Retirement
+                    if (attackData.attackerName.includes('Eden') && isFinalRush) {
+                        setTimeout(async () => {
+                            if (await vgConfirm("Eden: Cost CB 1 to retire an opponent's Rear-guard?")) {
+                                if (payCounterBlast(1)) {
+                                    sendData({ type: 'retireOpponentRG', attackerName: attackData.attackerName });
+                                    alert("Eden: Opponent is choosing a Rear-guard to retire.");
+                                }
+                            }
+                        }, 500);
+                    }
+                    triggerIvankaOnHitRC(attackData);
+                }
+
+                await handleEndOfBattle(attacker, attackData);
+                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
+
+                setTimeout(() => {
+                    isWaitingForGuard = false;
+                }, 500);
             }
+            currentAttackData = null;
         }
     }
 
@@ -5656,7 +5684,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     applyStaticBonuses(c);
                                     sendMoveData(c);
                                 }
-                                
+
                                 const darkIdx = soulPool.findIndex(c => c.dataset.name.includes('Blaster Dark'));
                                 if (darkIdx !== -1) {
                                     const c = soulPool.splice(darkIdx, 1)[0];
@@ -5676,12 +5704,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Alpin Post-Battle Bind ---
         if (name.includes('Alpin') && attacker.dataset.alpinBindReady === "true") {
-            if (confirm("Alpin: [End of Battle] จ่ายคอส Bind ตัวเองเพื่อ CC1 และ SC1?")) {
-                attacker.remove(); // Effectively bind
-                alert("Alpin: ไปที่ Bind Zone แล้ว! [Counter-Charge 1 / Soul-Charge 1]");
-                soulCharge(1);
-                counterCharge(1);
-                sendData({ type: 'removeCard', cardId: attacker.id });
+            if (await vgConfirm("Alpin: Bind? (CC1/SC1)")) {
+                attacker.classList.add('effect-retired');
+                setTimeout(() => { attacker.remove(); }, 500);
+                soulCharge(1); counterCharge(1);
+                sendRemoveData(attacker);
             }
         }
 
