@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sickle Blade of Inquest, Habitable Zone': 'avantgarda/habitable_zone.png',
         'Blue Deathster, Asagi Milestone': 'avantgarda/asagi.png',
         'Blue Deathster, Hanada Halfway': 'avantgarda/hanada_halfway.png',
-        'Automated Strategy, Belstul (Perfect Guard)': 'avantgarda/belstul_pg.png',
+        'Automated Belstul (Perfect Guard)': 'avantgarda/belstul_pg.png',
 
         'Critical Trigger (Brandt Gate)': 'avantgarda/brandt_crit.png',
         'Draw Trigger (Brandt Gate)': 'avantgarda/brandt_draw.png',
@@ -445,11 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mainDeck: [
             ...Array(4).fill({ name: 'Blue Deathster, "Skyrendriver" Avantgarda Richter', grade: 3, power: 13000, persona: true, skill: '[ACT](Hand): หากแวนคู่แข่งเกรด 3+ [เผยการ์ดนี้ & ไบนด์ "Skyrender" Avantgarda จาก (VC)] ไรด์ Stand และได้รับ [ACT] ของใบที่ถูกไบนด์\n[AUTO](VC): จบการบุก หากโซลมี "Sora Period" [ทิ้งมือ 2 ใบ] ไรด์ "Skyrender" Avantgarda จากไบนด์แบบ Stand, พลัง+10000 และ ไดรฟ์-1' }),
             ...Array(3).fill({ name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: หากในโซลมี "Blue Deathster, Sora Period" [เลือก Strategy 1 ใบจาก Order Zone เข้าโซล] จั่วการ์ด 1 ใบ แวนการ์ดพลัง+5000 และได้รับความสามารถ\n"[AUTO](VC)[1/Turn]: เมื่อจบการโจมตี หากโจมตีฮิตแวนการ์ด หรือทำ Persona Ride [CB1 & ทิ้งมือ 1 ใบ] Stand และไดรฟ์-1"' }),
-            ...Array(3).fill({ name: 'Shock Strategy: Death Winds', grade: 3, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[Activate]: จนจบเทิร์น แวนการ์ดของคุณได้รับ [CONT](VC): ยูนิทนี้และยูนิทของคุณทั้งหมดในแถวแนวตั้งเดียวกันได้รับ Critical +1' }),
+            ...Array(3).fill({ name: 'Shock Strategy: Death Winds', grade: 3, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(After a set order is played, put it into the order zone)\n[AUTO]:When this card is put into soul from the order zone, if your opponent\'s vanguard is grade 3 or greater, choose one of your vanguards, and it gets "AUTO(VC):When this unit attacks, all of your front row units get [Power] +5000 until end of turn." until end of turn.' }),
             ...Array(4).fill({ name: 'Ala Dargente', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อแวนการ์ด "Avantgarda" ของคุณโจมตี ยูนิทนี้ได้รับ พลัง+5000 จนจบเทิร์น\n[AUTO]: เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card ที่ชื่อไม่ซ้ำกับที่เพิ่งใส่โซลจากกองหรือดรอปนำขึ้นมือ 1 ใบ' }),
             ...Array(3).fill({ name: 'Sickle Blade of Inquest, Habitable Zone', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกทิ้งจากมือลงช่องดรอปใน Ride Phase [SB1 & นำการ์ดใบนี้เข้าใต้กอง] จั่วการ์ด 1 ใบ' }),
             ...Array(1).fill({ name: 'Bomber Strategy: Dusting', grade: 2, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(เข้าโซลเมื่อประกาศใช้งานจากแวนการ์ด)\n[AUTO]: เมื่อถูกส่งเข้าโซลจาก Order Zone แวนการ์ดคุณได้รับพลัง+10000 จนจบเทิร์น และคู่แข่งไม่สามารถอินเตอร์เซปต์หรือเล่น Blitz Order ได้' }),
-            ...Array(4).fill({ name: 'Automated Strategy, Belstul (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
+            ...Array(4).fill({ name: 'Automated Belstul (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
             ...Array(3).fill({ name: 'Blue Deathster, Asagi Milestone', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] เลือกการ์ด "Avantgarda" เกรด 3 หรือสูงกว่าจากช่องดรอป 1 ใบขึ้นมือ\n[CONT](RC): หาก Strategy Card ถูกใส่เข้าโซลในเทิร์นนี้ ยูนิทนี้ได้รับพลัง+5000' }),
             ...Array(4).fill({ name: 'Blue Deathster, Hanada Halfway', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] จั่วการ์ด 1 ใบ\n[AUTO](RC): เมื่อบูสต์ ถ้าวาง Strategy ลง Order Zone ในเทิร์นนี้ พลัง+2000(จนจบแบตเทิล) และถ้าอยู่ช่องหลังสุดแถวกลาง ได้รับ [CC1]' }),
             ...Array(1).fill({ name: 'Disruption Strategy: Killshroud', grade: 1, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[AUTO]: เมื่อถูกนำเข้าโซลจาก Order Zone เลือกเรียร์การ์ดคู่แข่ง 1 ใบรีไทร์ และแวนการ์ดพลัง+5000 จนจบเทิร์น' }),
@@ -1770,6 +1770,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function performAttack(attacker, target) {
+        if (currentTurn === 1 && isFirstPlayer) {
+            alert("ผู้เล่นที่ได้เริ่มเล่นก่อน ไม่สามารถโจมตีได้ในเทิร์นแรก!");
+            attacker.classList.remove('attacking-glow');
+            attackingCard = null;
+            return;
+        }
+
         // Stricter Targeting: Only allow attacking opponent's units on field (circles)
         const targetParent = target.parentElement;
         const isTargetOnField = targetParent && targetParent.classList.contains('circle');
@@ -1871,7 +1878,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const z = c.parentElement.dataset.zone || "";
                 if (z === 'vc' || z === 'rc_front_left' || z === 'rc_front_right') {
                     c.dataset.power = (parseInt(c.dataset.power) + 5000).toString();
+                    c.dataset.turnEndBuffPower = (parseInt(c.dataset.turnEndBuffPower || "0") + 5000).toString();
+                    c.dataset.turnEndBuffActive = "true";
                     syncPowerDisplay(c);
+                    sendMoveData(c);
                 }
             });
         }
@@ -2499,7 +2509,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return false; }
                 if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return false; }
-                if (cardGrade !== vanguardGrade + 1 && !(cardGrade === 3 && vanguardGrade === 3) && !(cardGrade === 4 && vanguardGrade === 3)) {
+                
+                // Allow exact same grade if it's G3 or G4 (Persona Ride or G4 re-ride)
+                const isSameGradeAllowed = cardGrade >= 3 && cardGrade === vanguardGrade;
+                if (cardGrade !== vanguardGrade + 1 && !isSameGradeAllowed && !(cardGrade === 4 && vanguardGrade === 3)) {
                     alert(`Cannot Ride Grade ${cardGrade} over Grade ${vanguardGrade}!`);
                     return false;
                 }
@@ -2707,21 +2720,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const zone = parent ? parent.dataset.zone : "";
         const isFrontRow = zone && (zone.startsWith('rc_front_') || zone === 'vc');
 
-        // Shock Strategy: Vertical Column Critical +1
-        let shockCritBonus = 0;
-        if (shockStrategyActive && isMyTurn) {
-            // If card is in the same column as Vanguard
-            if (zone === 'vc' || zone === 'rc_back_center') {
-                shockCritBonus = 1;
-            }
-        }
-        if (shockCritBonus > 0 && card.dataset.shockCritApplied !== "true") {
-            card.dataset.critical = parseInt(card.dataset.critical || 1) + 1;
-            card.dataset.shockCritApplied = "true";
-        } else if (shockCritBonus === 0 && card.dataset.shockCritApplied === "true") {
-            card.dataset.critical = parseInt(card.dataset.critical || 2) - 1;
-            card.dataset.shockCritApplied = "false";
-        }
+        // Shock Strategy check removed (Legacy)
 
         // --- Blue Deathster, Asagi Milestone [CONT] ---
         if (name.includes('Asagi Milestone') && zone.startsWith('rc')) {
@@ -5399,9 +5398,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const isSetOrder = skillText.includes('set order');
         const isBlitzOrder = skillText.includes('blitz order');
 
+        const orderGrade = parseInt(card.dataset.grade || 0);
+        const vgCard = document.querySelector('.my-side .circle.vc .card');
+        const vgGrade = vgCard ? parseInt(vgCard.dataset.grade || 0) : 0;
+
+        if (orderGrade > vgGrade) {
+            alert(`ไม่สามารถใช้งาน Order เกรด ${orderGrade} ได้ เนื่องจากแวนการ์ดของคุณคือเกรด ${vgGrade}!`);
+            return;
+        }
+
         if (isBlitzOrder) {
             if (window.currentIncomingAttack && window.currentIncomingAttack.bomberNoBlitz) {
                 alert("Bomber Strategy Dusting! คุณไม่สามารถใช้งาน Blitz Order ได้!");
+                return;
+            }
+        } else {
+            // Normal Order or Set Order can only be played in Main Phase
+            if (phases[currentPhaseIndex] !== 'main') {
+                alert("Order สามารถเล่นได้เฉพาะใน Main Phase เท่านั้น!");
                 return;
             }
         }
@@ -5648,6 +5662,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 // Power +5000 to Vanguard
                                 card.dataset.power = parseInt(card.dataset.power) + 5000;
+                                card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                                card.dataset.turnEndBuffActive = "true";
                                 syncPowerDisplay(card);
                                 alert(`${card.dataset.name}: พลัง +5000 จนจบเทิร์น!`);
                                 sendMoveData(card);
