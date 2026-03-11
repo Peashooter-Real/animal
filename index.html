@@ -219,6 +219,20 @@
                     <!-- Cards will be injected here -->
                 </div>
             </div>
+
+            <!-- Quick Access Panel -->
+            <div class="quick-access-panel">
+                <div class="quick-group">
+                    <span class="group-label">MY ZONES</span>
+                    <button onclick="document.getElementById('view-drop-btn').click()" class="quick-btn drop">Drop (<span id="quick-drop-num">0</span>)</button>
+                    <button onclick="document.getElementById('view-damage-btn').click()" class="quick-btn damage">Damage (<span id="quick-damage-num">0</span>)</button>
+                </div>
+                <div class="quick-group">
+                    <span class="group-label">OPP ZONES</span>
+                    <button onclick="document.getElementById('opp-view-drop-btn').click()" class="quick-btn drop">Drop (<span id="opp-quick-drop-num">0</span>)</button>
+                    <button onclick="document.getElementById('opp-view-damage-btn').click()" class="quick-btn damage">Damage (<span id="opp-quick-damage-num">0</span>)</button>
+                </div>
+            </div>
         </div>
     </div>
 

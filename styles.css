@@ -15,6 +15,7 @@
   --circle-size: 110px;
   --bg-zone: rgba(0, 10, 20, 0.8);
   --font-cyber: 'Orbitron', sans-serif;
+  --panel-width: 200px;
 }
 
 * {
@@ -1978,3 +1979,65 @@ body.targeting-mode::after {
     opacity: 1;
   }
 }
+/* Quick Access Panel */
+.quick-access-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--accent-blue);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+}
+
+.quick-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--accent-blue);
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.quick-btn {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 140px;
+  text-transform: uppercase;
+}
+
+.quick-btn:hover {
+  transform: translateX(-5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.quick-btn.drop {
+  border-left: 4px solid #888;
+}
+
+.quick-btn.damage {
+  border-left: 4px solid #ff3333;
+}
+
+.quick-btn:active {
+  transform: scale(0.95);
+}
+

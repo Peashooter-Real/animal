@@ -247,10 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Nirvana Jheva Deck
         'Sunrise Egg': 'picture/0nir.jpg',
-        'Heart-pounding Blaze Maiden, Rino': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_013.png',
+        'Heart-pounding Blaze Maiden, Rino': 'picture/1nir.jpg',
         'Snuggling Blaze Maiden, Reiyu': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_006.png',
         'Chakrabarthi Pheonix Dragon, Nirvana Jheva': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_001.png',
-        'Trickstar': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_004.png',
+        'Trickstar': 'picture/star.jpg',
         'Sparkle Rejector Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_023.png',
         'Illuminate Equip Dragon, Graillumirror': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_022.png',
         'Strike Equip Dragon, Stragallio': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_038.png',
@@ -494,6 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const myHand = playerHand.querySelectorAll('.card').length;
         const mySoul = soulPool.length;
         const myDeck = deckPool.length;
+
+        // Update local quick view
+        const qDrop = document.getElementById('quick-drop-num');
+        const qDamage = document.getElementById('quick-damage-num');
+        if (qDrop) qDrop.textContent = myDrop;
+        if (qDamage) qDamage.textContent = myDamage;
 
         sendData({
             type: 'syncCounts',
@@ -2274,9 +2280,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 isVanguardAttacker: isVanguardAttacker,
                 isTargetVanguard: isTargetVanguard,
                 vanguardGrade: attacker.dataset.grade,
+                driveCount: parseInt(attacker.dataset.drive || (parseInt(attacker.dataset.grade) >= 4 ? "3" : (parseInt(attacker.dataset.grade) >= 3 ? "2" : (attacker.dataset.baurDriveCheck === "true" ? "1" : "0")))),
                 boosterId: boosterCardInfo ? boosterCardInfo.id : null,
                 boosterName: boosterCardInfo ? boosterCardInfo.name : null,
-                tripleDrive: attacker.dataset.tripleDrive === "true",
+                tripleDrive: attacker.dataset.tripleDrive === "true" || (parseInt(attacker.dataset.grade) === 4),
                 majestyDriveBuff: attacker.dataset.majestyDriveBuff === "true",
                 baurDriveCheck: attacker.dataset.baurDriveCheck === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
@@ -2501,6 +2508,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const vanguard = document.querySelector('.my-side .circle.vc .card');
             const vanguardGrade = vanguard ? parseInt(vanguard.dataset.grade) : 0;
 
+            // Prevent Orders from being called to field
+            if (card.dataset.skill && card.dataset.skill.includes('[Order]')) {
+                alert("Order cards cannot be called to Vanguard or Rear-guard circles!");
+                return false;
+            }
+
             // 4a. Move to Vanguard Circle (RIDE)
             if (zone.classList.contains('vc')) {
                 if (isFromField) {
@@ -2524,7 +2537,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasRiddenThisTurn = true;
                 updateSoulUI();
 
-                if (card.dataset.persona === "true" && vanguardGrade === 3 && currentPhase === 'ride') {
+                const vanguardName = vanguard ? vanguard.dataset.name : "";
+
+                if (card.dataset.persona === "true" && vanguardGrade === 3 && currentPhase === 'ride' && card.dataset.name === vanguardName) {
                     triggerPersonaRide();
                 }
 
@@ -3742,7 +3757,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
-            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'killshroudDebuffApplied', 'shockCritApplied', 'strategyPowerBuffed'];
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'killshroudDebuffApplied', 'shockCritApplied', 'strategyPowerBuffed', 'drive'];
             flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
             let changed = false;
@@ -5455,6 +5470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMoveData(card);
                 updateHandCount();
                 orderPlayedThisTurn = true;
+                strategyActivatedThisTurn = true;
                 if (card.dataset.name.includes("Strategy")) {
                     strategyPutToOrderZoneThisTurn = true;
                 }
@@ -5472,6 +5488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateHandCount();
             updateDropCount();
             orderPlayedThisTurn = true;
+            strategyActivatedThisTurn = true;
             ordersPlayedCount++;
             alert(`Played Order: ${card.dataset.name}`);
         }
@@ -5677,6 +5694,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     lastStrategyPutIntoSoulName = stratName; // Save for Ala Dargente
+                    updateAllStaticBonuses(); // Recalculate Milestone power immediately
+                    syncPowerDisplay(card);
 
                     sendMoveData(card);
                 }
@@ -5942,6 +5961,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (oppDeckCountNum) oppDeckCountNum.textContent = data.deck;
                 if (oppDropCountNum) oppDropCountNum.textContent = data.drop;
                 if (oppDamageCountNum) oppDamageCountNum.textContent = data.damage;
+                const oqDrop = document.getElementById('opp-quick-drop-num');
+                const oqDamage = document.getElementById('opp-quick-damage-num');
+                if (oqDrop) oqDrop.textContent = data.drop;
+                if (oqDamage) oqDamage.textContent = data.damage;
                 if (oppSoulBadge) {
                     if (data.soul > 0) {
                         oppSoulBadge.classList.remove('hidden');
@@ -6405,8 +6428,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attackData.isVanguardAttacker) {
                 currentAttackData = { ...attackData, opponentShield: 0 };
                 const grade = parseInt(attackData.vanguardGrade || "0");
-                let checks = grade >= 4 ? 3 : (grade >= 3 ? 2 : 1);
-                if (attackData.tripleDrive) checks = 3;
+                let checks = attackData.driveCount !== undefined ? attackData.driveCount : (grade >= 4 ? 3 : (grade >= 3 ? 2 : 1));
+                if (attackData.tripleDrive) checks = Math.max(checks, 3);
                 if (attackData.majestyDriveBuff) checks++;
                 driveCheck(checks, attackData.totalCritical);
             } else {
@@ -6467,8 +6490,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (attackData.isVanguardAttacker) {
             const grade = parseInt(attackData.vanguardGrade || "0");
-            let checks = grade >= 4 ? 3 : (grade >= 3 ? 2 : 1);
-            if (attackData.tripleDrive) checks = 3;
+            let checks = attackData.driveCount !== undefined ? attackData.driveCount : (grade >= 4 ? 3 : (grade >= 3 ? 2 : 1));
+            if (attackData.tripleDrive) checks = Math.max(checks, 3);
             if (attackData.majestyDriveBuff) checks++;
             driveCheck(checks, attackData.totalCritical, data.isPG); // Pass PG to driveCheck
         } else {
