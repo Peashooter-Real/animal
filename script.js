@@ -495,11 +495,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const mySoul = soulPool.length;
         const myDeck = deckPool.length;
 
+        const myOrder = document.querySelectorAll('.my-side .order-zone .card').length;
+
         // Update local quick view
         const qDrop = document.getElementById('quick-drop-num');
         const qDamage = document.getElementById('quick-damage-num');
+        const qOrder = document.getElementById('quick-order-num');
         if (qDrop) qDrop.textContent = myDrop;
         if (qDamage) qDamage.textContent = myDamage;
+        if (qOrder) qOrder.textContent = myOrder;
 
         sendData({
             type: 'syncCounts',
@@ -514,6 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 shield: c.dataset.shield,
                 skill: c.dataset.skill
             })),
+            order: myOrder,
             deck: myDeck
         });
     }
@@ -5963,8 +5968,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (oppDamageCountNum) oppDamageCountNum.textContent = data.damage;
                 const oqDrop = document.getElementById('opp-quick-drop-num');
                 const oqDamage = document.getElementById('opp-quick-damage-num');
+                const oqOrder = document.getElementById('opp-quick-order-num');
                 if (oqDrop) oqDrop.textContent = data.drop;
                 if (oqDamage) oqDamage.textContent = data.damage;
+                if (oqOrder) oqOrder.textContent = data.order || 0;
                 if (oppSoulBadge) {
                     if (data.soul > 0) {
                         oppSoulBadge.classList.remove('hidden');
@@ -7308,6 +7315,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners for Viewer
+    // View Order Zone function
+    window.viewOrderZone = (side) => {
+        const selector = side === 'my' ? '.my-side .order-zone' : '.opponent-side .order-zone';
+        const zone = document.querySelector(selector);
+        if (!zone) return;
+        const cards = Array.from(zone.querySelectorAll('.card'));
+        if (cards.length === 0) {
+            alert(`Order Zone (${side === 'my' ? 'Mine' : "Opponent's"}) is empty.`);
+            return;
+        }
+        openViewer(`${side === 'my' ? 'My' : "Opponent's"} Order Zone`, cards);
+    };
+
     if (closeViewerBtn) {
         closeViewerBtn.addEventListener('click', () => zoneViewer.classList.add('hidden'));
     }
