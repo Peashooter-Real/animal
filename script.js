@@ -5061,7 +5061,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const playOrderBtn = document.getElementById('play-order-btn');
         if (playOrderBtn) {
-            const isOrder = card.dataset.skill && card.dataset.skill.includes('[Order]');
+            const skillLC = (card.dataset.skill || "").toLowerCase();
+            const isOrder = skillLC.includes('[order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]');
             const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
 
             if (isOrder && inHand && isMyTurn) {
