@@ -284,24 +284,24 @@ document.addEventListener('DOMContentLoaded', () => {
         'Light Dragon Deity of Honors, Amartinoa': 'majes/amartinoa.png',
 
         // Brandt Gate - Avantgarda
-        'Blue Deathster, Sora Period': 'picture/sora.png',
-        'Blue Deathster, "Dark Verdict" Findanis': 'picture/findanis.png',
-        'Blue Deathster, "Heavenly Death Ray" Stelvane': 'picture/stelvane.png',
-        'Blue Deathster, "Skyrender" Avantgarda': 'picture/avant_original.png',
-        'Blue Deathster, "Skyrendriver" Avantgarda Richter': 'picture/richter.png',
-        'Shock Strategy: Death Winds': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_079.png',
-        'Bomber Strategy: Dusting': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_080.png',
-        'Disruption Strategy: Killshroud': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_081.png',
-        'Ala Dargente': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_035.png',
-        'Sickle Blade of Inquest, Habitable Zone': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_036.png',
-        'Blue Deathster, Asagi Milestone': 'picture/asagi.png',
-        'Blue Deathster, Hanada Halfway': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_075.png',
-        'Automated Strategy, Belstul (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt09/d-bt09_041.png',
+        'Blue Deathster, Sora Period': 'avantgarda/sora.png',
+        'Blue Deathster, "Dark Verdict" Findanis': 'avantgarda/findanis.png',
+        'Blue Deathster, "Heavenly Death Ray" Stelvane': 'avantgarda/stelvane.png',
+        'Blue Deathster, "Skyrender" Avantgarda': 'avantgarda/avant_original.png',
+        'Blue Deathster, "Skyrendriver" Avantgarda Richter': 'avantgarda/richter.png',
+        'Shock Strategy: Death Winds': 'avantgarda/death_winds.png',
+        'Bomber Strategy: Dusting': 'avantgarda/bomber_dusting.png',
+        'Disruption Strategy: Killshroud': 'avantgarda/killshroud.png',
+        'Ala Dargente': 'avantgarda/ala_dargente.png',
+        'Sickle Blade of Inquest, Habitable Zone': 'avantgarda/habitable_zone.png',
+        'Blue Deathster, Asagi Milestone': 'avantgarda/asagi.png',
+        'Blue Deathster, Hanada Halfway': 'avantgarda/hanada_halfway.png',
+        'Automated Strategy, Belstul (Perfect Guard)': 'avantgarda/belstul_pg.png',
 
-        'Critical Trigger (Brandt Gate)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_076.png',
-        'Draw Trigger (Brandt Gate)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_077.png',
-        'Heal Trigger (Brandt Gate)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_078.png',
-        'Star Dragon Deity of Infinitude, Eldobreath': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_004.png'
+        'Critical Trigger (Brandt Gate)': 'avantgarda/brandt_crit.png',
+        'Draw Trigger (Brandt Gate)': 'avantgarda/brandt_draw.png',
+        'Heal Trigger (Brandt Gate)': 'avantgarda/brandt_heal.png',
+        'Star Dragon Deity of Infinitude, Eldobreath': 'avantgarda/eldobreath.png'
     };
 
     // --- Deck Definitions ---
@@ -438,21 +438,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const avantgardaDeck = {
         rideDeck: [
             { name: 'Blue Deathster, Sora Period', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
-            { name: 'Blue Deathster, "Dark Verdict" Findanis', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Heavenly Death Ray" Stelvane ค้นหา Strategy 1 ใบจากในกองขึ้นมือ\n[CONT](RC): เมื่อยูนิทนี้บูสต์ ถ้ามี Strategy ถูก Activate ในเทิร์นนี้ พลัง+5000' },
-            { name: 'Blue Deathster, "Heavenly Death Ray" Stelvane', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Skyrender" Avantgarda ค้นหา Strategy 1 ใบจากในกองขึ้นมือ\n[AUTO](RC): เมื่อโจมตี ถ้ามี Strategy ถูก Activate ในเทิร์นนี้ พลัง+5000' },
-            { name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: [SB1 & ทิ้งการ์ด 1 ใบ] เลือก Strategy 1 ใบจาก Order Zone และ "Activate" มัน\n[AUTO](VC): เมื่อโจมตี [CB1] ถ้ามีการ Activate Strategy ในเทิร์นนี้ คอสต์ CB1 เพื่อ Stand เรียร์การ์ด 1 ใบ' }
+            { name: 'Blue Deathster, "Dark Verdict" Findanis', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Heavenly Death Ray" Stelvane ค้นหา Strategy 1 ใบจากในกองขึ้นมือ\n[CONT](RC): เมื่อยูนิทนี้บูสต์ ถ้ามี Strategy Card ถูกเข้าโซล(ใช้งาน)ในเทิร์นนี้ พลัง+5000' },
+            { name: 'Blue Deathster, "Heavenly Death Ray" Stelvane', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดย "Skyrender" Avantgarda ค้นหา Strategy 1 ใบจากในกองขึ้นมือ\n[AUTO](RC): เมื่อโจมตี ถ้ามี Strategy Card ถูกเข้าโซล(ใช้งาน)ในเทิร์นนี้ พลัง+5000' },
+            { name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: หากในโซลมี "Blue Deathster, Sora Period" [เลือก Strategy 1 ใบจาก Order Zone เข้าโซล] จั่วการ์ด 1 ใบ แวนการ์ดพลัง+5000 และได้รับความสามารถ\n"[AUTO](VC)[1/Turn]: เมื่อจบการโจมตี หากโจมตีฮิตแวนการ์ด หรือทำ Persona Ride [CB1 & ทิ้งมือ 1 ใบ] Stand และไดรฟ์-1"' }
         ],
         mainDeck: [
-            ...Array(4).fill({ name: 'Blue Deathster, "Skyrendriver" Avantgarda Richter', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/turn]: [SB1 & ทิ้งการ์ด 1 ใบ] เลือก Strategy 1 ใบจาก Order Zone และ "Activate" มัน\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบ และ Stand มัน หากแวนการ์ดคู่แข่งเกรด 3 ขึ้นไป ยูนิทนี้ได้รับ Drive+1' }),
-            ...Array(3).fill({ name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: [SB1 & ทิ้งการ์ด 1 ใบ] เลือก Strategy 1 ใบจาก Order Zone และ "Activate" มัน\n[AUTO](VC): เมื่อโจมตี [CB1] ถ้ามีการ Activate Strategy ในเทิร์นนี้ คอสต์ CB1 เพื่อ Stand เรียร์การ์ด 1 ใบ' }),
+            ...Array(4).fill({ name: 'Blue Deathster, "Skyrendriver" Avantgarda Richter', grade: 3, power: 13000, persona: true, skill: '[ACT](Hand): หากแวนคู่แข่งเกรด 3+ [เผยการ์ดนี้ & ไบนด์ "Skyrender" Avantgarda จาก (VC)] ไรด์ Stand และได้รับ [ACT] ของใบที่ถูกไบนด์\n[AUTO](VC): จบการบุก หากโซลมี "Sora Period" [ทิ้งมือ 2 ใบ] ไรด์ "Skyrender" Avantgarda จากไบนด์แบบ Stand, พลัง+10000 และ ไดรฟ์-1' }),
+            ...Array(3).fill({ name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: หากในโซลมี "Blue Deathster, Sora Period" [เลือก Strategy 1 ใบจาก Order Zone เข้าโซล] จั่วการ์ด 1 ใบ แวนการ์ดพลัง+5000 และได้รับความสามารถ\n"[AUTO](VC)[1/Turn]: เมื่อจบการโจมตี หากโจมตีฮิตแวนการ์ด หรือทำ Persona Ride [CB1 & ทิ้งมือ 1 ใบ] Stand และไดรฟ์-1"' }),
             ...Array(3).fill({ name: 'Shock Strategy: Death Winds', grade: 3, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[Activate]: จนจบเทิร์น แวนการ์ดของคุณได้รับ [CONT](VC): ยูนิทนี้และยูนิทของคุณทั้งหมดในแถวแนวตั้งเดียวกันได้รับ Critical +1' }),
-            ...Array(4).fill({ name: 'Ala Dargente', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี [SB1] เลือกการ์ด 1 ใบจากโซลที่มีชื่อเดียวกับแวนการ์ดของคุณขึ้นมือ และส่งยูนิทนี้กลับเข้าใต้กอง' }),
-            ...Array(3).fill({ name: 'Sickle Blade of Inquest, Habitable Zone', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) ถ้าแวนการ์ดมีชื่อ Avantgarda [CB1] เลือก Strategy 1 ใบจากดรอบขึ้นมือ' }),
-            ...Array(1).fill({ name: 'Bomber Strategy: Dusting', grade: 2, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[Activate]: เลือกรีไทร์เรียร์การ์ดคู่แข่งสูงสุด 2 ใบ' }),
+            ...Array(4).fill({ name: 'Ala Dargente', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อแวนการ์ด "Avantgarda" ของคุณโจมตี ยูนิทนี้ได้รับ พลัง+5000 จนจบเทิร์น\n[AUTO]: เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card ที่ชื่อไม่ซ้ำกับที่เพิ่งใส่โซลจากกองหรือดรอปนำขึ้นมือ 1 ใบ' }),
+            ...Array(3).fill({ name: 'Sickle Blade of Inquest, Habitable Zone', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกทิ้งจากมือลงช่องดรอปใน Ride Phase [SB1 & นำการ์ดใบนี้เข้าใต้กอง] จั่วการ์ด 1 ใบ' }),
+            ...Array(1).fill({ name: 'Bomber Strategy: Dusting', grade: 2, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(เข้าโซลเมื่อประกาศใช้งานจากแวนการ์ด)\n[AUTO]: เมื่อถูกส่งเข้าโซลจาก Order Zone แวนการ์ดคุณได้รับพลัง+10000 จนจบเทิร์น และคู่แข่งไม่สามารถอินเตอร์เซปต์หรือเล่น Blitz Order ได้' }),
             ...Array(4).fill({ name: 'Automated Strategy, Belstul (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
-            ...Array(3).fill({ name: 'Blue Deathster, Asagi Milestone', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อบูสต์ Avantgarda [SB1] ดูการ์ด 5 ใบ เลือก Strategy 1 ใบขึ้นมือ' }),
-            ...Array(4).fill({ name: 'Blue Deathster, Hanada Halfway', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): เมื่อบูสต์ ถ้ามี Strategy ถูก Activate ในเทิร์นนี้ พลัง+5000' }),
-            ...Array(1).fill({ name: 'Disruption Strategy: Killshroud', grade: 1, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[Activate]: เลือกการ์ด 1 ใบในดาเมจโซนคู่แข่งและไบนด์มัน ยูนิททั้งหมดในแถวหน้าคู่แข่ง พลัง-5000' }),
+            ...Array(3).fill({ name: 'Blue Deathster, Asagi Milestone', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] เลือกการ์ด "Avantgarda" เกรด 3 หรือสูงกว่าจากช่องดรอป 1 ใบขึ้นมือ\n[CONT](RC): หาก Strategy Card ถูกใส่เข้าโซลในเทิร์นนี้ ยูนิทนี้ได้รับพลัง+5000' }),
+            ...Array(4).fill({ name: 'Blue Deathster, Hanada Halfway', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] จั่วการ์ด 1 ใบ\n[AUTO](RC): เมื่อบูสต์ ถ้าวาง Strategy ลง Order Zone ในเทิร์นนี้ พลัง+2000(จนจบแบตเทิล) และถ้าอยู่ช่องหลังสุดแถวกลาง ได้รับ [CC1]' }),
+            ...Array(1).fill({ name: 'Disruption Strategy: Killshroud', grade: 1, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[AUTO]: เมื่อถูกนำเข้าโซลจาก Order Zone เลือกเรียร์การ์ดคู่แข่ง 1 ใบรีไทร์ และแวนการ์ดพลัง+5000 จนจบเทิร์น' }),
             ...Array(8).fill({ name: 'Critical Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(3).fill({ name: 'Draw Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Heal Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
@@ -1534,6 +1534,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }
 
+        currentAttackData.isHit = (hasPG || isOpponentPG) ? false : isHit;
+
         await handleEndOfBattle(attacker, currentAttackData);
         currentAttackData = null;
         pendingCriticalIncrease = 0;
@@ -1850,6 +1852,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const z = unit.parentElement.dataset.zone || "";
                 if (unit.dataset.name.includes('Ala Dargente') && z.startsWith('rc')) {
                     unit.dataset.power = (parseInt(unit.dataset.power) + 5000).toString();
+                    unit.dataset.turnEndBuffPower = (parseInt(unit.dataset.turnEndBuffPower || "0") + 5000).toString();
+                    unit.dataset.turnEndBuffActive = "true";
                     syncPowerDisplay(unit);
                     sendMoveData(unit);
                     alert("Ala Dargente: แวนการ์ด 'Avantgarda' โจมตี ได้รับพลัง +5000 จนจบเทิร์น!");
@@ -1903,6 +1907,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (card.dataset.name.includes('Ordeal Dragon') && attacker.dataset.name.includes('Blaster')) {
                                 boosterPower += 5000;
                                 alert("Ordeal Dragon: บูสต์ยูนิท 'Blaster' พลัง +5000!");
+                            }
+
+                            if (card.dataset.name.includes('Hanada Halfway') && strategyPutToOrderZoneThisTurn) {
+                                boosterPower += 2000;
+                                alert(`Hanada Halfway: พลัง +2000 จนจบการต่อสู้!`);
+                                if (backZoneName === 'rc_back_center') {
+                                    counterCharge(1);
+                                    alert("Hanada Halfway (แถวหลังสุดกลาง): [Counter-Charge 1]!");
+                                }
                             }
 
                             totalPower += boosterPower;
@@ -2434,6 +2447,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (zone.classList.contains('drop-zone') || zone.dataset.zone === 'drop') {
+                if (isFromHand && isMyTurn && phases[currentPhaseIndex] === 'ride' && card.dataset.name.includes('Habitable Zone')) {
+                    if (await vgConfirm("Habitable Zone: [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ?")) {
+                        if (await paySoulBlast(1)) {
+                            deckPool.unshift(JSON.parse(card.dataset.cardData || "{}"));
+                            card.remove();
+                            updateDeckCounter();
+                            drawCard(1);
+                            alert("Habitable Zone: นำเข้าใต้กองและจั่วการ์ด 1 ใบสำเร็จ!");
+                            updateAllStaticBonuses();
+                            updateHandCount();
+                            return true; // prevent normal drop appending
+                        }
+                    }
+                }
+
                 if (card.unitSoul && card.unitSoul.length > 0) {
                     card.unitSoul.forEach(m => {
                         zone.appendChild(m);
@@ -2873,6 +2901,39 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.turnEndBuffApplied = "false";
             card.dataset.turnEndBuffActive = "false";
             card.dataset.turnEndBuffPower = "0";
+        }
+
+        // --- Bomber Strategy: Dusting Buff ---
+        if (bomberDustingPowerBuff && name.includes('Avantgarda') && zone === 'vc' && isMyTurn) {
+            if (card.dataset.dustingBuffApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.dustingBuffApplied = "true";
+            }
+        } else if (card.dataset.dustingBuffApplied === "true") {
+            card.dataset.power = parseInt(card.dataset.power) - 10000;
+            card.dataset.dustingBuffApplied = "false";
+        }
+
+        // --- Disruption Strategy: Killshroud Debuff ---
+        if (window.killshroudDebuffActive && name.includes('Avantgarda') === false && zone === 'vc' && !isMyTurn) {
+            if (card.dataset.killshroudDebuffApplied !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) - 5000;
+                card.dataset.killshroudDebuffApplied = "true";
+            }
+        } else if (card.dataset.killshroudDebuffApplied === "true") {
+            card.dataset.power = parseInt(card.dataset.power) + 5000;
+            card.dataset.killshroudDebuffApplied = "false";
+        }
+
+        // --- Asagi Milestone [CONT] ---
+        if (name.includes('Asagi Milestone') && zone.startsWith('rc') && isMyTurn && lastStrategyPutIntoSoulName !== "") {
+            if (card.dataset.asagiStrategyBuff !== "true") {
+                card.dataset.power = parseInt(card.dataset.power) + 5000;
+                card.dataset.asagiStrategyBuff = "true";
+            }
+        } else if (card.dataset.asagiStrategyBuff === "true") {
+            card.dataset.power = parseInt(card.dataset.power) - 5000;
+            card.dataset.asagiStrategyBuff = "false";
         }
 
         // 4. Final Rush Static Bonus - Only for owner
@@ -3885,50 +3946,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (payCounterBlast(1)) {
                         drawCard(1);
                         alert("Hanada Halfway: จั่วการ์ด 1 ใบเรียบร้อย!");
-                    }
-                }
-            }
-        }
-
-        // --- Habitable Zone [AUTO] (On Place) ---
-        if (name.includes('Habitable Zone') && card.parentElement && card.parentElement.classList.contains('rc')) {
-            if (personaRideActive) {
-                if (await vgConfirm("Habitable Zone: [CB1] Persona Ride This Turn! ค้นหา Set Order 1 ใบขึ้นมือ เลทิร์นนี้เล่นได้สอง Order และ Order ถัดไปเล่นฟรี?")) {
-                    if (payCounterBlast(1)) {
-                        let ok = false;
-                        const orders = deckPool.filter(c => c.skill && c.skill.toLowerCase().includes('set order'));
-                        if (orders.length > 0) {
-                            openViewer("เลือก Set Order 1 ใบจากกอง", orders);
-                            await new Promise(res => {
-                                const sel = (e) => {
-                                    const tgt = e.target.closest('.card');
-                                    if (tgt && tgt.parentElement === viewerGrid) {
-                                        const cname = tgt.dataset.name;
-                                        const originalId = tgt.dataset.originalId;
-                                        const idx = deckPool.findIndex(x => x.id === originalId);
-                                        if (idx !== -1) {
-                                            const cardData = deckPool.splice(idx, 1)[0];
-                                            const nCard = createCardElement(cardData);
-                                            playerHand.appendChild(nCard);
-                                            updateHandSpacing();
-                                            sendMoveData(nCard);
-                                            alert(`นำ ${cardData.name} ขึ้นมือ! Order ถัดไปของคุณในเทิร์นนี้ใช้งานได้ฟรี!`);
-                                            maxOrdersPerTurn = 2; // Can play two orders
-                                            nextSetOrderFree = true;
-                                            ok = true;
-                                            zoneViewer.classList.add('hidden');
-                                            viewerGrid.removeEventListener('click', sel);
-                                            res();
-                                        }
-                                    }
-                                };
-                                viewerGrid.addEventListener('click', sel);
-                                closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); res(); };
-                            });
-                        }
-                        deckPool.sort(() => 0.5 - Math.random());
-                        updateDeckCounter();
-                        if (!ok) alert("ไม่พบ Set Order ในกอง!");
                     }
                 }
             }
@@ -5615,7 +5632,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // --- Disruption Strategy: Killshroud Soul Bonus ---
                     if (stratName.includes('Killshroud')) {
-                        // Choose opponent RG to retire
                         alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
                         document.body.classList.add('targeting-mode');
                         const retireHandler = (e) => {
@@ -6492,46 +6508,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleEndOfBattle(attacker, attackData) {
         if (!attacker) return;
 
-        // --- Ala Dargente [AUTO] ---
-        if (attacker.dataset.name.includes('Ala Dargente')) {
-            if (await vgConfirm("Ala Dargente: [SB1] นำการ์ดชื่อเดียวกับแวนการ์ดจากโซลขึ้นมือ และส่งยูนิทนี้กลับเข้าใต้กอง?")) {
-                if (await paySoulBlast(1)) {
-                    const vg = document.querySelector('.my-side .circle.vc .card');
-                    const vgName = vg ? vg.dataset.name : "";
-                    if (vgName) {
-                        // Exact match for name
-                        const targetFromSoul = soulPool.find(c => c.dataset.name === vgName);
-                        if (targetFromSoul) {
-                            const idx = soulPool.indexOf(targetFromSoul);
-                            soulPool.splice(idx, 1);
-
-                            // Use original card to maintain ID sync
-                            playerHand.appendChild(targetFromSoul);
-                            updateHandCount();
-                            updateSoulUI();
-                            sendMoveData(targetFromSoul);
-                            alert(`นำ ${vgName} จากโซลขึ้นมือ!`);
-                        } else {
-                            alert(`ไม่พบการ์ดชื่อ ${vgName} ในโซล!`);
-                        }
-                    }
-                    // Return to deck (bottom)
-                    const cardData = JSON.parse(attacker.dataset.cardData);
-                    deckPool.unshift(cardData);
-                    attacker.remove();
-                    updateDeckCounter();
-                    alert("Ala Dargente: กลับเข้าใต้กองการ์ดแล้ว");
-                }
-            }
-        }
-
         // --- Richter [AUTO] ---
         if (attacker.dataset.name.includes('Richter')) {
             const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
             if (hasSora) {
                 const baseAvant = bindPool.find(c => c.dataset.name.includes('"Skyrender" Avantgarda'));
                 if (baseAvant) {
-                    if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบ] เพื่อ Ride Avant จาก Bind เป็น [Stand]?")) {
+                    if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบจากมือ] ไรด์ \"Skyrender\" Avantgarda จากไบนด์แบบ [Stand]?")) {
                         if (await payDiscard(2)) {
                             const idx = bindPool.indexOf(baseAvant);
                             bindPool.splice(idx, 1);
@@ -6560,33 +6543,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const isHitVG = attackData.isHit && attackData.isTargetVanguard;
             const isPersona = personaRideActive;
             if (isHitVG || isPersona) {
-                if (await vgConfirm("Avantgarda: [CB1 & Discard 1] เพื่อ Stand และ Drive -1?")) {
-                    alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
-                    document.body.classList.add('targeting-mode');
-                    const discarded = await new Promise(resolve => {
-                        const listener = (e) => {
-                            const t = e.target.closest('.card');
-                            if (t && t.parentElement && t.parentElement.dataset.zone === 'hand') {
-                                e.stopPropagation();
-                                const dropZone = document.querySelector('.my-side .drop-zone');
-                                dropZone.appendChild(t);
-                                sendMoveData(t);
-                                updateHandCount();
-                                updateDropCount();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', listener, true);
-                                resolve(true);
-                            }
-                        };
-                        document.addEventListener('click', listener, true);
-                    });
-                    if (discarded) {
+                if (await vgConfirm("Avantgarda: [CB1 & ทิ้งมือ 1 ใบ] Stand ยูนิทนี้ และไดรฟ์ -1 จนจบเทิร์น?")) {
+                    if (await payDiscard(1)) {
                         if (payCounterBlast(1)) {
                             attacker.classList.remove('rest');
                             attacker.dataset.avantStandReady = "false"; // Only once per turn
-                            attacker.dataset.drive = "1"; // Assuming Richter starts at 2, -1 = 1. Base Avant starts at 2, -1 = 1.
-                            // If it was Richter with Drive+1 (total 3), Drive-1 = 2.
-                            // Let's be smart about drive.
+
                             let currentDrive = parseInt(attacker.dataset.drive || "2");
                             attacker.dataset.drive = Math.max(0, currentDrive - 1);
                             alert(`Avantgarda: Stand! Drive ปรับเป็น ${attacker.dataset.drive}`);
