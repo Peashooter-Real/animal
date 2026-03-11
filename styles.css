@@ -26,13 +26,20 @@
   user-select: none;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--bg-dark);
+}
+
 body {
   font-family: 'Outfit', sans-serif;
   background: radial-gradient(circle at center, #05050f 0%, #010103 100%);
   color: var(--text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   background-image:
     linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
@@ -43,6 +50,22 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.game-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.game-container.hidden {
+  display: none !important;
 }
 
 /* Header */
@@ -1412,6 +1435,48 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   }
 }
 
+/* Portrait Mobile Optimization - Force Stacked Layout if needed */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+  .board-area {
+    min-height: 120vh; /* Allow scrolling for better fit */
+    padding: 0.5rem;
+  }
+
+  .player-side, .opponent-side {
+    flex-wrap: wrap; /* Allow zones to stack */
+    justify-content: center;
+  }
+
+  .col-circles {
+    width: 100%;
+    order: 1;
+  }
+
+  .col-zones.left-col {
+    order: 2;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .col-zones.right-col {
+    order: 3;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .zone {
+    width: 55px;
+    height: 80px;
+  }
+
+  .circle {
+    width: 65px;
+    height: 65px;
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --card-width: 60px;
@@ -2065,39 +2130,130 @@ body.targeting-mode::after {
   }
 }
 
-@media screen and (max-width: 480px) {
+/* Portrait Mobile Optimization - Enhanced Full Screen */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+  :root {
+    --card-width: 50px;
+    --card-height: 72px;
+    --circle-size: 60px;
+  }
+
+  .header {
+    height: 60px;
+    padding: 0 0.8rem;
+  }
+  
+  .logo {
+    font-size: 1rem;
+  }
+
+  .board-area {
+    padding: 10px 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: calc(100vh - 60px);
+  }
+
+  .player-side, .opponent-side {
+    display: grid;
+    grid-template-areas: 
+      "circles zones"
+      "hand hand";
+    grid-template-columns: 1fr auto;
+    gap: 0.3rem;
+    width: 100vw;
+    padding: 0.5rem;
+    flex: none;
+    height: auto;
+  }
+
+  .opponent-side {
+    transform: none; /* Already flipped in main CSS? No, usually opponent is at top. */
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  }
+
+  .col-circles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .col-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-right: 5px;
+  }
+
+  .zone {
+    width: 45px;
+    height: 65px;
+  }
+
+  .circle {
+    width: 55px;
+    height: 55px;
+  }
+
+  .row {
+    gap: 0.2rem;
+  }
+
+  .guardian-circle {
+    width: 98vw;
+    height: 80px;
+    margin: 5px auto;
+  }
+
+  .hand-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    border-top: 1px solid var(--accent-blue);
+    padding: 5px;
+  }
+  
+  .game-info {
+    font-size: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+  /* Quick Access Panel on top for even better access */
   .quick-access-panel {
-    top: 75px; /* Below header */
-    right: auto;
-    left: 10px; /* Shift to left side on mobile to clear End Turn */
-    transform: none;
+    top: 65px;
+    left: 5px;
+    right: 5px;
+    width: auto;
     flex-direction: row;
     padding: 6px;
-    background: rgba(0, 0, 0, 0.9);
-    width: auto;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    justify-content: space-around;
   }
   
   .quick-group {
     flex-direction: row;
-    align-items: center;
     gap: 4px;
+    align-items: center;
   }
-  
-  .group-label {
-    display: none;
-  }
-  
+
   .quick-btn {
-    min-width: 60px;
-    padding: 6px 8px;
+    min-width: unset;
+    flex: 1;
+    padding: 6px 4px;
     font-size: 0.6rem;
-    border-radius: 4px;
+    justify-content: center;
   }
 
   .quick-btn span {
-    font-size: 0.6rem;
+    display: none; /* Hide counts to save space on very small screens */
   }
 }
 
