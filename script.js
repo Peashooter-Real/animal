@@ -1074,7 +1074,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'card';
         card.draggable = true;
-        card.id = `card-${cardIdCounter++}`;
+        // Use prefix to prevent ID collision between players
+        const prefix = isHost ? 'h-' : 'g-';
+        card.id = `${prefix}card-${cardIdCounter++}`;
         card.dataset.grade = cardData.grade;
         card.dataset.power = cardData.power;
         card.dataset.basePower = cardData.power;
@@ -4605,12 +4607,14 @@ document.addEventListener('DOMContentLoaded', () => {
             result = "win";
             resultText.textContent = "YOU WIN! YOU GO FIRST.";
             isFirstPlayer = true;
+            window.isFirstPlayer = true;
             isMyTurn = true;
             setTimeout(() => startMulligan(), 2500);
         } else {
             result = "lose";
             resultText.textContent = "YOU LOSE! YOU GO SECOND.";
             isFirstPlayer = false;
+            window.isFirstPlayer = false;
             isMyTurn = false;
             setTimeout(() => startMulligan(), 2500);
         }
@@ -4708,8 +4712,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Determine if it's my turn: First player starts (Odd turns), Second player follows (Even turns)
         isMyTurn = (currentTurn % 2 !== 0 && isFirstPlayer) || (currentTurn % 2 === 0 && !isFirstPlayer);
 
-        // Reset power/critical at the start of ANY turn's stand phase
-        if (currentPhaseIndex === 0) { // Stand phase
+        // Reset power/critical ONLY at the start of YOUR turn's stand phase
+        if (isMyTurn && currentPhaseIndex === 0) { // Stand phase
             // Reset turn-based flags
             hasRiddenThisTurn = false;
             hasDiscardedThisTurn = false;
@@ -4728,10 +4732,9 @@ document.addEventListener('DOMContentLoaded', () => {
             strategyActivatedCount = 0;
             lastStrategyPutIntoSoulName = "";
             strategyPutToOrderZoneThisTurn = false;
-            // window.otKeterActive = false; // REMOVED: Amartinoa effect is permanent for the rest of the game once activated.
 
             // State expiration check
-            if (isMyTurn && currentTurn > finalRushTurnLimit && isFinalRush) {
+            if (currentTurn > finalRushTurnLimit && isFinalRush) {
                 isFinalRush = false;
                 isFinalBurst = false;
                 updateStatusUI();
@@ -6907,20 +6910,23 @@ document.addEventListener('DOMContentLoaded', () => {
             oppSide.querySelector(`.${mappedZone}`);
 
         if (targetZone) {
-            let cardId = data.cardId.startsWith('opp-') ? data.cardId : `opp-${data.cardId}`;
-            // If the card is already on our side but not as an opponent card (it's our card moved by opponent)
+            let cardId = (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) ? `opp-${data.cardId}` : `opp-${data.cardId}`;
+            
+            // Check if the card is already on our side but not as an opponent card
             const myCard = document.getElementById(data.cardId);
-            // Safety: Never let remote move commands manipulate our own Vanguard directly
-            if (myCard && !myCard.classList.contains('opponent-card') && data.cardId.startsWith('opp-')) {
-                const realId = data.cardId.substring(4);
-                const actualCard = document.getElementById(realId);
-                if (actualCard) {
-                    // Only move if it's NOT in our VC, unless it's explicitly being retired by opponent effect
-                    if (data.zone !== 'vc' || actualCard.parentElement?.classList.contains('vc') === false) {
-                        targetZone.appendChild(actualCard);
-                    }
+            // Strong Safety: Never let remote commands move our own Vanguard
+            if (myCard && !myCard.classList.contains('opponent-card')) {
+                const myInVC = myCard.parentElement?.classList.contains('vc');
+                if (myInVC) {
+                    console.warn("Blocked remote move attempt on local Vanguard:", data.cardId);
                     return;
                 }
+                
+                // If it's another unit of ours being moved (retired), allow only to non-VC zones
+                if (data.zone !== 'vc') {
+                    targetZone.appendChild(myCard);
+                }
+                return;
             }
 
             let card = document.getElementById(cardId);
