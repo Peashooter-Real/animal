@@ -2241,7 +2241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isVanguardAttacker: isVanguardAttacker,
                 isTargetVanguard: isTargetVanguard,
                 vanguardGrade: attacker.dataset.grade,
-                driveCount: parseInt(attacker.dataset.drive || (parseInt(attacker.dataset.grade) >= 4 ? "3" : (parseInt(attacker.dataset.grade) >= 3 ? "2" : (attacker.dataset.baurDriveCheck === "true" ? "1" : "0")))),
+                driveCount: parseInt(attacker.dataset.drive || (isVanguardAttacker ? (parseInt(attacker.dataset.grade) >= 4 ? "3" : (parseInt(attacker.dataset.grade) >= 3 ? "2" : "1")) : (attacker.dataset.baurDriveCheck === "true" ? "1" : "0"))),
                 boosterId: boosterCardInfo ? boosterCardInfo.id : null,
                 boosterName: boosterCardInfo ? boosterCardInfo.name : null,
                 tripleDrive: attacker.dataset.tripleDrive === "true" || (parseInt(attacker.dataset.grade) === 4),
