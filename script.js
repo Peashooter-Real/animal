@@ -215,10 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'Diabolos Girls, Ivanka': 'picture/ivanka.jpg',
 
         // Triggers - Dark States (Bruce)
-        'Critical Trigger (Dark States)': 'https://namu.wiki/file/dsd02_011.png',
-        'Draw Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_012.png',
-        'Front Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_014.png',
-        'Heal Trigger (Dark States)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd02/d-sd02_013.png',
+        'Critical Trigger (Dark States)': 'picture/bruce_crit.png',
+        'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
+        'Front Trigger (Dark States)': 'picture/bruce_front.png',
+        'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
         'Hades Dragon Deity, Gallmageveld': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_005.png',
 
         // Magnolia Deck
@@ -239,26 +239,28 @@ document.addEventListener('DOMContentLoaded', () => {
         'In the Dim Darkness, the Frozen Resentment': 'picture/dark.jpg',
 
         // Triggers - Stoicheia (Magnolia)
-        'Critical Trigger (Stoicheia)': 'https://namu.wiki/file/dsd04_011.png',
+        'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
         'Draw Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_012.png',
         'Front Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_014.png',
         'Heal Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_013.png',
         'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png',
 
         // Nirvana Jheva Deck
-        'Sunrise Egg': 'picture/0nir.jpg',
-        'Heart-pounding Blaze Maiden, Rino': 'picture/1nir.jpg',
-        'Snuggling Blaze Maiden, Reiyu': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_006.png',
-        'Chakrabarthi Pheonix Dragon, Nirvana Jheva': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_001.png',
-        'Trickstar': 'picture/star.jpg',
-        'Sparkle Rejector Dragon (Perfect Guard)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_023.png',
-        'Illuminate Equip Dragon, Graillumirror': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_022.png',
-        'Strike Equip Dragon, Stragallio': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_038.png',
-        'Sword Equip Dragon, Galondight': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_021.png',
-        'Mirror Reflection Equip, Mirrors Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_003.png',
-        'Jeweled Sword Equip, Garou Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_020.png',
-        'Sturdy Wall Equip, Vils Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt07/d-bt07_032.png',
-        'Brilliant Equip, Bram Vairina': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt07/d-bt07_012.png',
+        'Sunrise Egg': 'picnirvana/0nir.jpg',
+        'Heart-pounding Blaze Maiden, Rino': 'picnirvana/1nir.jpg',
+        'Snuggling Blaze Maiden, Reiyu': 'picnirvana/reiyu.png',
+        'Chakrabarthi Pheonix Dragon, Nirvana Jheva': 'picnirvana/nirvana_jheva.png',
+        'Trickstar': 'picnirvana/star.jpg',
+        'Sparkle Rejector Dragon (Perfect Guard)': 'picnirvana/sparkle_rejector.png',
+        'Illuminate Equip Dragon, Graillumirror': 'picnirvana/graillumirror.png',
+        'Strike Equip Dragon, Stragallio': 'picnirvana/stragallio.png',
+        'Sword Equip Dragon, Galondight': 'picnirvana/galondight.png',
+        'Mirror Reflection Equip, Mirrors Vairina': 'picnirvana/mirrors.png',
+        'Jeweled Sword Equip, Garou Vairina': 'picnirvana/garou.png',
+        'Sturdy Wall Equip, Vils Vairina': 'picnirvana/vils.png',
+        'Brilliant Equip, Bram Vairina': 'picnirvana/bram.png',
+        'Flaring Cannon Equip, Baur Vairina': 'picnirvana/baur.png',
+        'Vairina Arcs': 'picnirvana/arcs.png',
 
         // Triggers - Dragon Empire
         'Critical Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_011.png',
