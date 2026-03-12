@@ -1081,6 +1081,8 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.name = cardData.name;
         card.dataset.skill = cardData.skill || 'No skill description available.';
         card.dataset.persona = cardData.persona ? "true" : "false";
+        card.dataset.isPG = cardData.isPG ? "true" : "false";
+        card.dataset.imageUrl = cardData.imageUrl || "";
         card.dataset.cardData = JSON.stringify(cardData);
 
         // Grade Reduction Helper (e.g., Winnsapooh)
@@ -2226,53 +2228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // --- Avantgarda / Richter [AUTO](VC) ---
-            const isAvant = attacker.dataset.name && (attacker.dataset.name.includes('Avantgarda'));
-            if (isMyTurn && isVanguardAttacker && isAvant) {
-                const isRichter = attacker.dataset.name.includes('Richter');
-                const canStand = isRichter || strategyActivatedThisTurn;
-                const confirmMsg = isRichter ?
-                    "Richter: [CB1] Stand เรียร์การ์ด 1 ใบ? (ถ้าคู่แข่ง G3+ จะได้ Drive +1)" :
-                    "Avantgarda: [CB1] Stand เรียร์การ์ด 1 ใบ? (ต้อง Activate Strategy แล้ว)";
-
-                if (await vgConfirm(confirmMsg)) {
-                    if (canStand) {
-                        if (payCounterBlast(1)) {
-                            alert("เลือกเรียร์การ์ด 1 ใบเพื่อ Stand");
-                            document.body.classList.add('targeting-mode');
-                            const targetRG = await new Promise(resolve => {
-                                const listener = (e) => {
-                                    const t = e.target.closest('.circle.rc .card:not(.opponent-card)');
-                                    if (t) {
-                                        e.stopPropagation();
-                                        document.body.classList.remove('targeting-mode');
-                                        document.removeEventListener('click', listener, true);
-                                        resolve(t);
-                                    }
-                                };
-                                document.addEventListener('click', listener, true);
-                            });
-
-                            if (targetRG) {
-                                targetRG.classList.remove('rest');
-                                targetRG.dataset.stoodByEffect = "true";
-                                sendMoveData(targetRG);
-                                alert(`Stand ${targetRG.dataset.name}!`);
-                            }
-
-                            if (isRichter) {
-                                const oppVG = document.querySelector('.opponent-side .circle.vc .card');
-                                if (oppVG && parseInt(oppVG.dataset.grade) >= 3) {
-                                    attacker.dataset.tripleDrive = "true";
-                                    alert("Richter: แวนการ์ดคู่แข่งเกรด 3+! ได้รับ Drive +1 (Total: 3)");
-                                }
-                            }
-                        }
-                    } else {
-                        alert("ต้อง Activate Strategy ก่อนใช้งานความสามารถนี้!");
-                    }
-                }
-            }
+            // Removed incorrect Avantgarda/Richter stand RG skill
 
             const attackData = {
                 attackerId: attacker.id,
@@ -2427,8 +2383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Perfect Guard Logic: Discard cost
-            const isPG = (card.dataset.name && card.dataset.name.includes('Perfect Guard')) || card.dataset.isPG === "true";
+            const isPG = card.dataset.isPG === "true" || card.dataset.name.includes('(PG)');
             if (isPG) {
                 const cardsInHand = Array.from(playerHand.querySelectorAll('.card'));
                 // Filter out the current card being moved to GC if it's from hand
@@ -2467,31 +2422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.dataset.isPG = "false";
                 }
             }
-
-            if (zone.classList.contains('drop-zone') || zone.dataset.zone === 'drop') {
-                if (isFromHand && isMyTurn && phases[currentPhaseIndex] === 'ride' && card.dataset.name.includes('Habitable Zone')) {
-                    if (await vgConfirm("Habitable Zone: [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ?")) {
-                        if (await paySoulBlast(1)) {
-                            deckPool.unshift(JSON.parse(card.dataset.cardData || "{}"));
-                            card.remove();
-                            updateDeckCounter();
-                            drawCard(1);
-                            alert("Habitable Zone: นำเข้าใต้กองและจั่วการ์ด 1 ใบสำเร็จ!");
-                            updateAllStaticBonuses();
-                            updateHandCount();
-                            return true; // prevent normal drop appending
-                        }
-                    }
-                }
-
-                if (card.unitSoul && card.unitSoul.length > 0) {
-                    card.unitSoul.forEach(m => {
-                        zone.appendChild(m);
-                        sendMoveData(m);
-                    });
-                    card.unitSoul = [];
-                }
-            }
+            // Move card and cleanup
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
@@ -2536,7 +2467,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Ride success
-                zone.querySelectorAll('.card').forEach(c => soulPool.push(c));
+                zone.querySelectorAll('.card').forEach(c => {
+                    soulPool.push(c);
+                    sendMoveData(c);
+                });
                 zone.innerHTML = '';
                 zone.appendChild(card);
                 hasRiddenThisTurn = true;
@@ -2677,6 +2611,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (vanguard) {
                                 soulPool.push(vanguard);
                                 vanguard.remove();
+                                sendMoveData(vanguard);
                                 updateSoulUI();
                             }
                             const vcZone = document.querySelector('.my-side .circle.vc');
@@ -2696,32 +2631,35 @@ document.addEventListener('DOMContentLoaded', () => {
                             }, 800);
                         }, 500);
 
-                        // Habitable Zone auto skill
-                        if (card.dataset.name.includes('Habitable Zone')) {
-                            setTimeout(async () => {
-                                if (await vgConfirm("Habitable Zone: [SB1 & นำใบนี้ไปใต้กอง] เมื่อถูกทิ้งเป็นคอสไรด์ จบจั่วการ์ด 1 ใบ?")) {
-                                    if (await paySoulBlast(1)) {
-                                        const cData = {
-                                            id: card.id, name: card.dataset.name, grade: card.dataset.grade,
-                                            power: card.dataset.power, shield: card.dataset.shield,
-                                            critical: card.dataset.critical, nation: card.dataset.nation,
-                                            race: card.dataset.race, skill: card.dataset.skill,
-                                            trigger: card.dataset.trigger, imageUrl: card.dataset.imageUrl
-                                        };
-                                        deckPool.unshift(cData); // Bottom of deck
-                                        updateDeckCounter();
-                                        if (card.parentElement) card.parentElement.removeChild(card);
-                                        drawCard(1);
-                                        alert("Habitable Zone: จั่วการ์ด 1 ใบสำเร็จ!");
-                                    }
-                                }
-                            }, 1000);
+                        } else {
+                            alert(`No Grade ${nextGrade} unit found in your Ride Deck!`);
+                            return false;
                         }
-                    } else {
-                        alert(`No Grade ${nextGrade} unit found in your Ride Deck!`);
-                        return false;
                     }
                 }
+            if (isFromHand && isMyTurn && phases[currentPhaseIndex] === 'ride' && card.dataset.name.includes('Habitable Zone')) {
+                if (await vgConfirm("Habitable Zone: [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ?")) {
+                    if (await paySoulBlast(1)) {
+                        const cardData = JSON.parse(card.dataset.cardData || "{}");
+                        deckPool.unshift(cardData);
+                        card.remove();
+                        updateDeckCounter();
+                        drawCard(1);
+                        alert("Habitable Zone: นำเข้าใต้กองและจั่วการ์ด 1 ใบสำเร็จ!");
+                        sendMoveData(card, 'deck');
+                        updateAllStaticBonuses();
+                        updateHandCount();
+                        return true;
+                    }
+                }
+            }
+
+            if (card.unitSoul && card.unitSoul.length > 0) {
+                card.unitSoul.forEach(m => {
+                    zone.appendChild(m);
+                    sendMoveData(m);
+                });
+                card.unitSoul = [];
             }
             zone.appendChild(card);
             card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
@@ -2746,11 +2684,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name.includes('Asagi Milestone') && zone.startsWith('rc')) {
             if (isMyTurn && lastStrategyPutIntoSoulName !== "") {
                 if (card.dataset.asagiBonusApplied !== "true") {
-                    card.dataset.power = parseInt(card.dataset.power) + 5000;
+                    card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") + 5000).toString();
                     card.dataset.asagiBonusApplied = "true";
                 }
             } else if (card.dataset.asagiBonusApplied === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 5000;
+                card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
                 card.dataset.asagiBonusApplied = "false";
             }
         }
@@ -2918,7 +2856,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const val = parseInt(card.dataset.turnEndBuffPower || "0");
             card.dataset.power = parseInt(card.dataset.power) - val;
             card.dataset.turnEndBuffApplied = "false";
-            card.dataset.turnEndBuffActive = "false";
             card.dataset.turnEndBuffPower = "0";
         }
 
@@ -3130,9 +3067,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pSpan = card.querySelector('.card-power');
         if (pSpan) {
+            const powerVal = parseInt(card.dataset.power || "0");
             const cVal = parseInt(card.dataset.critical || "1");
             let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
-            pSpan.innerHTML = `⚔️${card.dataset.power} ${dCrit}`;
+            pSpan.innerHTML = `⚔️${powerVal >= 1000000 ? (powerVal/1000000).toFixed(1) + 'M' : powerVal} ${dCrit}`;
         }
         const sSpan = card.querySelector('.card-shield');
         if (sSpan) {
@@ -3374,7 +3312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAllStaticBonuses() {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
             applyStaticBonuses(c);
-            sendMoveData(c);
+            // Redundant sendMoveData removed (syncPowerDisplay already does it)
         });
     }
 
@@ -3484,9 +3422,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const centerBack = document.querySelector('.my-side .circle[data-zone="rc_back_center"]');
                     if (centerBack) {
                         // Vanguard Rule: Replacement
-                        if (centerBack.querySelector('.card')) {
-                            const oldCard = centerBack.querySelector('.card');
+                        const oldCard = centerBack.querySelector('.card:not(.opponent-card)');
+                        if (oldCard) {
                             soulPool.push(oldCard);
+                            sendMoveData(oldCard, 'soul');
                             oldCard.remove();
                         }
                         centerBack.appendChild(card);
@@ -3548,6 +3487,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (circle.querySelector('.card')) {
                         const old = circle.querySelector('.card');
                         soulPool.push(old);
+                        sendMoveData(old, 'soul');
                         old.remove();
                     }
                     circle.appendChild(inSoul);
@@ -3597,34 +3537,44 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', selectionHandler, true);
     }
 
-    function soulCharge(count) {
-        let scCount = 0;
-        for (let i = 0; i < count; i++) {
-            if (deckPool.length > 0) {
-                const cardData = deckPool.pop();
-                const card = createCardElement(cardData);
-                soulPool.push(card);
-                scCount++;
-            }
+    // Consolidated soulCharge into one version at the start of original script section
+
+    async function promptCallMultipleFromSoul(maxCount, message, filterFn = null, callCount = 0) {
+        if (callCount >= maxCount || soulPool.length === 0) return;
+        const openRCs = Array.from(document.querySelectorAll('.my-side .circle.rc')).filter(circle => !circle.querySelector('.card'));
+        if (openRCs.length === 0) return;
+
+        let displayPool = filterFn ? soulPool.filter(filterFn) : soulPool;
+        if (displayPool.length === 0) {
+            alert("No valid cards in Soul to call!");
+            return;
         }
-        if (scCount > 0) {
-            updateSoulUI();
-            updateDeckCounter();
-            syncCounts();
-            alert(`Soul Charge ${scCount}!`);
-        } else {
-            alert("Deck empty! Cannot Soul Charge.");
+
+        const nameToDisplay = callCount === 0 ? "1st" : (callCount === 1 ? "2nd" : (callCount === 2 ? "3rd" : `${callCount + 1}th`));
+        if (await vgConfirm(`${message}: [${nameToDisplay} Card] คุณต้องการคอลยูนิทจากโซลหรือไม่?`)) {
+            await new Promise(resolve => {
+                promptSoulCall(true, resolve, filterFn); // isSelective=true, callback=resolve, filterFn
+            });
+            await promptCallMultipleFromSoul(maxCount, message, filterFn, callCount + 1); // Recursive call
         }
     }
 
-    function promptSoulCall() {
+    // Consolidated selective soul call with optionality and callback
+    function promptSoulCall(isSelective = false, onComplete, filterFn = null) {
         if (soulPool.length === 0) {
             alert("Soul is empty!");
+            if (onComplete) onComplete();
             return;
         }
-        openViewer("Select 1 card to CALL from Soul", soulPool);
+        let displayPool = filterFn ? soulPool.filter(filterFn) : soulPool;
+        if (displayPool.length === 0) {
+            alert("No valid cards in Soul to call based on filter!");
+            if (onComplete) onComplete();
+            return;
+        }
 
-        // Handle selecting from viewer
+        openViewer("Select 1 card to CALL from Soul", displayPool);
+
         const selectionHandler = (e) => {
             const clicked = e.target.closest('.card');
             if (clicked && clicked.parentElement === viewerGrid) {
@@ -3641,15 +3591,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const callHandler = (ev) => {
                         const circle = ev.target.closest('.circle.rc');
-                        if (circle && !circle.querySelector('.card')) {
+                        if (circle && !circle.querySelector('.card')) { // Ensure circle is empty
                             ev.stopPropagation();
+                            if (circle.querySelector('.card')) { // This should not happen if filtered for empty, but as a safeguard
+                                const old = circle.querySelector('.card:not(.opponent-card)');
+                                if (old) {
+                                    soulPool.push(old);
+                                    sendMoveData(old, 'soul');
+                                    old.remove();
+                                }
+                            }
                             circle.appendChild(card);
                             card.classList.remove('rest');
+                            card.style.transform = 'none';
+                            applyStaticBonuses(card); // Apply bonuses to the newly called card
                             sendMoveData(card);
                             updateSoulUI();
                             document.body.classList.remove('targeting-mode');
                             document.removeEventListener('click', callHandler, true);
-                            alert("Unit called from Soul!");
+                            alert(`${card.dataset.name} called from Soul!`);
+                            if (onComplete) onComplete();
+                        } else if (circle) {
+                            alert("That circle is not empty! Please select an empty RC.");
                         }
                     };
                     document.addEventListener('click', callHandler, true);
@@ -4183,46 +4146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function promptCallMultipleFromSoul(maxCount, targetInfo, filterFn = null, callCount = 0) {
-        if (callCount >= maxCount || soulPool.length === 0) return;
-        const openRCs = Array.from(document.querySelectorAll('.my-side .circle.rc')).filter(circle => !circle.querySelector('.card'));
-        if (openRCs.length === 0) return;
-
-        let displayPool = filterFn ? soulPool.filter(filterFn) : soulPool;
-        if (displayPool.length === 0) return;
-
-        openViewer(`เลือกการ์ดใบที่ ${callCount + 1}/${maxCount} (จากโซล)`, displayPool);
-        const sel = (e) => {
-            const clicked = e.target.closest('.card');
-            if (clicked && clicked.parentElement === viewerGrid) {
-                const id = clicked.dataset.originalId;
-                const idx = soulPool.findIndex(c => c.id === id);
-                if (idx !== -1) {
-                    const chosen = soulPool.splice(idx, 1)[0];
-                    zoneViewer.classList.add('hidden');
-                    viewerGrid.removeEventListener('click', sel);
-                    alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${chosen.dataset.name}`);
-                    document.body.classList.add('targeting-mode');
-                    const call = (ev) => {
-                        const circle = ev.target.closest('.circle.rc');
-                        if (circle && !circle.querySelector('.card')) {
-                            ev.stopPropagation();
-                            circle.appendChild(chosen);
-                            chosen.classList.remove('rest');
-                            applyStaticBonuses(chosen);
-                            sendMoveData(chosen);
-                            updateSoulUI();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', call, true);
-                            promptCallMultipleFromSoul(maxCount, targetInfo, filterFn, callCount + 1);
-                        }
-                    };
-                    document.addEventListener('click', call, true);
-                }
-            }
-        };
-        viewerGrid.addEventListener('click', sel);
-    }
+    // promptCallMultipleFromSoul consolidated at line 3546
 
     function promptCallFromDrop(maxCount, filterFn = null, powerBonus = 0) {
         const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(node => {
@@ -4694,6 +4618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initialHand.forEach(cardData => {
             const cardElem = createCardElement(cardData);
             cardElem.classList.add('mulligan-card');
+            cardElem.draggable = false; // Prevent dragging during mulligan
             cardElem.onclick = () => cardElem.classList.toggle('to-mulligan');
             grid.appendChild(cardElem);
         });
@@ -4726,6 +4651,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             overlay.classList.add('hidden');
+            grid.innerHTML = ''; // Clear grid to avoid ghost cards
             hasConfirmedMulligan = true;
             sendData({ type: 'mulliganReady' });
             checkGameStart();
@@ -4738,6 +4664,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateHandCount();
             updateHandSpacing();
             updatePhaseUI(false);
+            syncCounts(); // Ensure initial counts are synced to opponent
 
             // Starter skill check if second player
             if (!isFirstPlayer) {
@@ -5589,7 +5516,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             vc.appendChild(card);
                             card.classList.remove('rest');
                             card.dataset.inheritedAvantAct = "true";
-
                             updateHandSpacing();
                             sendMoveData(card);
                             sendData({ type: 'syncBindCount', count: bindPool.length });
@@ -5620,24 +5546,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                alert("เลือก Strategy 1 ใบใน Order Zone เพื่อนำเข้าโซล");
-                document.body.classList.add('targeting-mode');
+                const strats = Array.from(document.querySelectorAll('.my-side .order-zone .card:not(.opponent-card)'))
+                    .map(c => ({ src: 'order', id: c.id, name: c.dataset.name, dom: c }));
+                const viewerData = strats.map(c => ({
+                    name: c.name, id: c.id, grade: c.dom.dataset.grade, power: c.dom.dataset.power, shield: c.dom.dataset.shield, skill: c.dom.dataset.skill, imageUrl: c.dom.dataset.imageUrl
+                }));
+                
+                openViewer("เลือก Strategy 1 ใบเข้าโซล", viewerData);
                 const strat = await new Promise(resolve => {
-                    const listener = (e) => {
-                        const target = e.target.closest('.my-side .order-zone .card');
-                        if (target) {
-                            e.stopPropagation();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', listener, true);
-                            resolve(target);
+                    const sel = (e) => {
+                        const tgt = e.target.closest('.card');
+                        if (tgt && tgt.parentElement === viewerGrid) {
+                            const cname = tgt.dataset.name;
+                            const refCard = strats.find(c => c.name === cname);
+                            if (refCard) {
+                                viewerGrid.removeEventListener('click', sel);
+                                zoneViewer.classList.add('hidden');
+                                resolve(refCard.dom);
+                            }
                         }
                     };
-                    document.addEventListener('click', listener, true);
+                    viewerGrid.addEventListener('click', sel);
                 });
 
                 if (strat) {
                     const stratName = strat.dataset.name;
                     soulPool.push(strat);
+                    sendMoveData(strat, 'soul'); // Tell opponent card moved to soul
                     strat.remove();
                     updateSoulUI();
                     sendData({ type: 'syncSoulCount', count: soulPool.length });
@@ -5645,8 +5580,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawCard(1);
                     card.dataset.power = parseInt(card.dataset.power) + 5000;
                     syncPowerDisplay(card);
+                    // Standard Avantgarda ACT effect (Restand for V)
                     card.dataset.avantStandReady = "true";
-                    alert("Avantgarda: Power +5000 และได้รับความสามารถ Stand เมื่อโจมตีฮิตหรือ Persona Ride!");
+                    alert("Avantgarda: Power +5000 และได้รับความสามารถ Restand เมื่อโจมตีฮิตหรือ Persona Ride!");
 
                     // --- Death Winds Soul Bonus ---
                     if (stratName.includes('Death Winds')) {
@@ -5868,6 +5804,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (payCounterBlast(1)) {
                             // Cost: Put this into soul
                             soulPool.push(card);
+                            sendMoveData(card, 'soul');
                             card.remove();
                             updateSoulUI();
 
@@ -5876,6 +5813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const currentVG = vc.querySelector('.card');
                             if (currentVG) {
                                 soulPool.push(currentVG);
+                                sendMoveData(currentVG, 'soul');
                                 currentVG.remove();
                             }
                             vc.appendChild(elderInHand);
@@ -6569,6 +6507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const vc = document.querySelector('.my-side .circle.vc');
                             attacker.remove();
                             soulPool.push(attacker);
+                            sendMoveData(attacker, 'soul');
 
                             vc.appendChild(baseAvant);
                             baseAvant.classList.remove('rest');
@@ -6596,7 +6535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             attacker.classList.remove('rest');
                             attacker.dataset.avantStandReady = "false"; // Only once per turn
 
-                            let currentDrive = parseInt(attacker.dataset.drive || "2");
+                            let currentDrive = parseInt(attacker.dataset.drive || (parseInt(attacker.dataset.grade) >= 3 ? "2" : "1"));
                             attacker.dataset.drive = Math.max(0, currentDrive - 1);
                             alert(`Avantgarda: Stand! Drive ปรับเป็น ${attacker.dataset.drive}`);
                             sendMoveData(attacker);
@@ -6979,7 +6918,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     power: data.power,
                     shield: data.shield,
                     critical: data.critical,
-                    skill: data.skill // Sync skill text
+                    skill: data.skill,
+                    imageUrl: data.imageUrl
                 });
                 card.id = cardId;
                 card.classList.add('opponent-card');
@@ -7308,9 +7248,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 isFinalBurst = false;
                 alert("DIABOLOS: Entering FINAL RUSH state!");
             }
-            updateAllStaticBonuses(); // Apply power/crit bonuses
             updateStatusUI();
             sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst });
+        } else {
+            // Optional: Alert the user why it failed if they expected it
+            console.log("Diabolos Ability: Requirements not met (All units must be Diabolos).");
         }
     }
 
