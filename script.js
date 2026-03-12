@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainDeck: [
             ...Array(4).fill({ name: 'Trickstar', grade: 0, power: 5000, shield: 5000, skill: '[CONT](RC): ไม่สามารถถูกเลือกโดยความสามารถการ์ดของคู่แข่ง' }),
             ...Array(4).fill({ name: 'Sparkle Rejector Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
-            ...Array(3).fill({ name: 'Illuminate Equip Dragon, Graillumirror', grade: 1, power: 8000, shield: 5000, skill: '[ACT](VC)[1/Turn]: [ทิ้งการ์ด 1 ใบ] เลือก "Trickstar" 1 ใบ และ <Prayer Dragon> 1 ใบจากดรอบคอลลง (RC)\n[AUTO](VC): เมื่อโจมตี [CB1] เลือกเรียร์การ์ด 1 ใบที่อยู่ในสถานะ [XoverDress] และ Stand ยูนิทนั้น' }),
+            ...Array(3).fill({ name: 'Illuminate Equip Dragon, Graillumirror', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อแวนการ์ด "Nirvana" โจมตี [CB1] เลือกเรียร์การ์ดสถานะ overDress หรือ X-overDress 1 ใบ Stand' }),
             ...Array(3).fill({ name: 'Strike Equip Dragon, Stragallio', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากบนมือ ถ้าแวนมีชื่อ "Nirvana" [ทิ้งการ์ด 1 ใบ] ค้นหาการ์ดที่มีความสามารถ [overDress] หรือ "Trickstar" 1 ใบขึ้นมือและสับกอง\n[AUTO]: เมื่อตกอยู่ในสถานะ originalDress [CB1] เลือก "Trickstar" จากดรอบคอลลง (RC)' }),
             ...Array(3).fill({ name: 'Sword Equip Dragon, Galondight', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกนำไปซ้อนใต้ร่าง X-overDress เลือกยูนิทที่ซ้อนทับ พลัง+5000 จนจบเทิร์น (ถ้าเป็น Garou Vairina พลัง+5000 แทนที่จะเป็น +5000)' }),
             ...Array(4).fill({ name: 'Mirror Reflection Equip, Mirrors Vairina', grade: 2, power: 10000, shield: 5000, skill: 'X-overDress: "Trickstar" & "Graillumirror"\n[AUTO]: เมื่อลง (RC) ด้วย X-overDress เลือก "Vairina" 2 ใบจากดรอบมาซ้อนใต้การ์ดนี้\n[AUTO](RC): เมื่อโจมตี พลัง+10000 จากนั้น [ทิ้งการ์ด Vairina ที่ซ้อนอยู่ 1 ใบ] เลือก "จั่วการ์ด 1 ใบ" หรือ "CC1"' }),
@@ -453,8 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Sickle Blade of Inquest, Habitable Zone', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกทิ้งจากมือลงช่องดรอปใน Ride Phase [SB1 & นำการ์ดใบนี้เข้าใต้กอง] จั่วการ์ด 1 ใบ' }),
             ...Array(1).fill({ name: 'Bomber Strategy: Dusting', grade: 2, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(เข้าโซลเมื่อประกาศใช้งานจากแวนการ์ด)\n[AUTO]: เมื่อถูกส่งเข้าโซลจาก Order Zone แวนการ์ดคุณได้รับพลัง+10000 จนจบเทิร์น และคู่แข่งไม่สามารถอินเตอร์เซปต์หรือเล่น Blitz Order ได้' }),
             ...Array(4).fill({ name: 'Automated Belstul (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
-            ...Array(3).fill({ name: 'Blue Deathster, Asagi Milestone', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] เลือกการ์ด "Avantgarda" เกรด 3 หรือสูงกว่าจากช่องดรอป 1 ใบขึ้นมือ\n[CONT](RC): หาก Strategy Card ถูกใส่เข้าโซลในเทิร์นนี้ ยูนิทนี้ได้รับพลัง+5000' }),
-            ...Array(4).fill({ name: 'Blue Deathster, Hanada Halfway', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" [CB1] จั่วการ์ด 1 ใบ\n[AUTO](RC): เมื่อบูสต์ ถ้าวาง Strategy ลง Order Zone ในเทิร์นนี้ พลัง+2000(จนจบแบตเทิล) และถ้าอยู่ช่องหลังสุดแถวกลาง ได้รับ [CC1]' }),
+            ...Array(3).fill({ name: 'Blue Deathster, Asagi Milestone', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" หรือ "Avantgarda" [CB1] เลือกการ์ด "Avantgarda" เกรด 3 หรือสูงกว่าจากช่องดรอป 1 ใบขึ้นมือ\n[CONT](RC): หาก Strategy Card ถูกใส่เข้าโซลในเทิร์นนี้ ยูนิทนี้ได้รับพลัง+5000' }),
+            ...Array(4).fill({ name: 'Blue Deathster, Hanada Halfway', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) หากแวนการ์ดมีชื่อ "Blue Deathster" หรือ "Avantgarda" [CB1] จั่วการ์ด 1 ใบ\n[AUTO](RC): เมื่อบูสต์ ถ้าวาง Strategy ลง Order Zone ในเทิร์นนี้ พลัง+2000(จนจบแบตเทิล) และถ้าอยู่ช่องหลังสุดแถวกลาง ได้รับ [CC1]' }),
             ...Array(1).fill({ name: 'Disruption Strategy: Killshroud', grade: 1, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[AUTO]: เมื่อถูกนำเข้าโซลจาก Order Zone เลือกเรียร์การ์ดคู่แข่ง 1 ใบรีไทร์ และแวนการ์ดพลัง+5000 จนจบเทิร์น' }),
             ...Array(8).fill({ name: 'Critical Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(3).fill({ name: 'Draw Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
@@ -2543,6 +2543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMoveData(card);
                 await handleRideAbilities(card);
                 await checkDropAbilities(card); // Goildoat Drop Skill
+                await checkOnPlaceAbilities(card); // Ensure on-place triggers for V
                 updatePhaseUI(true);
                 return true;
             }
@@ -2632,7 +2633,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateDropCount();
 
                 applyStaticBonuses(card);
-                checkOnPlaceAbilities(card);
+                await checkOnPlaceAbilities(card);
                 sendMoveData(card);
                 updateSoulUI();
                 updateHandCount();
@@ -3953,9 +3954,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Blue Deathster, Asagi Milestone [AUTO] (On Place) ---
-        if (name.includes('Asagi Milestone') && card.parentElement && card.parentElement.classList.contains('rc')) {
+        if (name.toLowerCase().includes('asagi milestone') && card.parentElement && card.parentElement.classList.contains('rc')) {
             const vg = document.querySelector('.my-side .circle.vc .card');
-            if (vg && vg.dataset.name.includes('Blue Deathster')) {
+            const vgName = vg ? vg.dataset.name : "";
+            if (vgName.includes('Blue Deathster') || vgName.includes('Avantgarda')) {
                 const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => parseInt(c.dataset.grade) >= 3 && c.dataset.name.includes('Avantgarda'));
                 if (dropAvants.length > 0) {
                     if (await vgConfirm("Asagi Milestone: [CB1] เลือก 'Avantgarda' เกรด 3 ขึ้นไปจาก Drop ขึ้นมือ?")) {
@@ -3968,9 +3970,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Blue Deathster, Hanada Halfway [AUTO] (On Place) ---
-        if (name.includes('Hanada Halfway') && card.parentElement && card.parentElement.classList.contains('rc')) {
+        if ((name.includes('Hanada Halfway')) && card.parentElement && card.parentElement.classList.contains('rc')) {
             const vg = document.querySelector('.my-side .circle.vc .card');
-            if (vg && vg.dataset.name.includes('Blue Deathster')) {
+            const vgName = vg ? (vg.dataset.name || "") : "";
+            if (vgName.includes('Blue Deathster') || vgName.includes('Avantgarda')) {
                 if (await vgConfirm("Hanada Halfway: [CB1] จั่วการ์ด 1 ใบ?")) {
                     if (payCounterBlast(1)) {
                         drawCard(1);
@@ -4150,14 +4153,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const chosenElem = createCardElement(chosenData);
                                     alert("เลือกช่อง RC ที่ว่างอยู่เพื่อคอล");
                                     document.body.classList.add('targeting-mode');
-                                    const callH = (ev) => {
+                                    const callH = async (ev) => {
                                         const circ = ev.target.closest('.circle.rc');
                                         if (circ && !circ.querySelector('.card')) {
                                             ev.stopPropagation();
                                             circ.appendChild(chosenElem);
                                             applyStaticBonuses(chosenElem);
                                             sendMoveData(chosenElem);
-                                            checkOnPlaceAbilities(chosenElem);
+                                            await checkOnPlaceAbilities(chosenElem);
                                             document.body.classList.remove('targeting-mode');
                                             document.removeEventListener('click', callH, true);
                                         }
@@ -5165,7 +5168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSoulUI();
         updateHandCount();
 
-        checkOnPlaceAbilities(odCard);
+        await checkOnPlaceAbilities(odCard);
         alert(`${odCard.dataset.name} overDress สำเร็จ!`);
     }
 
@@ -5319,6 +5322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        await checkOnPlaceAbilities(vairinaCard);
         // Material skills already triggered above
     }
 
@@ -5473,7 +5477,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function activateCardSkill(card) {
         const name = card.dataset.name;
-        const isJhevaOrGrail = name.includes('Nirvana Jheva') || name.includes('Graillumirror');
+        const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
 
         // --- Departure Towards the Dawn [Order] ---
         if (name.includes('Departure Towards the Dawn')) {
@@ -5700,7 +5704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (isJhevaOrGrail && card.parentElement.classList.contains('vc')) {
-            const skillName = name.includes('Nirvana') ? 'Nirvana Jheva' : 'Graillumirror';
+            const skillName = 'Nirvana Jheva';
             if (await vgConfirm(`${skillName}: [ACT][ทิ้งการ์ด 1 ใบ] คอล Trickstar และ Prayer Dragon จาก Drop?`)) {
                 alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
                 document.body.classList.add('targeting-mode');
@@ -6581,11 +6585,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             baseAvant.classList.remove('rest');
                             baseAvant.dataset.power = parseInt(baseAvant.dataset.power) + 10000;
                             baseAvant.dataset.drive = "1";
+                            baseAvant.dataset.avantStandReady = "true";
                             syncPowerDisplay(baseAvant);
                             updateSoulUI();
                             sendMoveData(baseAvant);
                             sendData({ type: 'syncBindCount', count: bindPool.length });
-                            alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1");
+                            alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1 / ได้รับความสามารถ Restand!");
                         }
                     }
                 }
