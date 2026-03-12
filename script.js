@@ -730,12 +730,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Universal Grade 0 "Go Second" Skill
         if (oldVanguard && parseInt(oldVanguard.dataset.grade) === 0) {
-            // isFirstPlayer is false for guest, true for host.
+            // Check if we are effectively the second player (isFirstPlayer is false for guest)
             if (isFirstPlayer === false) {
                 queue.push({
                     name: 'โบนัสคนเริ่มหลัง (Starter Bonus)',
                     description: "จั่วการ์ด 1 ใบเพราะได้เริ่มคนที่สอง",
                     resolve: (done) => {
+                        console.log("Go-Second Bonus triggered.");
                         alert("Starter Bonus: คุณได้เริ่มเป็นคนที่สอง! จั่วการ์ด 1 ใบ");
                         drawCard(true);
                         if (done) done();
@@ -1336,16 +1337,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!card) return;
         let pZone = explicitZone;
         if (!pZone) {
-            if (card.parentElement && card.parentElement.dataset && card.parentElement.dataset.zone) {
-                pZone = card.parentElement.dataset.zone;
-            } else if (soulPool.includes(card)) {
-                pZone = 'soul';
-            } else if (deckPool.includes(card)) {
-                pZone = 'deck';
-            } else if (card.parentElement && card.parentElement.id) {
-                pZone = card.parentElement.id;
-            } else {
-                pZone = 'unknown';
+            const parent = card.parentElement;
+            if (parent) {
+                if (parent.dataset && parent.dataset.zone) {
+                    pZone = parent.dataset.zone;
+                } else if (parent.classList.contains('vc')) {
+                    pZone = 'vc';
+                } else if (parent.classList.contains('rc')) {
+                    // Detect specific RC IDs or relative zones
+                    pZone = parent.id || (parent.dataset.zone) || 'rc';
+                } else if (parent.id) {
+                    pZone = parent.id;
+                }
+            }
+            
+            if (!pZone) {
+                if (soulPool.includes(card)) pZone = 'soul';
+                else if (deckPool.includes(card)) pZone = 'deck';
+                else pZone = 'unknown';
             }
         }
 
