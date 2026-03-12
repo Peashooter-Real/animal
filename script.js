@@ -5935,7 +5935,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'phaseChange':
                 currentPhaseIndex = data.phaseIndex;
-                isFirstPlayer = !data.isFirstPlayer;
                 updatePhaseUI(false);
                 break;
             case 'nextTurn':
@@ -6900,12 +6899,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // If the card is already on our side but not as an opponent card (it's our card moved by opponent)
             const myCard = document.getElementById(data.cardId);
             if (myCard && !myCard.classList.contains('opponent-card') && data.cardId.startsWith('opp-')) {
-                // The opponent is moving our card (likely a retire or cost)
-                // But wait, if they say 'opp-card-1', and our card is 'card-1'...
-                // Usually if they send 'opp-X', they are talking about OUR card X.
                 const realId = data.cardId.substring(4);
                 const actualCard = document.getElementById(realId);
                 if (actualCard) {
+                    if (data.zone === 'vc') targetZone.querySelectorAll('.card').forEach(c => { if(c !== actualCard) c.remove(); });
                     targetZone.appendChild(actualCard);
                     return;
                 }
@@ -6949,10 +6946,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Handle Vanguard replacement or OverDress replacement clears circle first
             if (data.zone === 'vc' || (targetZone.classList.contains('circle') && (data.isOD || data.isXOD))) {
-                targetZone.querySelectorAll('.card').forEach(c => c.remove());
+                targetZone.querySelectorAll('.card').forEach(c => {
+                    if (c.id !== cardId) c.remove();
+                });
             }
 
-            targetZone.appendChild(card);
+            if (card.parentElement !== targetZone) {
+                targetZone.appendChild(card);
+            }
 
             // Handle visual orientation
             if (data.isRest) card.classList.add('rest');
