@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainDeck: [
             ...Array(4).fill({ name: 'Blue Deathster, "Skyrendriver" Avantgarda Richter', grade: 3, power: 13000, persona: true, skill: '[ACT](Hand): หากแวนคู่แข่งเกรด 3+ [เผยการ์ดนี้ & ไบนด์ "Skyrender" Avantgarda จาก (VC)] ไรด์ Stand และได้รับ [ACT] ของใบที่ถูกไบนด์\n[AUTO](VC): จบการบุก หากโซลมี "Sora Period" [ทิ้งมือ 2 ใบ] ไรด์ "Skyrender" Avantgarda จากไบนด์แบบ Stand, พลัง+10000 และ ไดรฟ์-1' }),
             ...Array(3).fill({ name: 'Blue Deathster, "Skyrender" Avantgarda', grade: 3, power: 13000, persona: true, skill: '[ACT](VC)[1/Turn]: หากในโซลมี "Blue Deathster, Sora Period" [เลือก Strategy 1 ใบจาก Order Zone เข้าโซล] จั่วการ์ด 1 ใบ แวนการ์ดพลัง+5000 และได้รับความสามารถ\n"[AUTO](VC)[1/Turn]: เมื่อจบการโจมตี หากโจมตีฮิตแวนการ์ด หรือทำ Persona Ride [CB1 & ทิ้งมือ 1 ใบ] Stand และไดรฟ์-1"' }),
-            ...Array(3).fill({ name: 'Shock Strategy: Death Winds', grade: 3, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(After a set order is played, put it into the order zone)\n[AUTO]:When this card is put into soul from the order zone, if your opponent\'s vanguard is grade 3 or greater, choose one of your vanguards, and it gets "AUTO(VC):When this unit attacks, all of your front row units get [Power] +5000 until end of turn." until end of turn.' }),
+            ...Array(3).fill({ name: 'Shock Strategy: Death Winds', grade: 3, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n[AUTO]: เมื่อถูกนำเข้าโซลจาก Order Zone หากแวนการ์ดคู่แข่งระดับ 3 หรือสูงกว่า เลือกแวนการ์ด 1 ใบ "เมื่อโจมตี พลังแถวหน้าทั้งหมด +5000 จนจบเทิร์น"' }),
             ...Array(4).fill({ name: 'Ala Dargente', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อแวนการ์ด "Avantgarda" ของคุณโจมตี ยูนิทนี้ได้รับ พลัง+5000 จนจบเทิร์น\n[AUTO]: เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card ที่ชื่อไม่ซ้ำกับที่เพิ่งใส่โซลจากกองหรือดรอปนำขึ้นมือ 1 ใบ' }),
             ...Array(3).fill({ name: 'Sickle Blade of Inquest, Habitable Zone', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกทิ้งจากมือลงช่องดรอปใน Ride Phase [SB1 & นำการ์ดใบนี้เข้าใต้กอง] จั่วการ์ด 1 ใบ' }),
             ...Array(1).fill({ name: 'Bomber Strategy: Dusting', grade: 2, power: 0, shield: 0, skill: '[Set Order] (Strategy)\n(เข้าโซลเมื่อประกาศใช้งานจากแวนการ์ด)\n[AUTO]: เมื่อถูกส่งเข้าโซลจาก Order Zone แวนการ์ดคุณได้รับพลัง+10000 จนจบเทิร์น และคู่แข่งไม่สามารถอินเตอร์เซปต์หรือเล่น Blitz Order ได้' }),
@@ -1997,15 +1997,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Nirvana Jheva / Graillumirror [AUTO](VC) ---
-        if (isMyTurn && (attacker.dataset.name.includes('Nirvana Jheva') || attacker.dataset.name.includes('Graillumirror')) && parentZone === 'vc') {
-            if (await vgConfirm(`${attacker.dataset.name.includes('Nirvana') ? 'Nirvana Jheva' : 'Graillumirror'}: เมื่อโจมตี [CB1] เลือก Stand เรียร์การ์ดสถานะ [XoverDress] 1 ใบ?`)) {
+        // --- Nirvana Jheva [AUTO](VC) ---
+        if (isMyTurn && attacker.dataset.name.includes('Nirvana Jheva') && parentZone === 'vc') {
+            if (await vgConfirm(`Nirvana Jheva: เมื่อโจมตี [CB1] เลือก Stand เรียร์การ์ดสถานะ [XoverDress] 1 ใบ?`)) {
                 if (payCounterBlast(1)) {
                     alert("เลือกเรียร์การ์ดสถานะ X-overDress (Vairina) 1 ใบเพื่อ Stand");
                     document.body.classList.add('targeting-mode');
                     const standListener = (e) => {
                         const targetRG = e.target.closest('.circle.rc .card:not(.opponent-card)');
-                        if (targetRG && targetRG.dataset.name.includes('Vairina')) {
+                        if (targetRG && (targetRG.dataset.isOverDress === "true" || targetRG.dataset.isXoverDress === "true" || targetRG.dataset.name.includes('Vairina'))) {
                             e.stopPropagation();
                             targetRG.classList.remove('rest');
                             sendMoveData(targetRG);
@@ -2015,6 +2015,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     };
                     document.addEventListener('click', standListener, true);
+                }
+            }
+        }
+
+        // --- Graillumirror [AUTO](RC) Support ---
+        if (isMyTurn && attacker.dataset.name.includes('Nirvana') && parentZone === 'vc') {
+            const rgs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+            for (const grail of rgs) {
+                if (grail.dataset.name.includes('Graillumirror') && !grail.classList.contains('rest')) {
+                    if (await vgConfirm("Graillumirror (RC): เมื่อแวนการ์ด Nirvana โจมตี [CB1] เพื่อ Stand ยูนิท overDress/XoverDress?")) {
+                        if (payCounterBlast(1)) {
+                            alert("เลือกยูนิต overDress หรือ XoverDress เพื่อ Stand");
+                            document.body.classList.add('targeting-mode');
+                            const grailStandListener = (e) => {
+                                const targetRG = e.target.closest('.circle.rc .card:not(.opponent-card)');
+                                if (targetRG && (targetRG.dataset.isOverDress === "true" || targetRG.dataset.isXoverDress === "true")) {
+                                    e.stopPropagation();
+                                    targetRG.classList.remove('rest');
+                                    sendMoveData(targetRG);
+                                    alert(`${targetRG.dataset.name} Stand!`);
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', grailStandListener, true);
+                                }
+                            };
+                            document.addEventListener('click', grailStandListener, true);
+                        }
+                    }
+                    break; // Only one Graillumirror activation for simplicity or as per rule
                 }
             }
         }
@@ -2264,7 +2292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 baurDriveCheck: attacker.dataset.baurDriveCheck === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
                 guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null,
-                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || "0"),
+                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || (attacker.dataset.killshroudGuardRestrict === "true" ? "2" : "0")),
                 bomberNoIntercept: isVanguardAttacker && bomberDustingNoIntercept,
                 bomberNoBlitz: isVanguardAttacker && bomberDustingNoBlitz
             };
@@ -2306,6 +2334,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFromHand = oldParent && oldParent.dataset.zone === 'hand';
         const isFromField = oldParent && oldParent.classList.contains('circle');
         const isFromVC = oldParent && oldParent.classList.contains('vc');
+        const isFromGC = oldParent && (oldParent.dataset.zone === 'gc_player' || oldParent.id === 'shared-gc');
+        const isHandZone = zone.dataset.zone === 'hand' || zone.id === 'player-hand' || zone.classList.contains('player-hand');
+
+        // Allow returning cards from GC to Hand during defense
+        if (isFromGC && isHandZone && isGuarding) {
+            zone.appendChild(card);
+            updateHandCount();
+            updateGCShield();
+            updateHandSpacing();
+            sendMoveData(card);
+            return true;
+        }
 
         if (isFromHand) {
             card.dataset.fromHand = "true";
@@ -3740,7 +3780,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
-            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'killshroudDebuffApplied', 'shockCritApplied', 'strategyPowerBuffed', 'drive'];
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'killshroudDebuffApplied', 'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'drive', 'avantStandReady', 'turnEndBuffActive', 'turnEndBuffPower'];
             flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
             let changed = false;
@@ -3758,17 +3798,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (changed) {
-                const powerSpan = c.querySelector('.card-power');
-                if (powerSpan) {
-                    const critVal = parseInt(c.dataset.critical || "1");
-                    const displayCritical = critVal > 1 ? `<span style="color:gold;">★${critVal}</span>` : '';
-                    powerSpan.innerHTML = `⚔️${c.dataset.power} ${displayCritical}`;
-                }
-                const shieldSpan = c.querySelector('.card-shield');
-                if (shieldSpan) {
-                    shieldSpan.innerHTML = `🛡️${c.dataset.shield}`;
-                }
-                // REMOVED: sendMoveData(c); - Do not sync every unit during reset to prevent removal bugs
+                syncPowerDisplay(c);
+                sendMoveData(c); // Sync reset power to opponent
             }
         });
         updateStatusUI(); // Just update UI locally
@@ -4846,11 +4877,11 @@ document.addEventListener('DOMContentLoaded', () => {
         strategyPutToOrderZoneThisTurn = false;
 
         // Reset "Until end of turn" flags
+        resetMyUnits();
         window.otStoicheiaActive = false;
         window.killshroudDebuffActive = false;
         document.querySelectorAll('.my-side .circle .card').forEach(c => {
             if (c.dataset.turnEndBuffActive === "true") {
-                // applyStaticBonuses will handle the removal when isMyTurn flips or during this call
                 c.dataset.turnEndBuffActive = "false";
             }
             if (c.dataset.avantStandReady === "true") {
@@ -4858,9 +4889,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (c.dataset.deathWindsAttackTrigger === "true") {
                 c.dataset.deathWindsAttackTrigger = "false";
-            }
-            if (c.dataset.inheritedAvantAct === "true") {
-                c.dataset.inheritedAvantAct = "false";
             }
             applyStaticBonuses(c);
         });
@@ -5533,6 +5561,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             vc.appendChild(card);
                             card.classList.remove('rest');
                             card.dataset.inheritedAvantAct = "true";
+                            if (!card.dataset.skill.includes('[ACT]')) {
+                                card.dataset.skill += " [ACT]";
+                            }
                             updateHandSpacing();
                             sendMoveData(card);
                             sendData({ type: 'syncBindCount', count: bindPool.length });
@@ -5550,7 +5581,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Avantgarda (ACT) ---
-        if (name.includes('"Skyrender" Avantgarda') || (name.includes('Richter') && card.dataset.inheritedAvantAct === "true")) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('avantgarda') || (lowerName.includes('richter') && card.dataset.inheritedAvantAct === "true")) {
             if (await vgConfirm(`${name}: [ACT] [ใส่ Strategy ใน Order Zone เข้าโซล] เพื่อจั่ว 1, พลัง +5000 และได้รับ Restand Skill?`)) {
                 const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
                 if (!hasSora) {
@@ -5597,9 +5629,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawCard(1);
                     card.dataset.power = parseInt(card.dataset.power) + 5000;
                     syncPowerDisplay(card);
-                    // Standard Avantgarda ACT effect (Restand for V)
-                    card.dataset.avantStandReady = "true";
-                    alert("Avantgarda: Power +5000 และได้รับความสามารถ Restand เมื่อโจมตีฮิตหรือ Persona Ride!");
+                    // Standard Avantgarda ACT effect (Restand for V) - Richter DOES NOT inherit this part
+                    if (name.includes('Avantgarda') && !name.includes('Richter')) {
+                        card.dataset.avantStandReady = "true";
+                        alert("Avantgarda: Power +5000 และได้รับความสามารถ Restand เมื่อโจมตีฮิตหรือ Persona Ride!");
+                    } else {
+                        alert(`${name}: Power +5000 และได้รับความสามารถพิเศษจาก Strategy!`);
+                    }
 
                     // --- Death Winds Soul Bonus ---
                     if (stratName.includes('Death Winds')) {
@@ -5640,8 +5676,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
                                 card.dataset.turnEndBuffActive = "true";
                                 syncPowerDisplay(card);
-                                alert(`${card.dataset.name}: พลัง +5000 จนจบเทิร์น!`);
+                                alert(`${card.dataset.name}: พลัง +5000 และได้รับ Guard Restrict จนจบเทิร์น!`);
+                                card.dataset.killshroudGuardRestrict = "true";
                                 sendMoveData(card);
+                                sendData({ type: 'killshroudDebuff' }); // Synchronize debuff state to opponent
                             } else if (e.target.classList.contains('targeting-mode')) {
                                 // Cancel
                                 document.body.classList.remove('targeting-mode');
@@ -6265,21 +6303,35 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.style.boxShadow = "0 0 20px var(--accent-blue)";
 
         btn.onclick = () => {
-            isGuarding = false;
-            document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.remove('zone-highlight'));
-
             // Calculate Total Shield and PG check
-            let totalShieldAdded = 0;
-            let isPGActivated = false;
             const gc = document.querySelector('.guardian-circle');
             const guardCards = gc ? gc.querySelectorAll('.card') : [];
 
-            // Check Guard Restrict Count (Garou Vairina)
+            // Check Guard Restrict Count (Garou Vairina / Killshroud)
             const fromHandCount = Array.from(guardCards).filter(c => c.dataset.fromHand === "true").length;
             if (attackData.guardRestrictCount && attackData.guardRestrictCount > 1 && fromHandCount > 0 && fromHandCount < attackData.guardRestrictCount) {
                 alert(`GUARD RESTRICT: ต้อง Guard ด้วยการ์ดจากบนมืออย่างน้อย ${attackData.guardRestrictCount} ใบ! (ตอนนี้เลือกไว้ ${fromHandCount} ใบ)`);
-                return;
+                alert("ระบบจะส่งการ์ดกลับขึ้นมือเพื่อให้คุณเลือก Guard ใหม่อีกครั้ง");
+                
+                // Return all guards to hand if restriction not met
+                guardCards.forEach(c => {
+                    const hand = document.getElementById('player-hand');
+                    if (hand) {
+                        hand.appendChild(c);
+                        sendMoveData(c);
+                    }
+                });
+                updateHandSpacing();
+                updateGCShield();
+                return; // Keep isGuarding = true and the button visible
             }
+
+            // If check passed, proceed to finish guarding
+            isGuarding = false;
+            document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.remove('zone-highlight'));
+
+            let totalShieldAdded = 0;
+            let isPGActivated = false;
 
             guardCards.forEach(c => {
                 let baseShield = parseInt(c.dataset.shield || "0");
