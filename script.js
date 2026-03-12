@@ -147,7 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let attackingCard = null;
     let deckPool = [];
     let currentTurn = 1;
-    let isFirstPlayer = true;
+    let isFirstPlayer = true; // Host defaults to true, Guest will set to false
+    window.isFirstPlayer = true; // Global mirror for easier debugging
     const phases = ['stand', 'draw', 'ride', 'main', 'battle', 'end'];
     let currentPhaseIndex = 0;
     let hasRiddenThisTurn = false;
@@ -729,14 +730,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const newName = (newCard.dataset.name || "").toLowerCase();
 
         // 1. Universal Grade 0 "Go Second" Skill
-        if (oldVanguard && parseInt(oldVanguard.dataset.grade) === 0) {
-            // Check if we are effectively the second player (isFirstPlayer is false for guest)
-            if (isFirstPlayer === false) {
+        // We check grade 0 of the OLD vanguard being ridden over.
+        if (oldVanguard && (parseInt(oldVanguard.dataset.grade) === 0 || oldVanguard.dataset.name.toLowerCase().includes('starter') || oldVanguard.dataset.name.toLowerCase().includes('egg'))) {
+            // Priority check for second player status
+            if (isFirstPlayer === false || window.isFirstPlayer === false) {
                 queue.push({
                     name: 'โบนัสคนเริ่มหลัง (Starter Bonus)',
                     description: "จั่วการ์ด 1 ใบเพราะได้เริ่มคนที่สอง",
                     resolve: (done) => {
-                        console.log("Go-Second Bonus triggered.");
+                        console.log("Starter Bonus triggered for Player 2");
                         alert("Starter Bonus: คุณได้เริ่มเป็นคนที่สอง! จั่วการ์ด 1 ใบ");
                         drawCard(true);
                         if (done) done();
@@ -3764,9 +3766,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shieldSpan) {
                     shieldSpan.innerHTML = `🛡️${c.dataset.shield}`;
                 }
-                sendMoveData(c);
+                // REMOVED: sendMoveData(c); - Do not sync every unit during reset to prevent removal bugs
             }
         });
+        updateStatusUI(); // Just update UI locally
         orderPlayedThisTurn = false;
     }
 
@@ -6907,12 +6910,15 @@ document.addEventListener('DOMContentLoaded', () => {
             let cardId = data.cardId.startsWith('opp-') ? data.cardId : `opp-${data.cardId}`;
             // If the card is already on our side but not as an opponent card (it's our card moved by opponent)
             const myCard = document.getElementById(data.cardId);
+            // Safety: Never let remote move commands manipulate our own Vanguard directly
             if (myCard && !myCard.classList.contains('opponent-card') && data.cardId.startsWith('opp-')) {
                 const realId = data.cardId.substring(4);
                 const actualCard = document.getElementById(realId);
                 if (actualCard) {
-                    if (data.zone === 'vc') targetZone.querySelectorAll('.card').forEach(c => { if(c !== actualCard) c.remove(); });
-                    targetZone.appendChild(actualCard);
+                    // Only move if it's NOT in our VC, unless it's explicitly being retired by opponent effect
+                    if (data.zone !== 'vc' || actualCard.parentElement?.classList.contains('vc') === false) {
+                        targetZone.appendChild(actualCard);
+                    }
                     return;
                 }
             }
@@ -6954,10 +6960,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Handle Vanguard replacement or OverDress replacement clears circle first
-            if (data.zone === 'vc' || (targetZone.classList.contains('circle') && (data.isOD || data.isXOD))) {
+            // Handle Vanguard replacement: ONLY clear if moving to VC AND IDs are different
+            if (data.zone === 'vc') {
                 targetZone.querySelectorAll('.card').forEach(c => {
-                    if (c.id !== cardId) c.remove();
+                    if (c.id !== cardId) {
+                        console.log("Replacing remote Vanguard:", c.id, "with", cardId);
+                        c.remove();
+                    }
                 });
+            } else if (targetZone.classList.contains('circle') && (data.isOD || data.isXOD)) {
+                // OverDress replacement
+                targetZone.querySelectorAll('.card').forEach(c => c.remove());
             }
 
             if (card.parentElement !== targetZone) {
@@ -7050,6 +7063,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 conn = peer.connect(friendId, { reliable: true });
                 isHost = false;
                 isFirstPlayer = false;
+                window.isFirstPlayer = false;
 
                 conn.on('open', () => {
                     console.log("Connected! Handshaking...");
