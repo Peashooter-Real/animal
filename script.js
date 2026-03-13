@@ -1617,6 +1617,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             isWaitingForGuard = false;
             currentAttackResolving = false;
+            // Check auto end turn after attack resolves
+            checkAllAttackersRested();
         }, 500);
     }
 
@@ -1855,6 +1857,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function performAttack(attacker, target) {
+        if (document.body.classList.contains('targeting-mode')) {
+            alert("กรุณาเลือกเป้าหมายทริกเกอร์ให้เสร็จก่อน!");
+            attacker.classList.remove('attacking-glow');
+            attackingCard = null;
+            return;
+        }
         if (currentTurn === 1 && isFirstPlayer) {
             alert("ผู้เล่นที่ได้เริ่มเล่นก่อน ไม่สามารถโจมตีได้ในเทิร์นแรก!");
             attacker.classList.remove('attacking-glow');
@@ -3205,32 +3213,49 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMoveData(card);
         }
 
-        // Auto Turn End Prompt
-        if (isMyTurn && phases[currentPhaseIndex] === 'battle') {
+        // Auto Turn End Prompt - only check when not in targeting mode
+        if (isMyTurn && phases[currentPhaseIndex] === 'battle' && !document.body.classList.contains('targeting-mode')) {
             checkAllAttackersRested();
         }
     }
 
     function checkAllAttackersRested() {
         if (!isMyTurn || phases[currentPhaseIndex] !== 'battle') return;
-        if (isWaitingForGuard || currentAttackResolving || document.body.classList.contains('targeting-mode')) return;
+        if (isWaitingForGuard || currentAttackResolving) return;
+        if (document.body.classList.contains('targeting-mode')) return;
 
-        const attackers = Array.from(document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card), .my-side .circle.vc .card:not(.opponent-card)'))
-            .filter(u => !u.classList.contains('rest'));
+        // Check front-row RC units and Vanguard
+        const allFieldUnits = Array.from(document.querySelectorAll('.my-side .circle .card:not(.opponent-card)'));
+        const canAttackUnits = allFieldUnits.filter(u => {
+            const z = u.parentElement ? (u.parentElement.dataset.zone || '') : '';
+            // Front row RCs and Vanguard can attack
+            return z === 'vc' || z === 'rc_front_left' || z === 'rc_front_right';
+        });
 
-        if (attackers.length === 0 && !window.promptedEndTurn) {
+        // If all units that CAN attack are rested
+        const standingAttackers = canAttackUnits.filter(u => !u.classList.contains('rest'));
+
+        if (standingAttackers.length === 0 && canAttackUnits.length > 0 && !window.promptedEndTurn) {
             window.promptedEndTurn = true;
             setTimeout(async () => {
-                const stillNone = Array.from(document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card), .my-side .circle.vc .card:not(.opponent-card)'))
-                    .filter(u => !u.classList.contains('rest')).length === 0;
-                if (stillNone) {
+                // Double-check state hasn't changed
+                if (!isMyTurn || phases[currentPhaseIndex] !== 'battle') { window.promptedEndTurn = false; return; }
+                if (isWaitingForGuard || currentAttackResolving || document.body.classList.contains('targeting-mode')) { window.promptedEndTurn = false; return; }
+
+                const recheck = Array.from(document.querySelectorAll('.my-side .circle .card:not(.opponent-card)'))
+                    .filter(u => {
+                        const z = u.parentElement ? (u.parentElement.dataset.zone || '') : '';
+                        return (z === 'vc' || z === 'rc_front_left' || z === 'rc_front_right') && !u.classList.contains('rest');
+                    });
+
+                if (recheck.length === 0) {
                     if (await vgConfirm("ยูนิทที่โจมตีได้ทั้งหมดอยู่ในสภาพ Rest แล้ว คุณต้องการจบเทิร์นหรือไม่?")) {
-                        currentPhaseIndex = phases.length - 1; // End phase
-                        updatePhaseUI(true);
+                        // Auto-click the End Turn button
+                        nextTurnBtn.click();
                     }
                 }
-                window.promptedEndTurn = false; // Reset for next check
-            }, 1000);
+                window.promptedEndTurn = false;
+            }, 1500);
         }
     }
 
@@ -3452,8 +3477,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const pickHandler = (e) => {
                                     const clicked = e.target.closest('.card');
                                     if (clicked && clicked.parentElement === viewerGrid) {
-                                        const selectedId = clicked.dataset.originalId || clicked.id;
-                                        const idx = deckPool.findIndex(c => c.id === selectedId);
+                                        const selectedName = clicked.dataset.name;
+                                        const idx = deckPool.findIndex(c => c.name === selectedName);
                                         if (idx !== -1) {
                                             const pickedData = deckPool.splice(idx, 1)[0];
                                             const pickedCard = createCardElement(pickedData);
@@ -4639,6 +4664,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     nextPhaseBtn.addEventListener('click', async () => {
+        if (document.body.classList.contains('targeting-mode')) {
+            alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
+            return;
+        }
         if (currentPhaseIndex < phases.length - 1) {
             currentPhaseIndex++;
             await updatePhaseUI(true);
@@ -4646,6 +4675,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextTurnBtn.addEventListener('click', async () => {
+        if (document.body.classList.contains('targeting-mode')) {
+            alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
+            return;
+        }
+        if (isWaitingForGuard || currentAttackResolving) {
+            alert("กรุณารอให้การต่อสู้จบก่อน!");
+            return;
+        }
         currentTurn++;
         currentPhaseIndex = 0;
         hasRiddenThisTurn = false;
@@ -6195,6 +6232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 currentAttackResolving = false;
                 isWaitingForGuard = false;
+                checkAllAttackersRested();
             }, 500);
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
@@ -6265,6 +6303,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 setTimeout(() => {
                     isWaitingForGuard = false;
+                    checkAllAttackersRested();
                 }, 500);
             }
             currentAttackData = null;
