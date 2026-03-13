@@ -1352,6 +1352,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedCard = card;
                     card.classList.add('card-selected');
                 }
+                // Stop propagation for GC cards so the GC container doesn't clear the selection
+                if (isInGC) e.stopPropagation();
                 return;
             }
 
