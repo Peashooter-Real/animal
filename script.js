@@ -1755,15 +1755,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (myDamage > 0 && myDamage >= oppDamageCardCount) {
                 const damageZone = document.querySelector('.my-side .damage-zone');
-                const damageCards = damageZone.querySelectorAll('.card');
-                const cardToHeal = damageCards[0];
+                const damageCards = Array.from(damageZone.querySelectorAll('.card'));
                 const dropZone = document.querySelector('.my-side .drop-zone');
-                dropZone.appendChild(cardToHeal);
-                cardToHeal.classList.remove('rest');
-                cardToHeal.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-                sendMoveData(cardToHeal);
-                updateDropCount();
-                alert("Heal successful!");
+                if (damageCards.length === 1) {
+                    const cardToHeal = damageCards[0];
+                    dropZone.appendChild(cardToHeal);
+                    cardToHeal.classList.remove('rest');
+                    cardToHeal.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    sendMoveData(cardToHeal);
+                    updateDropCount();
+                    alert("Heal successful!");
+                } else {
+                    openViewer("เลือกการ์ด 1 ใบจากดาเมจโซนเพื่อฮีล", damageCards);
+                    const healPick = (e) => {
+                        const clicked = e.target.closest('.card');
+                        if (clicked && clicked.parentElement === viewerGrid) {
+                            const origId = clicked.dataset.originalId || clicked.id;
+                            const actual = damageCards.find(c => c.id === origId);
+                            if (actual) {
+                                dropZone.appendChild(actual);
+                                actual.classList.remove('rest');
+                                actual.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                                sendMoveData(actual);
+                                updateDropCount();
+                                alert("Heal successful! (" + actual.dataset.name + ")");
+                            }
+                            viewerGrid.removeEventListener('click', healPick);
+                            zoneViewer.classList.add('hidden');
+                        }
+                    };
+                    viewerGrid.addEventListener('click', healPick);
+                }
             } else {
                 alert("Heal failed (your damage must be >= opponent's damage).");
             }
@@ -1787,13 +1809,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     const oppDamageCardCount = parseInt(document.getElementById('opp-damage-count-num')?.textContent || "0");
                     if (myDamage > 0 && myDamage >= oppDamageCardCount) {
                         const damageZone = document.querySelector('.my-side .damage-zone');
-                        const cardToHeal = damageZone.querySelector('.card');
+                        const dmgCards = Array.from(damageZone.querySelectorAll('.card'));
                         const dropZone = document.querySelector('.my-side .drop-zone');
-                        dropZone.appendChild(cardToHeal);
-                        cardToHeal.classList.remove('rest');
-                        sendMoveData(cardToHeal);
-                        updateDropCount();
-                        alert("Stoicheia OT: Heal 1 successful!");
+                        if (dmgCards.length === 1) {
+                            dropZone.appendChild(dmgCards[0]);
+                            dmgCards[0].classList.remove('rest');
+                            sendMoveData(dmgCards[0]);
+                            updateDropCount();
+                            alert("Stoicheia OT: Heal 1 successful!");
+                        } else if (dmgCards.length > 1) {
+                            openViewer("เลือกการ์ด 1 ใบจากดาเมจโซนเพื่อฮีล (Stoicheia OT)", dmgCards);
+                            const healPick = (e) => {
+                                const clicked = e.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    const origId = clicked.dataset.originalId || clicked.id;
+                                    const actual = dmgCards.find(c => c.id === origId);
+                                    if (actual) {
+                                        dropZone.appendChild(actual);
+                                        actual.classList.remove('rest');
+                                        sendMoveData(actual);
+                                        updateDropCount();
+                                        alert("Stoicheia OT: Heal 1 successful!");
+                                    }
+                                    viewerGrid.removeEventListener('click', healPick);
+                                    zoneViewer.classList.add('hidden');
+                                }
+                            };
+                            viewerGrid.addEventListener('click', healPick);
+                        }
                     }
 
                     // Critical +1 (Step 3 - following power/draw/heal)
@@ -5437,13 +5480,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.dataset.avantSkillPowerBuffed = "true";
                     applyStaticBonuses(card);
 
-                    // Standard Avantgarda ACT effect (Restand for V) - Richter DOES NOT inherit this part
-                    if (name.includes('Avantgarda') && !name.includes('Richter')) {
-                        card.dataset.avantStandReady = "true";
-                        alert("Avantgarda: Power +5000 และได้รับความสามารถ Restand เมื่อโจมตีฮิตหรือ Persona Ride!");
-                    } else {
-                        alert(`${name}: Power +5000 และได้รับความสามารถพิเศษจาก Strategy!`);
-                    }
+                    // Both Avantgarda and Richter (with inherited ACT) get Restand ability
+                    card.dataset.avantStandReady = "true";
+                    alert(`${name}: Power +5000 และได้รับความสามารถ Restand เมื่อโจมตีฮิตหรือ Persona Ride!`);
 
                     // --- Death Winds Soul Bonus ---
                     if (stratName.includes('Death Winds')) {
@@ -6313,22 +6352,114 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleEndOfBattle(attacker, attackData) {
         if (!attacker) return;
 
-        // --- Richter [AUTO] ---
-        if (attacker.dataset.name.includes('Richter')) {
+        // --- Richter End of Battle: Choose between own skill or Avantgarda Restand ---
+        if (attacker.dataset.name.includes('Richter') && attacker.dataset.avantStandReady === "true") {
+            const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
+            const baseAvant = bindPool.find(c => c.dataset.name.includes('"Skyrender" Avantgarda'));
+            const isHitVG = attackData.isHit && attackData.isTargetVanguard;
+            const isPersona = personaRideActive;
+
+            const canUseRichterSkill = hasSora && baseAvant && playerHand.querySelectorAll('.card').length >= 2;
+            const canUseAvantRestand = (isHitVG || isPersona);
+
+            if (canUseRichterSkill && canUseAvantRestand) {
+                const choice = await vgConfirm(
+                    "เลือกสกิลที่จะใช้:\n" +
+                    "✅ CONFIRM = Richter: [ทิ้ง 2 ใบ] ไรด์ Avantgarda จากไบนด์ Stand + Power+10000 + Drive-1\n" +
+                    "❌ CANCEL = Avantgarda Restand: [CB1 + ทิ้ง 1 ใบ] Stand + Drive-1"
+                );
+
+                if (choice) {
+                    if (await payDiscard(2)) {
+                        const idx = bindPool.indexOf(baseAvant);
+                        bindPool.splice(idx, 1);
+                        const vc = document.querySelector('.my-side .circle.vc');
+                        attacker.remove();
+                        soulPool.push(attacker);
+                        sendMoveData(attacker, 'soul');
+                        vc.appendChild(baseAvant);
+                        baseAvant.classList.remove('rest');
+                        baseAvant.dataset.power = parseInt(baseAvant.dataset.power) + 10000;
+                        baseAvant.dataset.drive = "1";
+                        baseAvant.dataset.avantStandReady = "true";
+                        syncPowerDisplay(baseAvant);
+                        updateSoulUI();
+                        sendMoveData(baseAvant);
+                        sendData({ type: 'syncBindCount', count: bindPool.length });
+                        alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
+                    }
+                } else {
+                    const handCount = playerHand.querySelectorAll('.card').length;
+                    const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
+                    if (handCount >= 1 && openDamage >= 1) {
+                        if (await payDiscard(1)) {
+                            if (payCounterBlast(1)) {
+                                attacker.classList.remove('rest');
+                                attacker.dataset.avantStandReady = "false";
+                                let currentDrive = parseInt(attacker.dataset.drive || "2");
+                                attacker.dataset.drive = Math.max(0, currentDrive - 1);
+                                alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
+                                sendMoveData(attacker);
+                            }
+                        }
+                    } else {
+                        alert("คอสต์ไม่เพียงพอ! (ต้องการ CB1 + ทิ้ง 1 ใบ)");
+                    }
+                }
+            } else if (canUseRichterSkill) {
+                if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบจากมือ] ไรด์ Avantgarda จากไบนด์แบบ [Stand]?")) {
+                    if (await payDiscard(2)) {
+                        const idx = bindPool.indexOf(baseAvant);
+                        bindPool.splice(idx, 1);
+                        const vc = document.querySelector('.my-side .circle.vc');
+                        attacker.remove();
+                        soulPool.push(attacker);
+                        sendMoveData(attacker, 'soul');
+                        vc.appendChild(baseAvant);
+                        baseAvant.classList.remove('rest');
+                        baseAvant.dataset.power = parseInt(baseAvant.dataset.power) + 10000;
+                        baseAvant.dataset.drive = "1";
+                        baseAvant.dataset.avantStandReady = "true";
+                        syncPowerDisplay(baseAvant);
+                        updateSoulUI();
+                        sendMoveData(baseAvant);
+                        sendData({ type: 'syncBindCount', count: bindPool.length });
+                        alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1 / Restand!");
+                    }
+                }
+            } else if (canUseAvantRestand) {
+                const handCount = playerHand.querySelectorAll('.card').length;
+                const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
+                if (handCount >= 1 && openDamage >= 1) {
+                    if (await vgConfirm("Richter (Avantgarda Skill): [CB1 & ทิ้งมือ 1 ใบ] Stand + Drive -1?")) {
+                        if (await payDiscard(1)) {
+                            if (payCounterBlast(1)) {
+                                attacker.classList.remove('rest');
+                                attacker.dataset.avantStandReady = "false";
+                                let currentDrive = parseInt(attacker.dataset.drive || "2");
+                                attacker.dataset.drive = Math.max(0, currentDrive - 1);
+                                alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
+                                sendMoveData(attacker);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // --- Richter [AUTO] (without Restand) ---
+        else if (attacker.dataset.name.includes('Richter') && attacker.dataset.avantStandReady !== "true") {
             const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
             if (hasSora) {
                 const baseAvant = bindPool.find(c => c.dataset.name.includes('"Skyrender" Avantgarda'));
-                if (baseAvant) {
-                    if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบจากมือ] ไรด์ \"Skyrender\" Avantgarda จากไบนด์แบบ [Stand]?")) {
+                if (baseAvant && playerHand.querySelectorAll('.card').length >= 2) {
+                    if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบจากมือ] ไรด์ Avantgarda จากไบนด์แบบ [Stand]?")) {
                         if (await payDiscard(2)) {
                             const idx = bindPool.indexOf(baseAvant);
                             bindPool.splice(idx, 1);
-
                             const vc = document.querySelector('.my-side .circle.vc');
                             attacker.remove();
                             soulPool.push(attacker);
                             sendMoveData(attacker, 'soul');
-
                             vc.appendChild(baseAvant);
                             baseAvant.classList.remove('rest');
                             baseAvant.dataset.power = parseInt(baseAvant.dataset.power) + 10000;
@@ -6338,53 +6469,40 @@ document.addEventListener('DOMContentLoaded', () => {
                             updateSoulUI();
                             sendMoveData(baseAvant);
                             sendData({ type: 'syncBindCount', count: bindPool.length });
-                            alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1 / ได้รับความสามารถ Restand!");
+                            alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1 / Restand!");
                         }
                     }
                 }
             }
         }
 
-        // --- Avantgarda [AUTO] Restand ---
-        if (attacker.dataset.name.includes('Avantgarda') && attacker.dataset.avantStandReady === "true") {
+        // --- Avantgarda [AUTO] Restand (non-Richter) ---
+        if (attacker.dataset.name.includes('Avantgarda') && !attacker.dataset.name.includes('Richter') && attacker.dataset.avantStandReady === "true") {
             const isHitVG = attackData.isHit && attackData.isTargetVanguard;
             const isPersona = personaRideActive;
             if (isHitVG || isPersona) {
-                if (await vgConfirm("Avantgarda: [CB1 & ทิ้งมือ 1 ใบ] Stand ยูนิทนี้ และไดรฟ์ -1 จนจบเทิร์น?")) {
-                    if (await payDiscard(1)) {
-                        if (payCounterBlast(1)) {
-                            attacker.classList.remove('rest');
-                            attacker.dataset.avantStandReady = "false"; // Only once per turn
-
-                            let currentDrive = parseInt(attacker.dataset.drive || (parseInt(attacker.dataset.grade) >= 3 ? "2" : "1"));
-                            attacker.dataset.drive = Math.max(0, currentDrive - 1);
-                            alert(`Avantgarda: Stand! Drive ปรับเป็น ${attacker.dataset.drive}`);
-                            sendMoveData(attacker);
+                const handCount = playerHand.querySelectorAll('.card').length;
+                const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
+                if (handCount >= 1 && openDamage >= 1) {
+                    if (await vgConfirm("Avantgarda: [CB1 & ทิ้งมือ 1 ใบ] Stand + Drive -1?")) {
+                        if (await payDiscard(1)) {
+                            if (payCounterBlast(1)) {
+                                attacker.classList.remove('rest');
+                                attacker.dataset.avantStandReady = "false";
+                                let currentDrive = parseInt(attacker.dataset.drive || (parseInt(attacker.dataset.grade) >= 3 ? "2" : "1"));
+                                attacker.dataset.drive = Math.max(0, currentDrive - 1);
+                                alert("Avantgarda: Stand! Drive = " + attacker.dataset.drive);
+                                sendMoveData(attacker);
+                            }
                         }
                     }
+                } else {
+                    alert("คอสต์ไม่เพียงพอ! (ต้องการ CB1 + ทิ้ง 1 ใบ)");
                 }
             }
         }
         const name = attacker.dataset.name;
         const boosterId = attackData.boosterId;
-        // The following code snippet seems to be misplaced or malformed.
-        // If the intention was to modify `createCardElement` to add `originalId`
-        // for cards displayed in `openViewer`, that modification should be
-        // within the `createCardElement` function itself, not here.
-        // As per the instruction, I'm inserting it as provided,
-        // but please note it will cause a syntax error and is likely incorrect.
-        // It looks like a partial `if/else` block from another context.
-        // } else {
-        //     node = createCardElement(originalCard);
-        //     // Preserve original ID for matching back to deckPool/source data
-        //     if (originalCard.id) {
-        //         node.dataset.originalId = originalCard.id;
-        //     }
-        // }
-        // rId) { // This part is definitely a syntax error.
-        // I will comment out the problematic part to avoid breaking the code,
-        // assuming the user will clarify its intended placement.
-        // If the intent was to modify `createCardElement`, that function needs to be provided.
 
         // --- Painkiller Angel Post-Battle ---
         if (boosterId) {
