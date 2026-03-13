@@ -2283,11 +2283,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- Avantgarda Attacker / Booster Skills ---
             if (strategyActivatedThisTurn) {
-                // Findanis / Hanada (Booster)
-                if (boosterCardInfo && (boosterCardInfo.name.includes('Findanis') || boosterCardInfo.name.includes('Hanada'))) {
-                    totalPower += 5000;
-                    alert(`${boosterCardInfo.name}: [CONT] Boosting & Strategy Active, Power +5000!`);
-                }
+                // Findanis (CONT) - Handled in applyStaticBonuses for visibility
+
+
+
+
                 // Stelvane (Attacker)
                 if (attacker.dataset.name.includes('Stelvane')) {
                     totalPower += 5000;
@@ -2772,6 +2772,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (card.dataset.asagiBonusApplied === "true") {
                 card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
                 card.dataset.asagiBonusApplied = "false";
+            }
+        }
+
+        // --- Blue Deathster, "Dark Verdict" Findanis [CONT] ---
+        if (name.includes('Findanis') && zone.startsWith('rc')) {
+            if (isMyTurn && strategyPutToOrderZoneThisTurn) {
+                if (card.dataset.findanisBonusApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") + 5000).toString();
+                    card.dataset.findanisBonusApplied = "true";
+                    syncPowerDisplay(card);
+                }
+            } else if (card.dataset.findanisBonusApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
+                card.dataset.findanisBonusApplied = "false";
+                syncPowerDisplay(card);
             }
         }
 
@@ -3821,7 +3836,18 @@ document.addEventListener('DOMContentLoaded', () => {
         isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
-            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied', 'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied', 'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower', 'actUsed', 'fromHand'];
+            const flags = [
+                'stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 
+                'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 
+                'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 
+                'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied', 
+                'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied', 
+                'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower', 
+                'actUsed', 'fromHand', 'asagiBonusApplied', 'avantSkillBuffApplied', 'killshroudPowerBuffApplied',
+                'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
+                'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
+                'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed'
+            ];
             flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
             let changed = false;
