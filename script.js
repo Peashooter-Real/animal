@@ -1748,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (triggerType === 'Draw') {
-            if (!isDamageCheck) drawCard(true); // Draw unconditionally only if it's drive check
+            drawCard(true); // Draw for both drive check and damage check
         } else if (triggerType === 'Heal') {
             const myDamage = document.querySelectorAll('.my-side .damage-zone .card').length;
             const oppDamageCardCount = parseInt(oppDamageCountNum?.textContent || "0");
@@ -2352,12 +2352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-                // Stelvane (Attacker)
-                if (attacker.dataset.name.includes('Stelvane')) {
-                    totalPower += 5000;
-                    alert("Stelvane: [AUTO] Attacking & Strategy Active, Power +5000!");
-                    syncPowerDisplay(attacker);
-                }
+                // Stelvane AUTO power bonus removed per user request
             }
 
             // Removed incorrect Avantgarda/Richter stand RG skill
@@ -2381,7 +2376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 baurDriveCheck: attacker.dataset.baurDriveCheck === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
                 guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null,
-                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || (attacker.dataset.killshroudGuardRestrict === "true" ? "2" : "0")),
+                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || "0"),
                 bomberNoIntercept: isVanguardAttacker && bomberDustingNoIntercept,
                 bomberNoBlitz: isVanguardAttacker && bomberDustingNoBlitz
             };
@@ -2651,6 +2646,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return true;
             }
 
+            // 4a-extra. Block removing Set Order cards from Order Zone
+            if (oldParent && oldParent.classList.contains('order-zone') && card.dataset.skill && card.dataset.skill.includes('[Set Order]')) {
+                alert("ไม่สามารถย้าย Set Order ออกจาก Order Zone ได้ นอกจากสกิลตัวอื่น!");
+                return false;
+            }
+
             // 4b. Move to Rear-guard Circle (CALL or MOVE)
             if (zone.classList.contains('rc')) {
                 // IF MOVING WITHIN FIELD
@@ -2838,20 +2839,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Blue Deathster, "Dark Verdict" Findanis [CONT] ---
-        if (name.includes('Findanis') && zone.startsWith('rc')) {
-            if (isMyTurn && strategyPutToOrderZoneThisTurn) {
-                if (card.dataset.findanisBonusApplied !== "true") {
-                    card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") + 5000).toString();
-                    card.dataset.findanisBonusApplied = "true";
-                    syncPowerDisplay(card);
-                }
-            } else if (card.dataset.findanisBonusApplied === "true") {
-                card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
-                card.dataset.findanisBonusApplied = "false";
-                syncPowerDisplay(card);
-            }
-        }
+        // Findanis CONT power bonus removed per user request
 
         // --- Avantgarda ACT Skill Power (+5000) ---
         if (card.dataset.avantSkillPowerBuffed === "true" && isMyTurn && zone === 'vc') {
@@ -4160,7 +4148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff',
                 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady',
                 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied',
-                'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied',
+                'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied',
                 'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower',
                 'actUsed', 'fromHand', 'asagiBonusApplied', 'avantSkillBuffApplied', 'killshroudPowerBuffApplied',
                 'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
@@ -5505,34 +5493,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // --- Disruption Strategy: Killshroud Soul Bonus ---
                     if (stratName.includes('Killshroud')) {
-                        alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                        document.body.classList.add('targeting-mode');
-                        const retireHandler = (e) => {
-                            const target = e.target.closest('.opponent-side .circle.rc .card');
-                            if (target) {
-                                e.stopPropagation();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', retireHandler, true);
-                                const dropZone = document.querySelector('.opponent-side .drop-zone');
-                                dropZone.appendChild(target);
-                                sendMoveData(target);
-                                alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
+                        // Power +5000 to Vanguard
+                        card.dataset.killshroudPowerBuffed = "true";
+                        updateAllStaticBonuses();
 
-                                // Power +5000 to Vanguard handled via flag in applyStaticBonuses
-                                card.dataset.killshroudPowerBuffed = "true";
-                                updateAllStaticBonuses();
+                        sendMoveData(card);
+                        sendData({ type: 'killshroudDebuff' });
 
-                                alert(`${card.dataset.name}: พลัง +5000 และได้รับ Guard Restrict จนจบเทิร์น!`);
-                                card.dataset.killshroudGuardRestrict = "true";
-                                sendMoveData(card);
-                                sendData({ type: 'killshroudDebuff' }); // Synchronize debuff state to opponent
-                            } else if (e.target.classList.contains('targeting-mode')) {
-                                // Cancel
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', retireHandler, true);
-                            }
-                        };
-                        document.addEventListener('click', retireHandler, true);
+                        // Check if opponent has rear-guards to retire
+                        const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card');
+                        if (oppRGs.length > 0) {
+                            alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
+                            document.body.classList.add('targeting-mode');
+                            const retireHandler = (e) => {
+                                const target = e.target.closest('.opponent-side .circle.rc .card');
+                                if (target) {
+                                    e.stopPropagation();
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', retireHandler, true);
+                                    const dropZone = document.querySelector('.opponent-side .drop-zone');
+                                    dropZone.appendChild(target);
+                                    sendMoveData(target);
+                                    alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
+                                }
+                            };
+                            document.addEventListener('click', retireHandler, true);
+                        } else {
+                            alert("Killshroud: ไม่มีเรียร์การ์ดคู่แข่งให้รีไทร์! VG พลัง+5000 และ Guard Restrict สำเร็จ!");
+                        }
                     }
 
                     lastStrategyPutIntoSoulName = stratName; // Save for Ala Dargente
