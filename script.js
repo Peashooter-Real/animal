@@ -7082,7 +7082,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.zone, .circle.vc, .circle.rc, .guardian-circle').forEach(el => {
+    document.querySelectorAll('.zone, .circle.vc, .circle.rc, .guardian-circle, #player-hand').forEach(el => {
         // DRAG AND DROP
         el.addEventListener('dragover', (e) => {
             e.preventDefault();
