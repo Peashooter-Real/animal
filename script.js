@@ -730,6 +730,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const oldName = oldVanguard ? (oldVanguard.dataset.name || "").toLowerCase() : "";
         const newName = (newCard.dataset.name || "").toLowerCase();
 
+        // 0. Discarded Card Abilities (e.g. Habitable Zone)
+        if (discardedCard) {
+            const discName = (discardedCard.dataset.name || "").toLowerCase();
+            if (discName.includes('habitable zone')) {
+                queue.push({
+                    name: 'Habitable Zone: [AUTO]',
+                    description: "เมื่อถูกทิ้งเพื่อไรด์ [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ",
+                    resolve: async (done) => {
+                        if (await vgConfirm("Habitable Zone: [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ?")) {
+                            if (await paySoulBlast(1)) {
+                                const cardData = JSON.parse(discardedCard.dataset.cardData || "{}");
+                                deckPool.unshift(cardData);
+                                discardedCard.remove();
+                                updateDeckCounter();
+                                drawCard(1);
+                                alert("Habitable Zone: นำเข้าใต้กองและจั่วการ์ด 1 ใบสำเร็จ!");
+                                sendMoveData(discardedCard, 'deck');
+                                updateAllStaticBonuses();
+                            }
+                        }
+                        if (done) done();
+                    }
+                });
+            }
+        }
+
         // 1. Universal Grade 0 "Go Second" Skill
         // We check grade 0 of the OLD vanguard being ridden over.
         if (oldVanguard && (parseInt(oldVanguard.dataset.grade) === 0 || oldVanguard.dataset.name.toLowerCase().includes('starter') || oldVanguard.dataset.name.toLowerCase().includes('egg'))) {
@@ -1194,7 +1220,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const parent = card.parentElement;
             const isRestricted = parent.classList.contains('drop-zone') ||
                 parent.classList.contains('damage-zone') ||
-                parent.classList.contains('ride-deck-zone');
+                parent.classList.contains('ride-deck-zone') ||
+                parent.classList.contains('order-zone');
 
             if (isRestricted) {
                 e.preventDefault();
@@ -2148,30 +2175,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // --- Baur Vairina Attack ---
-            if (attacker.dataset.name.includes('Baur Vairina') && attacker.dataset.isXoverDress === "true") {
-                const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card').length;
-                const openRC = 5 - oppRGs;
-                const baurPwr = openRC * 2000;
-                attacker.dataset.power = parseInt(attacker.dataset.power) + baurPwr;
-                attacker.dataset.baurPwrAdded = baurPwr;
-                totalPower += baurPwr;
-                syncPowerDisplay(attacker);
-                alert(`Baur Vairina: X-overDress Attack! พลัง +${baurPwr} (ช่องว่าง: ${openRC})`);
-
-                if (oppRGs <= 1) {
-                    if (await vgConfirm("Baur Vairina: [CB1] ทำการ Drive Check (Drive -1)?")) {
-                        if (payCounterBlast(1)) {
-                            attacker.dataset.drive = "1"; // G2 usually 0, so Drive-1 of something? 
-                            // Actually "performs drive checks" usually means it gets drive -1 of its current?
-                            // Vanguard G2 normally has zero. But this skill gives it drive checks.
-                            // I'll set drive to 1.
-                            attacker.dataset.baurDriveCheck = "true";
-                            alert("Baur Vairina: ทำการ Drive Check 1 ครั้ง!");
-                        }
-                    }
-                }
-            }
 
             // --- Mirrors Vairina [AUTO](RC) ---
             if (attacker.dataset.name.includes('Mirrors Vairina')) {
@@ -2322,6 +2325,23 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset Bojalcorn multi-attack flag if it was active
             if (attacker.dataset.name && (attacker.dataset.name.includes('Bojalcorn') || attacker.dataset.name.includes('Magnolia'))) {
                 attacker.dataset.bojalcornActive = "false";
+            }
+
+            // --- Baur Vairina Attack Skill ---
+            const isBaur = attacker.dataset.name && attacker.dataset.name.includes('Baur Vairina');
+            if (isBaur && attacker.dataset.isXoverDress === "true" && !attacker.dataset.baurDriveUsed) {
+                if (await vgConfirm("Baur Vairina: [CB1] เพื่อได้รับ Drive +1?")) {
+                    if (payCounterBlast(1)) {
+                        attacker.dataset.baurDriveCheck = "true";
+                        attacker.dataset.baurDriveUsed = "true"; 
+                        syncPowerDisplay(attacker);
+                        sendMoveData(attacker);
+                        alert("Baur Vairina: ได้รับ Drive +1 สำหรับการต่อสู้นี้!");
+                        // Update attack data drive count
+                        attackData.driveCount = 1; 
+                        attackData.baurDriveCheck = true;
+                    }
+                }
             }
 
             // Bruce Attack Ability Check
@@ -2559,11 +2579,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     triggerPersonaRide();
                 }
 
-                // Apply Final Rush or Persona bonuses if calling/riding
                 applyStaticBonuses(card);
-
+                handleRideAbilities(card); // Trigger ride abilities (including queue)
                 sendMoveData(card);
-                await handleRideAbilities(card);
                 await checkDropAbilities(card); // Goildoat Drop Skill
                 await checkOnPlaceAbilities(card); // Ensure on-place triggers for V
                 updatePhaseUI(true);
@@ -2717,22 +2735,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
-            if (isFromHand && isMyTurn && phases[currentPhaseIndex] === 'ride' && card.dataset.name.includes('Habitable Zone')) {
-                if (await vgConfirm("Habitable Zone: [SB1 & นำการ์ดนี้เข้าใต้กอง] เพื่อจั่วการ์ด 1 ใบ?")) {
-                    if (await paySoulBlast(1)) {
-                        const cardData = JSON.parse(card.dataset.cardData || "{}");
-                        deckPool.unshift(cardData);
-                        card.remove();
-                        updateDeckCounter();
-                        drawCard(1);
-                        alert("Habitable Zone: นำเข้าใต้กองและจั่วการ์ด 1 ใบสำเร็จ!");
-                        sendMoveData(card, 'deck');
-                        updateAllStaticBonuses();
-                        updateHandCount();
-                        return true;
-                    }
-                }
-            }
 
             if (card.unitSoul && card.unitSoul.length > 0) {
                 card.unitSoul.forEach(m => {
@@ -2773,29 +2775,48 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Avantgarda ACT Skill Power (+5000) ---
+        if (card.dataset.avantSkillPowerBuffed === "true" && isMyTurn && zone === 'vc') {
+            if (card.dataset.avantSkillBuffApplied !== "true") {
+                card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                card.dataset.avantSkillBuffApplied = "true";
+                syncPowerDisplay(card);
+            }
+        } else if (card.dataset.avantSkillBuffApplied === "true") {
+            card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+            card.dataset.avantSkillBuffApplied = "false";
+            syncPowerDisplay(card);
+        }
+
+        // --- Disruption Strategy: Killshroud Power Buff (+5000) ---
+        if (card.dataset.killshroudPowerBuffed === "true" && isMyTurn && zone === 'vc') {
+            if (card.dataset.killshroudPowerBuffApplied !== "true") {
+                card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                card.dataset.killshroudPowerBuffApplied = "true";
+                syncPowerDisplay(card);
+            }
+        } else if (card.dataset.killshroudPowerBuffApplied === "true") {
+            card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+            card.dataset.killshroudPowerBuffApplied = "false";
+            syncPowerDisplay(card);
+        }
+
         // 1. Persona Ride (+10000 to front row and Vanguard)
         if (personaRideActive && isFrontRow && isMyTurn) {
             if (card.dataset.personaBuffed !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 10000;
+                card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
                 card.dataset.personaBuffed = "true";
+                syncPowerDisplay(card);
             }
         } else {
             if (card.dataset.personaBuffed === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 10000;
+                card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
                 card.dataset.personaBuffed = "false";
+                syncPowerDisplay(card);
             }
         }
 
-        // Bomber Strategy Dusting (+10000 Vanguard)
-        if (bomberDustingPowerBuff && zone === 'vc') {
-            if (card.dataset.bomberBuffApplied !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 10000;
-                card.dataset.bomberBuffApplied = "true";
-            }
-        } else if (card.dataset.bomberBuffApplied === "true") {
-            card.dataset.power = parseInt(card.dataset.power) - 10000;
-            card.dataset.bomberBuffApplied = "false";
-        }
+        // Bomber Strategy Dusting (+10000 Vanguard) - REMOVED DUPLICATE
 
         // --- Blaster Dark [CONT] (+5000 if RG retired) ---
         if (name.includes('Blaster Dark') && zone.startsWith('rc')) {
@@ -2951,16 +2972,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.killshroudDebuffApplied = "false";
         }
 
-        // --- Asagi Milestone [CONT] ---
-        if (name.includes('Asagi Milestone') && zone.startsWith('rc') && isMyTurn && lastStrategyPutIntoSoulName !== "") {
-            if (card.dataset.asagiStrategyBuff !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 5000;
-                card.dataset.asagiStrategyBuff = "true";
-            }
-        } else if (card.dataset.asagiStrategyBuff === "true") {
-            card.dataset.power = parseInt(card.dataset.power) - 5000;
-            card.dataset.asagiStrategyBuff = "false";
-        }
 
         // 4. Final Rush Static Bonus - Only for owner
         if (isFinalRush) {
@@ -3810,7 +3821,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isOpponentPersonaRide = false;
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
-            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'killshroudDebuffApplied', 'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'drive', 'avantStandReady', 'turnEndBuffActive', 'turnEndBuffPower', 'actUsed', 'fromHand'];
+            const flags = ['stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied', 'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied', 'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower', 'actUsed', 'fromHand'];
             flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
 
             let changed = false;
@@ -3983,17 +3994,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Blue Deathster, Asagi Milestone [AUTO] (On Place) ---
-        if (name.toLowerCase().includes('asagi milestone') && card.parentElement) {
-            const isRC = card.parentElement.classList.contains('rc') || (card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc'));
+        if (name.toLowerCase().includes('asagi milestone')) {
+            const circle = card.closest('.circle');
+            const isRC = circle && circle.classList.contains('rc');
             if (isRC) {
                 const vg = document.querySelector('.my-side .circle.vc .card');
-                const vgName = vg ? (vg.dataset.name || "").toLowerCase() : "";
+                const vgName = (vg ? (vg.dataset.name || "") : "").toLowerCase();
                 if (vgName.includes('blue deathster') || vgName.includes('avantgarda')) {
-                    const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => parseInt(c.dataset.grade) >= 3 && (c.dataset.name || "").includes('Avantgarda'));
+                    const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card'))
+                        .filter(c => parseInt(c.dataset.grade || "0") >= 3 && (c.dataset.name || "").includes('Avantgarda'));
                     if (dropAvants.length > 0) {
                         if (await vgConfirm("Asagi Milestone: [CB1] เลือก 'Avantgarda' เกรด 3 ขึ้นไปจาก Drop ขึ้นมือ?")) {
-                            if (payCounterBlast(1)) {
-                                promptAddFromDropToHand((c) => parseInt(c.dataset.grade) >= 3 && (c.dataset.name || "").includes('Avantgarda'));
+                            if (await payCounterBlast(1)) {
+                                promptAddFromDropToHand((c) => parseInt(c.dataset.grade || "0") >= 3 && (c.dataset.name || "").includes('Avantgarda'));
                             }
                         }
                     }
@@ -5568,35 +5581,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else return false;
         }
 
-        // --- Baur Vairina [ACT] ---
-        if (name.includes('Baur Vairina') && card.dataset.isXoverDress === "true") {
-            if (await vgConfirm("Baur Vairina: [ACT] [SB2] รีไทร์เรียร์การ์ดคู่แข่ง 1 ใบ?")) {
-                if (await paySoulBlast(2)) {
-                    alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                    document.body.classList.add('targeting-mode');
-                    const retireHander = (e) => {
-                        const target = e.target.closest('.opponent-side .circle.rc .card');
-                        if (target) {
-                            e.stopPropagation();
-                            // Retire it
-                            const oppDrop = document.querySelector('.opponent-side .drop-zone');
-                            oppDrop.appendChild(target);
-                            sendData({ type: 'forceRetire', cardId: target.id.replace('opp-', '') });
-                            alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
-                            if (card.dataset.isXoverDress === "true") {
-                                card.dataset.baurDriveCheck = "true";
-                                syncPowerDisplay(card);
-                                sendMoveData(card); // Sync the drive check flag
-                                alert("Baur Vairina: ได้รับ Drive +1 จนจบการต่อสู้ถัดไป!");
-                            }
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', retireHander, true);
-                        }
-                    };
-                    document.addEventListener('click', retireHander, true);
-                }
-            }
-        }
 
         // --- Avantgarda Richter (Hand ACT) ---
         if (name.includes('Richter')) {
@@ -5618,13 +5602,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             vc.appendChild(card);
                             card.classList.remove('rest');
                             card.dataset.inheritedAvantAct = "true";
-                            applyStaticBonuses(card); // Richter needs to check for Persona Ride bonus
-                            if (!card.dataset.skill.includes('[ACT]')) {
-                                card.dataset.skill += " [ACT]";
-                            }
-                            updateHandSpacing();
+                            applyStaticBonuses(card);
                             sendMoveData(card);
                             sendData({ type: 'syncBindCount', count: bindPool.length });
+                            updateAllStaticBonuses();
                             alert("Richter: Ride สำเร็จ! และได้รับ ACT ของใบที่ Bind");
                             return;
                         } else {
@@ -5685,8 +5666,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendData({ type: 'syncSoulCount', count: soulPool.length });
                     alert("จ่ายคอสต์สำเร็จ! จั่วการ์ด 1 ใบ");
                     drawCard(1);
-                    card.dataset.power = parseInt(card.dataset.power) + 5000;
-                    syncPowerDisplay(card);
+                    
+                    card.dataset.avantSkillPowerBuffed = "true";
+                    applyStaticBonuses(card);
+
                     // Standard Avantgarda ACT effect (Restand for V) - Richter DOES NOT inherit this part
                     if (name.includes('Avantgarda') && !name.includes('Richter')) {
                         card.dataset.avantStandReady = "true";
@@ -5729,11 +5712,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sendMoveData(target);
                                 alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
 
-                                // Power +5000 to Vanguard
-                                card.dataset.power = parseInt(card.dataset.power) + 5000;
-                                card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
-                                card.dataset.turnEndBuffActive = "true";
-                                syncPowerDisplay(card);
+                                // Power +5000 to Vanguard handled via flag in applyStaticBonuses
+                                card.dataset.killshroudPowerBuffed = "true";
+                                 updateAllStaticBonuses();
+
+
                                 alert(`${card.dataset.name}: พลัง +5000 และได้รับ Guard Restrict จนจบเทิร์น!`);
                                 card.dataset.killshroudGuardRestrict = "true";
                                 sendMoveData(card);
@@ -5760,27 +5743,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isJhevaOrGrail && card.parentElement.classList.contains('vc')) {
             const skillName = 'Nirvana Jheva';
             if (await vgConfirm(`${skillName}: [ACT][ทิ้งการ์ด 1 ใบ] คอล Trickstar และ Prayer Dragon จาก Drop?`)) {
-                alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
-                document.body.classList.add('targeting-mode');
-                const discarded = await new Promise(resolve => {
-                    const discardListener = (e) => {
-                        const target = e.target.closest('.card');
-                        if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
-                            e.stopPropagation();
-                            const dropZone = document.querySelector('.my-side .drop-zone');
-                            dropZone.appendChild(target);
-                            sendMoveData(target);
-                            updateHandCount();
-                            updateDropCount();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', discardListener, true);
-                            resolve(true);
-                        }
-                    };
-                    document.addEventListener('click', discardListener, true);
-                });
-
-                if (discarded) {
+                if (await payDiscard(1)) {
                     alert("Step 1: เลือก Trickstar 1 ใบจาก Drop");
                     promptCallFromDrop(1, (c) => c.dataset.name.includes('Trickstar'), 0, () => {
                         alert("Step 2: เลือก Prayer Dragon (Equip Dragon) 1 ใบจาก Drop");
@@ -6840,12 +6803,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Baur Vairina Reset ---
+        attacker.dataset.baurDriveCheck = "false"; 
+        attacker.dataset.baurDriveUsed = "false"; 
+        attacker.dataset.driveAdded = "0";
+
         if (attacker.dataset.baurPwrAdded && attacker.dataset.baurPwrAdded !== "0") {
             const pwrAdded = parseInt(attacker.dataset.baurPwrAdded);
             attacker.dataset.power = parseInt(attacker.dataset.power) - pwrAdded;
             attacker.dataset.baurPwrAdded = "0";
-            attacker.dataset.baurDriveCheck = "false"; 
-            attacker.dataset.driveAdded = "0";
             if (attacker.dataset.emmelineAtkBonus) {
                 attacker.dataset.power = (parseInt(attacker.dataset.power) - parseInt(attacker.dataset.emmelineAtkBonus)).toString();
                 attacker.dataset.emmelineAtkBonus = "0";
