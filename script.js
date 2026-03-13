@@ -2593,6 +2593,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isMyTurn) return false;
         const currentPhase = phases[currentPhaseIndex];
 
+        // 3a. Block removing Set Order cards from Order Zone (must be before any zone-specific logic)
+        if (oldParent && oldParent.classList.contains('order-zone') && card.dataset.skill && card.dataset.skill.includes('[Set Order]')) {
+            alert("ไม่สามารถย้าย Set Order ออกจาก Order Zone ได้ นอกจากสกิลตัวอื่น!");
+            return false;
+        }
+
         // 4. Circle Validation (Ride/Call/Move)
         if (zone.classList.contains('circle')) {
             const cardGrade = card.getEffectiveGrade ? card.getEffectiveGrade() : parseInt(card.dataset.grade);
@@ -2644,12 +2650,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 await checkOnPlaceAbilities(card); // Ensure on-place triggers for V
                 updatePhaseUI(true);
                 return true;
-            }
-
-            // 4a-extra. Block removing Set Order cards from Order Zone
-            if (oldParent && oldParent.classList.contains('order-zone') && card.dataset.skill && card.dataset.skill.includes('[Set Order]')) {
-                alert("ไม่สามารถย้าย Set Order ออกจาก Order Zone ได้ นอกจากสกิลตัวอื่น!");
-                return false;
             }
 
             // 4b. Move to Rear-guard Circle (CALL or MOVE)
