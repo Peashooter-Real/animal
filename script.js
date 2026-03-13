@@ -1319,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const powerSpan = card.querySelector('.card-power');
                     if (powerSpan) {
                         let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${card.dataset.power >= 100000 ? '100M' : card.dataset.power} ${displayCritical}`;
+                        powerSpan.innerHTML = `⚔️${parseInt(card.dataset.power) >= 100000 ? '100M' : card.dataset.power} ${displayCritical}`;
                     }
 
                     sendMoveData(card);
@@ -1620,6 +1620,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 
+
     function driveCheck(count, crit, isOpponentPG = false) {
         if (count <= 0) {
             // If PG was played, override hit check
@@ -1811,17 +1812,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Keter Sanctuary OT: All your Rear-guards perform drive checks for the rest of the game!");
                 } else if (otName.includes('Eldobreath')) {
                     if (!isDamageCheck) {
-                        // Double the Power and Critical of all your front row units until end of turn!
-                        const frontRowUnits = document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)');
-                        frontRowUnits.forEach(unit => {
-                            let currPower = parseInt(unit.dataset.power);
-                            let currCrit = parseInt(unit.dataset.critical || "1");
-                            unit.dataset.power = (currPower * 2).toString();
-                            unit.dataset.critical = (currCrit * 2).toString();
-                            syncPowerDisplay(unit);
-                            sendMoveData(unit);
-                        });
-                        alert("Brandt Gate OT: แถวหน้าทั้งหมด พลังและคริติคอล คูณ 2!");
+                        window.otBrandtGateActive = true;
+                        alert("Brandt Gate OT: แถวหน้าทั้งหมด พลังและคริติคอล คูณ 2! (จะทำงานเมื่อเลือกเป้าหมาย +100M เสร็จ)");
                     } else {
                         alert("Brandt Gate OT: (Damage Check) No additional effect.");
                     }
@@ -1840,6 +1832,26 @@ document.addEventListener('DOMContentLoaded', () => {
             targetingType = 'power';
             alert(`Select a unit to receive +${powerIncrease >= 100000 ? '100M' : powerIncrease} Power.`);
         }
+
+        // After targeting is complete (or if no targeting needed for power/crit), apply Brandt Gate OT
+        const checkTargetingComplete = setInterval(() => {
+            if (!document.body.classList.contains('targeting-mode')) {
+                clearInterval(checkTargetingComplete);
+                if (window.otBrandtGateActive && triggerType === 'Over' && cardData.name.includes('Eldobreath') && !isDamageCheck) {
+                    document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card), .my-side .circle.vc .card:not(.opponent-card)').forEach(unit => {
+                        let currentPower = parseInt(unit.dataset.power);
+                        let currentCritical = parseInt(unit.dataset.critical || "1");
+
+                        unit.dataset.power = (currentPower * 2).toString();
+                        unit.dataset.critical = (currentCritical * 2).toString();
+                        syncPowerDisplay(unit);
+                        sendMoveData(unit);
+                    });
+                    alert("Brandt Gate OT: แถวหน้าทั้งหมด พลังและคริติคอล คูณ 2 สำเร็จ!");
+                    window.otBrandtGateActive = false; // Consume the effect for this turn
+                }
+            }
+        }, 200);
     }
 
     async function performAttack(attacker, target) {
@@ -1930,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attacker.dataset.name.includes('Avantgarda') && attackerParentCircle.classList.contains('vc')) {
             document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
                 const z = unit.parentElement.dataset.zone || "";
-                if (unit.dataset.name.includes('Ala Dargente') && z.startsWith('rc')) {
+                if (unit.dataset.name.includes('Ala Dargente') && z.startsWith('rc')) { // Fix: Ensure Ala Dargente is matched by name
                     unit.dataset.power = (parseInt(unit.dataset.power) + 5000).toString();
                     unit.dataset.turnEndBuffPower = (parseInt(unit.dataset.turnEndBuffPower || "0") + 5000).toString();
                     unit.dataset.turnEndBuffActive = "true";
@@ -1993,8 +2005,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
 
                             if (card.dataset.name.includes('Hanada Halfway') && strategyPutToOrderZoneThisTurn) {
-                                boosterPower += 2000;
-                                alert(`Hanada Halfway: พลัง +2000 จนจบการต่อสู้!`);
+                                // Removed redundant Hanada calculation here, it's handled below
+                                // boosterPower += 2000;
+                                // alert(`Hanada Halfway: พลัง +2000 จนจบการต่อสู้!`);
                                 if (backZoneName === 'rc_back_center') {
                                     counterCharge(1);
                                     alert("Hanada Halfway (แถวหลังสุดกลาง): [Counter-Charge 1]!");
@@ -2026,8 +2039,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalPower += bonusPwr;
                 let ccMsg = "";
                 if (boosterCardInfo.zone === 'rc_back_center') {
-                    counterCharge(1);
-                    ccMsg = " และทำการ [Counter-Charge 1]";
+                    // Counter-Charge already handled above if it was the center back row
+                    // ccMsg = " และทำการ [Counter-Charge 1]";
                 }
                 alert(`Hanada Halfway: พลังบูสต์เพิ่ม +2000${ccMsg}!`);
             }
@@ -2333,12 +2346,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (await vgConfirm("Baur Vairina: [CB1] เพื่อได้รับ Drive +1?")) {
                     if (payCounterBlast(1)) {
                         attacker.dataset.baurDriveCheck = "true";
-                        attacker.dataset.baurDriveUsed = "true"; 
+                        attacker.dataset.baurDriveUsed = "true";
                         syncPowerDisplay(attacker);
                         sendMoveData(attacker);
                         alert("Baur Vairina: ได้รับ Drive +1 สำหรับการต่อสู้นี้!");
                         // Update attack data drive count
-                        attackData.driveCount = 1; 
+                        attackData.driveCount = 1;
                         attackData.baurDriveCheck = true;
                     }
                 }
@@ -2497,7 +2510,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 e.stopPropagation();
                                 const dropZone = document.querySelector('.my-side .drop-zone');
                                 dropZone.appendChild(discardTarget);
-                                discardTarget.classList.remove('rest');
                                 sendMoveData(discardTarget);
                                 updateHandCount();
                                 updateDropCount();
@@ -2555,7 +2567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (currentPhase !== 'ride') { alert("Only Ride during Ride Phase!"); return false; }
                 if (hasRiddenThisTurn) { alert("Only Ride once per turn!"); return false; }
-                
+
                 // Allow exact same grade if it's G3 or G4 (Persona Ride or G4 re-ride)
                 const isSameGradeAllowed = cardGrade >= 3 && cardGrade === vanguardGrade;
                 if (cardGrade !== vanguardGrade + 1 && !isSameGradeAllowed && !(cardGrade === 4 && vanguardGrade === 3)) {
@@ -2819,13 +2831,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Persona Ride (+10000 to front row and Vanguard)
         if (personaRideActive && isFrontRow && isMyTurn) {
             if (card.dataset.personaBuffed !== "true") {
-                card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
+                card.dataset.power = parseInt(card.dataset.power) + 10000;
                 card.dataset.personaBuffed = "true";
                 syncPowerDisplay(card);
             }
         } else {
             if (card.dataset.personaBuffed === "true") {
-                card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
+                card.dataset.power = parseInt(card.dataset.power) - 10000;
                 card.dataset.personaBuffed = "false";
                 syncPowerDisplay(card);
             }
@@ -3192,6 +3204,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (card.parentElement && card.parentElement.classList.contains('circle')) {
             sendMoveData(card);
         }
+
+        // Auto Turn End Prompt
+        if (isMyTurn && phases[currentPhaseIndex] === 'battle') {
+            checkAllAttackersRested();
+        }
+    }
+
+    function checkAllAttackersRested() {
+        if (!isMyTurn || phases[currentPhaseIndex] !== 'battle') return;
+        if (isWaitingForGuard || currentAttackResolving || document.body.classList.contains('targeting-mode')) return;
+
+        const attackers = Array.from(document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card), .my-side .circle.vc .card:not(.opponent-card)'))
+            .filter(u => !u.classList.contains('rest'));
+
+        if (attackers.length === 0 && !window.promptedEndTurn) {
+            window.promptedEndTurn = true;
+            setTimeout(async () => {
+                const stillNone = Array.from(document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card), .my-side .circle.vc .card:not(.opponent-card)'))
+                    .filter(u => !u.classList.contains('rest')).length === 0;
+                if (stillNone) {
+                    if (await vgConfirm("ยูนิทที่โจมตีได้ทั้งหมดอยู่ในสภาพ Rest แล้ว คุณต้องการจบเทิร์นหรือไม่?")) {
+                        currentPhaseIndex = phases.length - 1; // End phase
+                        updatePhaseUI(true);
+                    }
+                }
+                window.promptedEndTurn = false; // Reset for next check
+            }, 1000);
+        }
     }
 
     async function handleMajestyAttackSkills(vanguard) {
@@ -3331,15 +3371,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
-    function counterCharge(count) {
-        const closedCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card.face-down'));
-        const toTurn = Math.min(count, closedCards.length);
-        for (let i = 0; i < toTurn; i++) {
-            closedCards[i].classList.remove('face-down');
-            sendMoveData(closedCards[i]);
-        }
-        if (toTurn > 0) alert(`Counter Charge ${toTurn}!`);
-    }
+
+
 
     async function processInletPulse(units) {
         const queue = units.map(unit => {
@@ -3385,6 +3418,134 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function checkOnPlaceAbilities(card) {
+        if (!card) return;
+        const name = card.dataset.name || "";
+        const parent = card.parentElement;
+        if (!parent) return;
+        const zone = parent.dataset.zone || "";
+        const isRC = zone.startsWith('rc');
+        const isFromHand = card.dataset.fromHand === "true";
+
+        const vg = document.querySelector('.my-side .circle.vc .card');
+        const vgName = vg ? vg.dataset.name : "";
+        const hasBlueDeathsterOrAvant = vgName.includes('Blue Deathster') || vgName.includes('Avantgarda');
+
+        // --- Ala Dargente [AUTO]: เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card จากกอง ---
+        if (name.includes('Ala Dargente') && isRC && isFromHand) {
+            if (soulPool.length > 0) {
+                if (await vgConfirm("Ala Dargente: [AUTO] เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card จากกองที่ชื่อไม่ซ้ำกับที่เพิ่งใส่โซล นำ 1 ใบขึ้นมือ?")) {
+                    if (await paySoulBlast(1)) {
+                        // Find Strategy Cards in deck
+                        const strategyCards = deckPool.filter(c =>
+                            c.skill && c.skill.includes('Strategy') && c.skill.includes('[Set Order]')
+                        );
+
+                        // Filter out cards with same name as what was just put into soul
+                        const uniqueStrategies = strategyCards.filter(c =>
+                            c.name !== lastStrategyPutIntoSoulName
+                        );
+
+                        if (uniqueStrategies.length > 0) {
+                            openViewer("เลือก Strategy Card 1 ใบ (ชื่อไม่ซ้ำ)", uniqueStrategies);
+                            await new Promise(resolve => {
+                                const pickHandler = (e) => {
+                                    const clicked = e.target.closest('.card');
+                                    if (clicked && clicked.parentElement === viewerGrid) {
+                                        const selectedId = clicked.dataset.originalId || clicked.id;
+                                        const idx = deckPool.findIndex(c => c.id === selectedId);
+                                        if (idx !== -1) {
+                                            const pickedData = deckPool.splice(idx, 1)[0];
+                                            const pickedCard = createCardElement(pickedData);
+                                            playerHand.appendChild(pickedCard);
+                                            updateHandSpacing();
+                                            updateDeckCounter();
+                                            updateHandCount();
+                                            sendMoveData(pickedCard);
+                                            deckPool.sort(() => 0.5 - Math.random()); // Shuffle
+                                            alert(`Ala Dargente: ${pickedData.name} ขึ้นมือแล้ว!`);
+                                        }
+                                        viewerGrid.removeEventListener('click', pickHandler);
+                                        zoneViewer.classList.add('hidden');
+                                        resolve();
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', pickHandler);
+                            });
+                        } else {
+                            alert("ไม่พบ Strategy Card ที่ชื่อไม่ซ้ำในกอง!");
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Asagi Milestone [AUTO]: เมื่อวางบน (RC) [CB1] ค้นหา "Avantgarda" G3+ จากดรอป ---
+        if (name.includes('Asagi Milestone') && isRC && isFromHand && hasBlueDeathsterOrAvant) {
+            const dropZone = document.querySelector('.my-side .drop-zone');
+            const avantInDrop = Array.from(dropZone.querySelectorAll('.card')).filter(c =>
+                c.dataset.name.includes('Avantgarda') && parseInt(c.dataset.grade) >= 3
+            );
+
+            if (avantInDrop.length > 0) {
+                if (await vgConfirm("Asagi Milestone: [AUTO] เมื่อวางบน (RC) [CB1] เลือก 'Avantgarda' G3+ จากดรอป 1 ใบขึ้นมือ?")) {
+                    if (payCounterBlast(1)) {
+                        if (avantInDrop.length === 1) {
+                            const picked = avantInDrop[0];
+                            playerHand.appendChild(picked);
+                            updateHandSpacing();
+                            updateHandCount();
+                            updateDropCount();
+                            sendMoveData(picked);
+                            alert(`Asagi Milestone: ${picked.dataset.name} ขึ้นมือแล้ว!`);
+                        } else {
+                            openViewer("เลือก Avantgarda G3+ 1 ใบจากดรอป", avantInDrop.map(c => ({
+                                name: c.dataset.name,
+                                grade: c.dataset.grade,
+                                power: c.dataset.power,
+                                shield: c.dataset.shield,
+                                skill: c.dataset.skill,
+                                id: c.id,
+                                imageUrl: c.querySelector('img')?.src || ''
+                            })));
+                            await new Promise(resolve => {
+                                const pickHandler = (e) => {
+                                    const clicked = e.target.closest('.card');
+                                    if (clicked && clicked.parentElement === viewerGrid) {
+                                        const selectedId = clicked.dataset.originalId || clicked.id;
+                                        const actual = avantInDrop.find(c => c.id === selectedId);
+                                        if (actual) {
+                                            playerHand.appendChild(actual);
+                                            updateHandSpacing();
+                                            updateHandCount();
+                                            updateDropCount();
+                                            sendMoveData(actual);
+                                            alert(`Asagi Milestone: ${actual.dataset.name} ขึ้นมือแล้ว!`);
+                                        }
+                                        viewerGrid.removeEventListener('click', pickHandler);
+                                        zoneViewer.classList.add('hidden');
+                                        resolve();
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', pickHandler);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Hanada Halfway [AUTO]: เมื่อวางบน (RC) [CB1] จั่วการ์ด 1 ใบ ---
+        if (name.includes('Hanada Halfway') && isRC && isFromHand && hasBlueDeathsterOrAvant) {
+            if (await vgConfirm("Hanada Halfway: [AUTO] เมื่อวางบน (RC) [CB1] จั่วการ์ด 1 ใบ?")) {
+                if (payCounterBlast(1)) {
+                    drawCard(true);
+                    alert("Hanada Halfway: จั่ว 1 ใบสำเร็จ!");
+                }
+            }
+        }
+    }
+
     async function checkDropAbilities(newVanguard) {
         const vgName = (newVanguard.dataset.name || "").toLowerCase();
         if (!vgName.includes('magnolia')) return;
@@ -3423,7 +3584,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAllStaticBonuses() {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
             applyStaticBonuses(c);
-            // Redundant sendMoveData removed (syncPowerDisplay already does it)
+            syncPowerDisplay(c); // Ensure power display and sendMoveData for opponent sync
         });
     }
 
@@ -3468,6 +3629,96 @@ document.addEventListener('DOMContentLoaded', () => {
         await checkRideAbilities(oldVanguard, newVanguard, discardedCard);
     }
 
+
+    function payCounterBlast(cost) {
+        const openCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)'));
+        if (openCards.length < cost) {
+            alert(`CB${cost} 失敗！ดาเมจโซนที่เปิดอยู่ไม่พอ (มี ${openCards.length} ใบ ต้องการ ${cost} ใบ)`);
+            return false;
+        }
+        for (let i = 0; i < cost; i++) {
+            openCards[i].classList.add('face-down');
+            sendMoveData(openCards[i]);
+        }
+        alert(`Counter Blast ${cost} จ่ายสำเร็จ!`);
+        return true;
+    }
+
+    function promptCallFromDrop(count, filterFn, powerBonus = 0, onComplete = null) {
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        const eligibleCards = Array.from(dropZone.querySelectorAll('.card')).filter(c => {
+            if (c.classList.contains('opponent-card')) return false;
+            if (filterFn && !filterFn(c)) return false;
+            return true;
+        });
+
+        if (eligibleCards.length === 0) {
+            alert("ไม่พบการ์ดที่ตรงเงื่อนไขในดรอปโซน!");
+            if (onComplete) onComplete();
+            return;
+        }
+
+        openViewer("เลือกการ์ดจากดรอปโซนเพื่อคอล", eligibleCards.map(c => ({
+            name: c.dataset.name,
+            grade: c.dataset.grade,
+            power: c.dataset.power,
+            shield: c.dataset.shield,
+            skill: c.dataset.skill,
+            id: c.id,
+            imageUrl: c.querySelector('img')?.src || ''
+        })));
+
+        const pickHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const selectedId = clicked.dataset.originalId || clicked.id;
+                const actual = eligibleCards.find(c => c.id === selectedId);
+                if (actual) {
+                    viewerGrid.removeEventListener('click', pickHandler);
+                    zoneViewer.classList.add('hidden');
+
+                    // Prompt for RC selection
+                    alert("เลือก RC เพื่อวางการ์ด");
+                    document.body.classList.add('targeting-mode');
+                    const rcHandler = (ev) => {
+                        const circle = ev.target.closest('.my-side .circle.rc');
+                        if (circle) {
+                            ev.stopPropagation();
+                            // Replace existing card if any
+                            const existing = circle.querySelector('.card:not(.opponent-card)');
+                            if (existing) {
+                                dropZone.appendChild(existing);
+                                existing.classList.remove('rest');
+                                existing.style.transform = 'none';
+                                sendMoveData(existing);
+                            }
+                            circle.appendChild(actual);
+                            actual.classList.remove('rest');
+                            actual.style.transform = 'none';
+
+                            if (powerBonus > 0) {
+                                actual.dataset.power = (parseInt(actual.dataset.power) + powerBonus).toString();
+                                actual.dataset.turnEndBuffPower = (parseInt(actual.dataset.turnEndBuffPower || "0") + powerBonus).toString();
+                                actual.dataset.turnEndBuffActive = "true";
+                                alert(`${actual.dataset.name}: พลัง +${powerBonus}!`);
+                            }
+
+                            applyStaticBonuses(actual);
+                            syncPowerDisplay(actual);
+                            sendMoveData(actual);
+                            updateDropCount();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', rcHandler, true);
+
+                            if (onComplete) onComplete();
+                        }
+                    };
+                    document.addEventListener('click', rcHandler, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', pickHandler);
+    }
 
     async function paySoulBlast(cost) {
         if (soulPool.length < cost) {
@@ -3630,8 +3881,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rg) {
                 e.stopPropagation();
                 soulPool.push(rg);
-                // Important: sendMoveData while it's in soulPool but before DOM removal might not work perfectly because 
-                // sendMoveData check parentZone first. 
+                // Important: sendMoveData while it's in soulPool but before DOM removal might not work perfectly because
+                // sendMoveData check parentZone first.
                 // Better: Explicitly send it.
                 sendMoveData(rg, 'soul');
                 rg.remove();
@@ -3837,572 +4088,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
             const flags = [
-                'stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied', 
-                'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff', 
-                'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady', 
-                'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied', 
-                'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied', 
-                'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower', 
+                'stoodByEffect', 'frBonusApplied', 'meganBuffed', 'edenCritApplied', 'burstBonusApplied',
+                'burstFrontBuffApplied', 'personaBuffed', 'julianUsed', 'elderBuffed', 'winnsapoohPlacedBuff',
+                'enpixBackBuffed', 'bojalcornActive', 'gabrestrict', 'alpinBindReady', 'goildoatRetireReady',
+                'stefanieBuffed', 'baurPwrAdded', 'baurDriveCheck', 'baurDriveUsed', 'killshroudDebuffApplied',
+                'killshroudGuardRestrict', 'shockCritApplied', 'strategyPowerBuffed', 'dustingBuffApplied',
+                'drive', 'avantStandReady', 'avantSkillPowerBuffed', 'turnEndBuffActive', 'turnEndBuffPower',
                 'actUsed', 'fromHand', 'asagiBonusApplied', 'avantSkillBuffApplied', 'killshroudPowerBuffApplied',
                 'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
                 'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
                 'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed'
             ];
-            flags.forEach(f => { if (c.dataset[f]) delete c.dataset[f]; });
+            flags.forEach(flag => delete c.dataset[flag]);
 
-            let changed = false;
-            if (c.dataset.basePower && c.dataset.power != c.dataset.basePower) {
-                c.dataset.power = c.dataset.basePower;
-                changed = true;
-            }
-            if (c.dataset.baseCritical && c.dataset.critical != c.dataset.baseCritical) {
-                c.dataset.critical = c.dataset.baseCritical;
-                changed = true;
-            }
-            if (c.dataset.baseShield && c.dataset.shield != c.dataset.baseShield) {
-                c.dataset.shield = c.dataset.baseShield;
-                changed = true;
-            }
-
-            if (changed) {
-                syncPowerDisplay(c);
-                sendMoveData(c); // Sync reset power to opponent
-            }
+            // Reset power and critical to base values
+            c.dataset.power = c.dataset.basePower;
+            c.dataset.critical = c.dataset.baseCritical;
+            syncPowerDisplay(c);
         });
-        updateStatusUI(); // Just update UI locally
-        orderPlayedThisTurn = false;
     }
 
-
-    function restandColumn(col) {
-        const colMap = {
-            'left': ['rc_front_left', 'rc_back_left'],
-            'right': ['rc_front_right', 'rc_back_right'],
-            'center': ['vc', 'rc_back_center']
-        };
-
-        const zones = colMap[col];
-        if (!zones) return;
-
-        zones.forEach(zoneName => {
-            const circle = document.querySelector(`.my-side .circle[data-zone="${zoneName}"]`);
-            if (circle) {
-                const card = circle.querySelector('.card:not(.opponent-card)');
-                if (card) {
-                    card.classList.remove('rest');
-                    card.dataset.stoodByEffect = "true";
-                    // Bruce (VC) Final Burst Stand Condition check...
-                    // The stand happens, and power is added.
-                    card.dataset.power = parseInt(card.dataset.power) + 5000;
-                    syncPowerDisplay(card);
-                    sendMoveData(card);
-                }
-            }
-        });
-        alert(`Column ${col} has been restood! (+5000 Power for Rear-guards)`);
-    }
-
-    function payCounterBlast(cost) {
-        const damageZone = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)');
-        if (damageZone.length < cost) {
-            alert("Not enough Counter Blast cost!");
-            return false;
-        }
-        for (let i = 0; i < cost; i++) {
-            damageZone[i].classList.add('face-down');
-            sendMoveData(damageZone[i]);
-        }
-        updateDamageCount();
-        return true;
-    }
-
-    function showColumnSelection(callback) {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.id = 'col-selection-overlay';
-        // Force centering in runtime style in case CSS is overridden
-        overlay.style.display = "flex";
-        overlay.style.justifyContent = "center";
-        overlay.style.alignItems = "center";
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
-
-        overlay.innerHTML = `
-                <div class="modal-content glass-panel" style="background: rgba(10,10,20,0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; padding: 2rem; text-align: center; width: 90%; max-width: 400px; box-sizing: border-box; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); margin: auto;">
-                    <h2 style="color:var(--accent-vanguard); text-shadow:0 0 10px #f00; margin-bottom: 25px; font-size: 1.4rem; font-family:'Orbitron', sans-serif;">SELECT COLUMN TO STAND</h2>
-                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
-                        <button class="glass-btn column-btn highlight-btn" data-col="left" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Left Column</button>
-                        <button class="glass-btn column-btn highlight-btn" data-col="center" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Center Column</button>
-                        <button class="glass-btn column-btn highlight-btn" data-col="right" style="padding: 1.2rem; font-size: 1.1rem; width: 100%;">Right Column</button>
-                    </div>
-                    <button id="cancel-col" class="glass-btn" style="width: 100%; padding: 1rem; font-size: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #444; color: #aaa;">Cancel</button>
-                </div>
-            `;
-        document.body.appendChild(overlay);
-
-        overlay.querySelectorAll('.column-btn').forEach(btn => {
-            btn.onclick = () => {
-                const col = btn.dataset.col;
-                overlay.remove();
-                callback(col);
-            };
-        });
-
-        const cancel = overlay.querySelector('#cancel-col');
-        if (cancel) {
-            cancel.onclick = () => {
-                overlay.remove();
-                callback(null);
-            };
-        }
-    }
-
-    async function checkOnPlaceAbilities(card) {
-        if (!card) return;
-        const name = card.dataset.name || "";
-        if (name.includes('Stragallio') && card.dataset.fromHand === "true") {
-            const vg = document.querySelector('.my-side .circle.vc .card');
-            if (vg && vg.dataset.name.includes('Nirvana')) {
-                if (await vgConfirm("Stragallio: [AUTO] เมื่อวางบน (RC) [ทิ้งการ์ด 1 ใบ] เพื่อดึง Trickstar หรือ [overDress] ขึ้นมือ?")) {
-                    alert("เลือกการ์ด 1 ใบจากบนมือเพื่อทิ้ง");
-                    document.body.classList.add('targeting-mode');
-                    const discarded = await new Promise(resolve => {
-                        const discardListener = (e) => {
-                            const target = e.target.closest('.card');
-                            if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
-                                e.stopPropagation();
-                                const dropZone = document.querySelector('.my-side .drop-zone');
-                                dropZone.appendChild(target);
-                                sendMoveData(target);
-                                updateHandCount();
-                                updateDropCount();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', discardListener, true);
-                                resolve(true);
-                            }
-                        };
-                        document.addEventListener('click', discardListener, true);
-                    });
-
-                    if (discarded) {
-                        promptSearchAndAddHand((c) => c.name.includes("overDress") || c.name.includes("Trickstar"), "Select [overDress] or Trickstar");
-                    }
-                }
-            }
-        }
-
-        if (name.includes('Jamil')) {
-            const vg = document.querySelector('.my-side .circle.vc .card');
-            if (vg && vg.dataset.name.includes('Bruce')) {
-                if (await vgConfirm("Jamil: [AUTO] เมื่อวางบนช่อง (RC) [CB1] เพื่อ SC 1 และคอลการ์ด 'เดียโบลอส' จากโซล?")) {
-                    if (payCounterBlast(1)) {
-                        soulCharge(1);
-                        promptCallMultipleFromSoul(1, "RC ที่ว่างอยู่", (c) => c.dataset.name.includes("Diabolos") && parseInt(c.dataset.grade) <= 3 && !c.dataset.trigger);
-                    }
-                }
-            }
-        }
-
-        // --- Vairina Arcs [overDress] On-place ---
-        if (name.includes('Vairina Arcs') && card.dataset.isOverDress === "true") {
-            if (await vgConfirm("Vairina Arcs: [overDress] เมื่อวางบน (RC) [CB1] เพื่อจั่วการ์ด 2 ใบและพลัง+5000?")) {
-                if (payCounterBlast(1)) {
-                    drawCard(true);
-                    drawCard(true);
-                    card.dataset.power = parseInt(card.dataset.power) + 5000;
-                    syncPowerDisplay(card);
-                    card.dataset.turnEndBuffPower = "5000";
-                    card.dataset.turnEndBuffActive = "true";
-                    applyStaticBonuses(card);
-                    alert("Vairina Arcs: จั่วการ์ด 2 ใบ และพลัง+5000 (จนจบเทิร์น)!");
-                }
-            }
-        }
-
-        // --- Blue Deathster, Asagi Milestone [AUTO] (On Place) ---
-        if (name.toLowerCase().includes('asagi milestone')) {
-            const circle = card.closest('.circle');
-            const isRC = circle && circle.classList.contains('rc');
-            if (isRC) {
-                const vg = document.querySelector('.my-side .circle.vc .card');
-                const vgName = (vg ? (vg.dataset.name || "") : "").toLowerCase();
-                if (vgName.includes('blue deathster') || vgName.includes('avantgarda')) {
-                    const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card'))
-                        .filter(c => parseInt(c.dataset.grade || "0") >= 3 && (c.dataset.name || "").includes('Avantgarda'));
-                    if (dropAvants.length > 0) {
-                        if (await vgConfirm("Asagi Milestone: [CB1] เลือก 'Avantgarda' เกรด 3 ขึ้นไปจาก Drop ขึ้นมือ?")) {
-                            if (await payCounterBlast(1)) {
-                                promptAddFromDropToHand((c) => parseInt(c.dataset.grade || "0") >= 3 && (c.dataset.name || "").includes('Avantgarda'));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- Blue Deathster, Hanada Halfway [AUTO] (On Place) ---
-        if ((name.includes('Hanada Halfway')) && card.parentElement && card.parentElement.classList.contains('rc')) {
-            const vg = document.querySelector('.my-side .circle.vc .card');
-            const vgName = vg ? (vg.dataset.name || "") : "";
-            if (vgName.includes('Blue Deathster') || vgName.includes('Avantgarda')) {
-                if (await vgConfirm("Hanada Halfway: [CB1] จั่วการ์ด 1 ใบ?")) {
-                    if (payCounterBlast(1)) {
-                        drawCard(1);
-                        alert("Hanada Halfway: จั่วการ์ด 1 ใบเรียบร้อย!");
-                    }
-                }
-            }
-        }
-
-        // --- Ala Dargente [AUTO] (On Place) ---
-        if (name.includes('Ala Dargente') && card.parentElement && card.parentElement.classList.contains('rc')) {
-            if (lastStrategyPutIntoSoulName !== "") {
-                if (await vgConfirm("Ala Dargente: [SB1] ค้นหา Strategy ที่ชื่อไม่ซ้ำกับที่เพิ่งใส่โซลจากกอง หรือดรอป นำขึ้นมือ?")) {
-                    if (await paySoulBlast(1)) {
-                        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'))
-                            .map(c => ({ src: 'drop', id: c.id, name: c.dataset.name, dom: c }));
-                        const deckCards = deckPool.filter(c => c.name.includes('Strategy'))
-                            .map(c => ({ src: 'deck', id: c.id, name: c.name, data: c }));
-
-                        const validCards = [...dropCards, ...deckCards].filter(c => c.name.includes('Strategy') && c.name !== lastStrategyPutIntoSoulName);
-
-                        if (validCards.length > 0) {
-                            // Map for viewer
-                            const viewerData = validCards.map(c => {
-                                if (c.src === 'drop') {
-                                    return {
-                                        name: c.name, id: c.id, grade: c.dom.dataset.grade, power: c.dom.dataset.power, shield: c.dom.dataset.shield, skill: c.dom.dataset.skill, imageUrl: c.dom.dataset.imageUrl
-                                    };
-                                } else return c.data;
-                            });
-
-                            openViewer("เลือก Strategy ใบใหม่", viewerData);
-                            await new Promise(res => {
-                                const sel = (e) => {
-                                    const tgt = e.target.closest('.card');
-                                    if (tgt && tgt.parentElement === viewerGrid) {
-                                        const cname = tgt.dataset.name;
-                                        const refCard = validCards.find(c => c.name === cname);
-                                        if (refCard) {
-                                            if (refCard.src === 'drop') {
-                                                const dCard = refCard.dom;
-                                                playerHand.appendChild(dCard);
-                                                updateDropCount();
-                                                sendMoveData(dCard);
-                                            } else {
-                                                const idx = deckPool.findIndex(x => x.id === refCard.id);
-                                                if (idx !== -1) {
-                                                    const cardData = deckPool.splice(idx, 1)[0];
-                                                    const nCard = createCardElement(cardData);
-                                                    playerHand.appendChild(nCard);
-                                                    sendMoveData(nCard);
-                                                }
-                                                deckPool.sort(() => 0.5 - Math.random());
-                                                updateDeckCounter();
-                                            }
-                                            updateHandSpacing();
-                                            alert(`นำ ${cname} ขึ้นมือ!`);
-                                            zoneViewer.classList.add('hidden');
-                                            viewerGrid.removeEventListener('click', sel);
-                                            res();
-                                        }
-                                    }
-                                };
-                                viewerGrid.addEventListener('click', sel);
-                                closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); res(); };
-                            });
-                        } else {
-                            alert("ไม่พบการ์ด Strategy ตัวเลือกอื่นในกองหรือดรอป");
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- Blaster Blade [AUTO] on (RC) ---
-        if (name === 'Blaster Blade') {
-            const circle = card.parentElement;
-            if (circle && circle.classList.contains('rc')) {
-                if (await vgConfirm("Blaster Blade Skill: [RC] [CB1] เลือกรีไทร์เรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบ?")) {
-                    if (payCounterBlast(1)) {
-                        alert("เลือกเรียร์การ์ดเกรด 2 หรือสูงกว่าของคู่แข่ง 1 ใบเพื่อรีไทร์");
-                        document.body.classList.add('targeting-mode');
-                        const h = (e) => {
-                            const target = e.target.closest('.opponent-side .circle.rc .card');
-                            if (target) {
-                                const targetGrade = parseInt(target.dataset.grade || "0");
-                                if (targetGrade >= 2) {
-                                    e.stopPropagation();
-                                    const oppDrop = document.querySelector('.opponent-side .drop-zone');
-                                    oppDrop.appendChild(target);
-                                    sendMoveData(target);
-                                    alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
-                                    document.body.classList.remove('targeting-mode');
-                                    document.removeEventListener('click', h, true);
-                                } else {
-                                    alert("เลือกได้เฉพาะยูนิทเกรด 2 หรือสูงกว่าเท่านั้น!");
-                                }
-                            }
-                        };
-                        document.addEventListener('click', h, true);
-                    }
-                }
-            }
-        }
-
-        // --- Blaster Dark [AUTO] on (VC/RC) ---
-        if (name === 'Blaster Dark') {
-            const myRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)')).filter(c => c.id !== card.id);
-            if (await vgConfirm("Blaster Dark Skill: [VC/RC] [CB1 & Retire 1 RG] Retire opponent RG & Drive +1?")) {
-                if (payCounterBlast(1)) {
-                    if (myRGs.length > 0) {
-                        alert("เลือกเรียร์การ์ดของคุณ 1 ใบเพื่อจ่ายคอสต์ Retire");
-                        document.body.classList.add('targeting-mode');
-                        const costHandler = async (e) => {
-                            const target = e.target.closest('.my-side .circle.rc .card:not(.opponent-card)');
-                            if (target && target.id !== card.id) {
-                                e.stopPropagation();
-                                document.querySelector('.my-side .drop-zone').appendChild(target);
-                                sendMoveData(target);
-                                window.myRGRetiredThisTurn = true;
-                                updateDropCount();
-                                updateAllStaticBonuses();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', costHandler, true);
-
-                                // Retire Opponent unit
-                                alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                                document.body.classList.add('targeting-mode');
-                                const retireHandler = (ev) => {
-                                    const oppT = ev.target.closest('.opponent-side .circle.rc .card');
-                                    if (oppT) {
-                                        ev.stopPropagation();
-                                        document.querySelector('.opponent-side .drop-zone').appendChild(oppT);
-                                        sendMoveData(oppT);
-                                        alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
-                                        card.dataset.driveAdded = (parseInt(card.dataset.driveAdded || "0") + 1).toString();
-                                        alert(`${card.dataset.name}: ได้รับ Drive +1!`);
-                                        document.body.classList.remove('targeting-mode');
-                                        document.removeEventListener('click', retireHandler, true);
-                                    }
-                                };
-                                document.addEventListener('click', retireHandler, true);
-                            }
-                        };
-                        document.addEventListener('click', costHandler, true);
-                    } else {
-                        alert("ไม่มีเรียร์การ์ดอื่นเพื่อจ่ายคอสต์ Retire! (เฉพาะ CB1 จะทำงานเป็นความสามารถเก่าหากคุณต้องการ หรือคุณอาจจะไม่ได้ Retire)");
-                        // Optional: Fallback to old skill if no another RG? 
-                        // But card text says "retire ANOTHER", so cost cannot be paid.
-                    }
-                }
-            }
-        }
-
-        // --- Knight of Inheritance, Emmeline [AUTO] on (RC) from hand ---
-        const onRC = card.parentElement && card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc');
-        if (name.includes('Emmeline') && onRC && card.dataset.fromHand === "true") {
-            if (await vgConfirm("Emmeline: [RC] [SB1] ดู 5 ใบ เลือก 'Blaster' ลงช่อง Rear-guard 1 ใบ?")) {
-                if (await paySoulBlast(1)) {
-                    const top5 = deckPool.slice(0, 5);
-                    openViewer("Emmeline: Top 5 (Select 'Blaster' unit)", top5);
-                    const sel = async (e) => {
-                        const clicked = e.target.closest('.card');
-                        if (clicked && clicked.parentElement === viewerGrid) {
-                            const cName = clicked.dataset.name;
-                            if (cName.includes('Blaster')) {
-                                viewerGrid.removeEventListener('click', sel);
-                                zoneViewer.classList.add('hidden');
-
-                                const id = clicked.dataset.originalId;
-                                const originalIdx = deckPool.findIndex(c => c.id === id);
-                                const chosenData = deckPool.splice(originalIdx, 1)[0];
-                                deckPool.sort(() => 0.5 - Math.random());
-                                updateDeckCounter();
-
-                                if (await vgConfirm(`ต้องการคอล ${cName} ลงสนามหรือไม่? (ถ้าไม่จะนำขึ้นมือและทิ้ง 1 ใบ)`)) {
-                                    const chosenElem = createCardElement(chosenData);
-                                    alert("เลือกช่อง RC ที่ว่างอยู่เพื่อคอล");
-                                    document.body.classList.add('targeting-mode');
-                                    const callH = async (ev) => {
-                                        const circ = ev.target.closest('.circle.rc');
-                                        if (circ && !circ.querySelector('.card')) {
-                                            ev.stopPropagation();
-                                            circ.appendChild(chosenElem);
-                                            applyStaticBonuses(chosenElem);
-                                            sendMoveData(chosenElem);
-                                            await checkOnPlaceAbilities(chosenElem);
-                                            document.body.classList.remove('targeting-mode');
-                                            document.removeEventListener('click', callH, true);
-                                        }
-                                    };
-                                    document.addEventListener('click', callH, true);
-                                } else {
-                                    const chosenElem = createCardElement(chosenData);
-                                    playerHand.appendChild(chosenElem);
-                                    updateHandSpacing();
-                                    sendMoveData(chosenElem);
-                                    alert(`นำ ${cName} ขึ้นมือ! เลือกการ์ดบนมือ 1 ใบเพื่อทิ้ง`);
-                                    document.body.classList.add('targeting-mode');
-                                    const discardH = (ev) => {
-                                        const t = ev.target.closest('.my-side .card');
-                                        if (t && t.parentElement.dataset.zone === 'hand') {
-                                            ev.stopPropagation();
-                                            document.querySelector('.my-side .drop-zone').appendChild(t);
-                                            sendMoveData(t);
-                                            updateHandSpacing();
-                                            updateDropCount();
-                                            document.body.classList.remove('targeting-mode');
-                                            document.removeEventListener('click', discardH, true);
-                                        }
-                                    };
-                                    document.addEventListener('click', discardH, true);
-                                }
-                            }
-                        }
-                    };
-                    viewerGrid.addEventListener('click', sel);
-                }
-            }
-        }
-    }
-
-    // promptCallMultipleFromSoul consolidated at line 3546
-
-    function promptCallFromDrop(maxCount, filterFn = null, powerBonus = 0, onComplete = null) {
-        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(node => {
-            return {
-                name: node.dataset.name,
-                grade: node.dataset.grade,
-                power: node.dataset.power,
-                shield: node.dataset.shield,
-                skill: node.dataset.skill,
-                id: node.id,
-                node: node // Keep reference
-            };
-        });
-
-        const displayCards = filterFn ? dropCards.filter(c => {
-            // Re-create a temp element or simulated data for filterFn
-            const temp = document.createElement('div');
-            temp.dataset.grade = c.grade;
-            temp.dataset.name = c.name;
-            return filterFn(temp);
-        }) : dropCards;
-
-        if (displayCards.length === 0) {
-            alert("No valid cards in Drop Zone to call!");
-            if (onComplete) onComplete();
-            return;
-        }
-
-        openViewer("Choose from Drop Zone", displayCards.map(c => c.node));
-
-        const selectFromDrop = (e) => {
-            const clicked = e.target.closest('.card');
-            if (clicked && clicked.parentElement === viewerGrid) {
-                viewerGrid.removeEventListener('click', selectFromDrop);
-                const originalId = clicked.dataset.originalId;
-                const dropZone = document.querySelector('.my-side .drop-zone');
-                const originalCard = document.getElementById(originalId);
-
-                if (originalCard && originalCard.parentElement === dropZone) {
-                    zoneViewer.classList.add('hidden');
-                    alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${originalCard.dataset.name}`);
-                    document.body.classList.add('targeting-mode');
-
-                    const callListener = async (ev) => {
-                        const circle = ev.target.closest('.circle.rc');
-                        if (circle && !circle.querySelector('.card')) {
-                            ev.stopPropagation();
-                            circle.appendChild(originalCard);
-                            originalCard.classList.remove('rest');
-
-                            if (powerBonus > 0) {
-                                originalCard.dataset.power = parseInt(originalCard.dataset.power) + powerBonus;
-                                syncPowerDisplay(originalCard);
-                                alert(`${originalCard.dataset.name} gets +${powerBonus} Power!`);
-                            }
-
-                            applyStaticBonuses(originalCard);
-                            sendMoveData(originalCard);
-                            updateDropCount();
-                            document.body.classList.remove('targeting-mode');
-                            await checkOnPlaceAbilities(originalCard);
-                            document.removeEventListener('click', callListener, true);
-                            if (onComplete) onComplete();
-                        }
-                    };
-                    document.addEventListener('click', callListener, true);
-                }
-            }
-        };
-        viewerGrid.addEventListener('click', selectFromDrop);
-    }
-
-    function promptSearchAndCall(cardName) {
-        const matches = deckPool.filter(c => c.name.includes(cardName));
-        if (matches.length === 0) {
-            alert(`ไม่พบ ${cardName} ในกองการ์ด!`);
-            return;
-        }
-
-        openViewer(`Select 1 ${cardName} from Deck to Call`, matches);
-
-        const selHandler = (e) => {
-            const clicked = e.target.closest('.card');
-            if (clicked && clicked.parentElement === viewerGrid) {
-                const targetName = clicked.dataset.name;
-                const idx = deckPool.findIndex(c => c.name === targetName);
-                if (idx !== -1) {
-                    const cardData = deckPool.splice(idx, 1)[0];
-                    zoneViewer.classList.add('hidden');
-                    viewerGrid.removeEventListener('click', selHandler);
-
-                    const card = createCardElement(cardData);
-                    alert(`เรียก ${cardData.name}! โปรดเลือกช่อง RC ที่ว่างอยู่`);
-
-                    document.body.classList.add('targeting-mode');
-                    const call = (ev) => {
-                        const circle = ev.target.closest('.circle.rc');
-                        if (circle && !circle.querySelector('.card')) {
-                            ev.stopPropagation();
-                            circle.appendChild(card);
-                            card.classList.remove('rest');
-                            applyStaticBonuses(card);
-                            sendMoveData(card);
-                            updateDeckCounter();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', call, true);
-
-                            deckPool.sort(() => 0.5 - Math.random());
-                            updateDeckCounter();
-                        }
-                    };
-                    document.addEventListener('click', call, true);
-                }
-            }
-        };
-        viewerGrid.addEventListener('click', selHandler);
-    }
-
-    function promptReturnStrategyFromDrop() {
-        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'))
-            .filter(c => c.dataset.name.includes('Strategy'));
-        if (dropCards.length === 0) {
-            alert("No Strategy in Drop Zone!");
-            return;
-        }
-        openViewer("Habitable Zone: Return Strategy", dropCards.map(el => ({
-            name: el.dataset.name,
-            grade: el.dataset.grade,
-            power: el.dataset.power,
-            shield: el.dataset.shield,
-            skill: el.dataset.skill,
-            id: el.id,
-            originalId: el.dataset.originalId || el.id
-        })));
-
+    function promptReturnToHand() {
+        const handCards = Array.from(playerHand.querySelectorAll('.card'));
+        openViewer("Select a card to return to hand", handCards);
         const sel = (e) => {
             const clicked = e.target.closest('.card');
             if (clicked && clicked.parentElement === viewerGrid) {
@@ -4955,6 +4663,7 @@ document.addEventListener('DOMContentLoaded', () => {
         strategyPutToOrderZoneThisTurn = false;
 
         // Reset "Until end of turn" flags
+        window.promptedEndTurn = false;
         resetMyUnits();
         window.otStoicheiaActive = false;
         window.killshroudDebuffActive = false;
@@ -5237,13 +4946,6 @@ document.addEventListener('DOMContentLoaded', () => {
             odCard.appendChild(badge);
         }
         badge.textContent = 'OD';
-        // The provided change was syntactically incorrect and did not fit the context.
-        // Assuming the intent was to add a check for 'actUsed' and 'fromHand'
-        // in a relevant ACT skill activation function, not here.
-        // As per instructions, making the change faithfully, but the provided snippet
-        // was malformed. Reverting to original line for syntactical correctness.
-        // If the intent was to add a new block, it needs to be properly structured.
-
         applyStaticBonuses(odCard);
         sendMoveData(odCard);
         updateSoulUI();
@@ -5376,7 +5078,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (mData.name.includes('Galondight')) {
-                // [AUTO]: When this card becomes an originalDress, power +5000, 
+                // [AUTO]: When this card becomes an originalDress, power +5000,
                 // and if the outerDress is "Garou Vairina", it gets another [Power] +5000.
                 let bonus = 5000;
                 if (vairinaCard.dataset.name.includes('Garou Vairina')) bonus = 10000;
@@ -5514,7 +5216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Note: For now activateCardSkill triggers costs. If isFree, we should ideally bypass CB/SB.
         // For simplicity with Habitable Zone, we'll assume the prompt says "without paying its cost".
-        // In full implementation, activateCardSkill needs to take an 'isFree' parameter. 
+        // In full implementation, activateCardSkill needs to take an 'isFree' parameter.
         if (isFree) card.dataset.playOrderFree = "true";
 
         const skillResult = await activateCardSkill(card);
@@ -5526,7 +5228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSetOrder) {
             const orderZone = document.querySelector('.my-side .order-zone');
             if (orderZone) {
-                // Remove existing strategy if you want only one set order active? 
+                // Remove existing strategy if you want only one set order active?
                 // In Vanguard, you can have multiple. But often for strategies you might swap.
                 // Re-playing same strategy replaces? Let's keep multiple for now as per rules.
                 orderZone.appendChild(card);
@@ -5538,6 +5240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     strategyPutToOrderZoneThisTurn = true;
                 }
                 ordersPlayedCount++;
+                sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
                 alert(`Played Set Order: ${card.dataset.name}`);
                 return;
             }
@@ -5553,6 +5256,7 @@ document.addEventListener('DOMContentLoaded', () => {
             orderPlayedThisTurn = true;
             strategyActivatedThisTurn = true;
             ordersPlayedCount++;
+            sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
             alert(`Played Order: ${card.dataset.name}`);
         }
     }
@@ -5665,7 +5369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const viewerData = strats.map(c => ({
                     name: c.name, id: c.id, grade: c.dom.dataset.grade, power: c.dom.dataset.power, shield: c.dom.dataset.shield, skill: c.dom.dataset.skill, imageUrl: c.dom.dataset.imageUrl
                 }));
-                
+
                 openViewer("เลือก Strategy 1 ใบเข้าโซล", viewerData);
                 const strat = await new Promise(resolve => {
                     const sel = (e) => {
@@ -5692,7 +5396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendData({ type: 'syncSoulCount', count: soulPool.length });
                     alert("จ่ายคอสต์สำเร็จ! จั่วการ์ด 1 ใบ");
                     drawCard(1);
-                    
+
                     card.dataset.avantSkillPowerBuffed = "true";
                     applyStaticBonuses(card);
 
@@ -5740,8 +5444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 // Power +5000 to Vanguard handled via flag in applyStaticBonuses
                                 card.dataset.killshroudPowerBuffed = "true";
-                                 updateAllStaticBonuses();
-
+                                updateAllStaticBonuses();
 
                                 alert(`${card.dataset.name}: พลัง +5000 และได้รับ Guard Restrict จนจบเทิร์น!`);
                                 card.dataset.killshroudGuardRestrict = "true";
@@ -5857,7 +5560,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-
 
         // --- Lattice (RC) ACT ---
         if (name.includes('Lattice') && card.parentElement.classList.contains('rc')) {
@@ -6010,6 +5712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 strategyActivatedThisTurn = false;
                 shockStrategyActive = false;
                 strategyActivatedCount = 0;
+                window.promptedEndTurn = false;
                 updatePhaseUI(false);
                 break;
             case 'gameOver':
@@ -6030,6 +5733,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'revealDrive':
                 showOpponentDriveCheck(data);
                 break;
+            case 'strategyActivated':
+                strategyActivatedThisTurn = data.active;
+                updateAllStaticBonuses();
+                break;
             case 'bruceStatus':
                 isOpponentFinalRush = data.isFinalRush;
                 isOpponentFinalBurst = data.isFinalBurst;
@@ -6039,14 +5746,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'killshroudDebuff':
                 window.killshroudDebuffActive = true;
                 updateAllStaticBonuses();
-                break;
-            case 'syncBindCount':
-                const bBadge = document.getElementById('opp-bind-counter');
-                if (bBadge) {
-                    bBadge.textContent = `Bind: ${data.count}`;
-                    if (data.count > 0) bBadge.classList.remove('hidden');
-                    else bBadge.classList.add('hidden');
-                }
                 break;
             case 'hostAck': // Guest receives deck info from host
                 if (data.deck === 'magnolia') {
@@ -6629,6 +6328,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const name = attacker.dataset.name;
         const boosterId = attackData.boosterId;
+        // The following code snippet seems to be misplaced or malformed.
+        // If the intention was to modify `createCardElement` to add `originalId`
+        // for cards displayed in `openViewer`, that modification should be
+        // within the `createCardElement` function itself, not here.
+        // As per the instruction, I'm inserting it as provided,
+        // but please note it will cause a syntax error and is likely incorrect.
+        // It looks like a partial `if/else` block from another context.
+        // } else {
+        //     node = createCardElement(originalCard);
+        //     // Preserve original ID for matching back to deckPool/source data
+        //     if (originalCard.id) {
+        //         node.dataset.originalId = originalCard.id;
+        //     }
+        // }
+        // rId) { // This part is definitely a syntax error.
+        // I will comment out the problematic part to avoid breaking the code,
+        // assuming the user will clarify its intended placement.
+        // If the intent was to modify `createCardElement`, that function needs to be provided.
 
         // --- Painkiller Angel Post-Battle ---
         if (boosterId) {
@@ -7029,7 +6746,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const powerSpan = card.querySelector('.card-power');
                     if (powerSpan) {
                         let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${card.dataset.power >= 100000 ? '100M' : card.dataset.power} ${displayCritical}`;
+                        powerSpan.innerHTML = `⚔️${parseInt(card.dataset.power) >= 1000000 ? (parseInt(card.dataset.power)/1000000).toFixed(1) + 'M' : card.dataset.power} ${displayCritical}`;
                     }
                 }
             }
@@ -7176,6 +6893,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 node.dataset.originalId = originalCard.id;
             } else {
                 node = createCardElement(originalCard);
+                if (originalCard.id) {
+                    node.dataset.originalId = originalCard.id;
+                }
             }
 
             node.classList.remove('dragging', 'rest', 'opponent-card');
