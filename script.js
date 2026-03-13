@@ -725,9 +725,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function checkRideAbilities(oldVanguard, newCard) {
+    async function checkRideAbilities(oldVanguard, newCard, discardedCard = null) {
         const queue = [];
-        const oldName = (oldVanguard.dataset.name || "").toLowerCase();
+        const oldName = oldVanguard ? (oldVanguard.dataset.name || "").toLowerCase() : "";
         const newName = (newCard.dataset.name || "").toLowerCase();
 
         // 1. Universal Grade 0 "Go Second" Skill
@@ -1058,6 +1058,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
+        }
+
+        // 5. Discarded for Ride specific abilities (Generic/Placeholder infrastructure)
+        if (discardedCard) {
+            const discardedName = (discardedCard.dataset.name || "").toLowerCase();
+            // Example: Discarded card has specific ability
+            if (discardedName.includes('some_ability_card')) {
+                queue.push({
+                    name: `ทักษะจากการทิ้ง: ${discardedCard.dataset.name}`,
+                    description: "ความสามารถเมื่อถูกทิ้งเพื่อไรด์",
+                    resolve: async (done) => {
+                        alert(`ใช้งานความสามารถของ ${discardedCard.dataset.name} จากการถูกทิ้ง!`);
+                        // Logic here
+                        done();
+                    }
+                });
+            }
         }
 
         console.log(`Ability Queue built: ${queue.length} items.`);
@@ -2667,6 +2684,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nextRideCard = Array.from(rideDeckZone.querySelectorAll('.card')).find(c => parseInt(c.dataset.grade) === nextGrade);
 
                     if (nextRideCard) {
+                        const discardedCard = card; // The card being moved to Drop is the discard for Ride
                         hasDiscardedThisTurn = true;
                         hasRiddenThisTurn = true;
                         setTimeout(() => {
@@ -2683,7 +2701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             applyStaticBonuses(nextRideCard);
                             sendMoveData(nextRideCard);
-                            handleRideAbilities(nextRideCard); // Added for Auto-Ride
+                            handleRideAbilities(nextRideCard, discardedCard);
                             alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
 
                             // Move to Main Phase after ride
@@ -2921,16 +2939,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.turnEndBuffPower = "0";
         }
 
-        // --- Bomber Strategy: Dusting Buff ---
-        if (bomberDustingPowerBuff && name.includes('Avantgarda') && zone === 'vc' && isMyTurn) {
-            if (card.dataset.dustingBuffApplied !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 10000;
-                card.dataset.dustingBuffApplied = "true";
-            }
-        } else if (card.dataset.dustingBuffApplied === "true") {
-            card.dataset.power = parseInt(card.dataset.power) - 10000;
-            card.dataset.dustingBuffApplied = "false";
-        }
 
         // --- Disruption Strategy: Killshroud Debuff ---
         if (window.killshroudDebuffActive && name.includes('Avantgarda') === false && zone === 'vc' && !isMyTurn) {
@@ -3000,9 +3008,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stefanieBonus > 0 && card.dataset.stefanieBuffed !== "true") {
             card.dataset.power = parseInt(card.dataset.power) + stefanieBonus;
             card.dataset.stefanieBuffed = "true";
+            syncPowerDisplay(card);
         } else if (stefanieBonus === 0 && card.dataset.stefanieBuffed === "true") {
             card.dataset.power = parseInt(card.dataset.power) - 5000;
             card.dataset.stefanieBuffed = "false";
+            syncPowerDisplay(card);
+        }
+
+        // --- Bomber Strategy: Dusting Buff ---
+        if (bomberDustingPowerBuff && name.includes('Avantgarda') && zone === 'vc' && isMyTurn) {
+            if (card.dataset.dustingBuffApplied !== "true") {
+                card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
+                card.dataset.dustingBuffApplied = "true";
+                syncPowerDisplay(card);
+            }
+        } else if (card.dataset.dustingBuffApplied === "true") {
+            card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
+            card.dataset.dustingBuffApplied = "false";
+            syncPowerDisplay(card);
         }
 
         // 6. Magnolia Elder [CONT] Bonus (+5000 to all rear-guards)
@@ -3408,15 +3431,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1200);
     }
 
-    async function handleRideAbilities(newVanguard) {
-        if (!newVanguard || soulPool.length === 0) {
+    async function handleRideAbilities(newVanguard, discardedCard = null) {
+        if (!newVanguard || (soulPool.length === 0 && !discardedCard)) {
             console.log("Ride Ability Check Skipped: Soul empty or no unit.");
             return;
         }
         // The card just ridden over is the last one added to soulPool in validateAndMoveCard
-        const oldVanguard = soulPool[soulPool.length - 1];
-        console.log(`Ride Triggered: ${oldVanguard.dataset.name} -> ${newVanguard.dataset.name}`);
-        await checkRideAbilities(oldVanguard, newVanguard);
+        const oldVanguard = soulPool.length > 0 ? soulPool[soulPool.length - 1] : null;
+        console.log(`Ride Triggered: ${oldVanguard ? oldVanguard.dataset.name : "None"} -> ${newVanguard.dataset.name}`);
+        await checkRideAbilities(oldVanguard, newVanguard, discardedCard);
     }
 
 
@@ -3960,15 +3983,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Blue Deathster, Asagi Milestone [AUTO] (On Place) ---
-        if (name.toLowerCase().includes('asagi milestone') && card.parentElement && card.parentElement.classList.contains('rc')) {
-            const vg = document.querySelector('.my-side .circle.vc .card');
-            const vgName = vg ? vg.dataset.name : "";
-            if (vgName.includes('Blue Deathster') || vgName.includes('Avantgarda')) {
-                const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => parseInt(c.dataset.grade) >= 3 && c.dataset.name.includes('Avantgarda'));
-                if (dropAvants.length > 0) {
-                    if (await vgConfirm("Asagi Milestone: [CB1] เลือก 'Avantgarda' เกรด 3 ขึ้นไปจาก Drop ขึ้นมือ?")) {
-                        if (payCounterBlast(1)) {
-                            promptAddFromDropToHand((c) => parseInt(c.dataset.grade) >= 3 && c.dataset.name.includes('Avantgarda'));
+        if (name.toLowerCase().includes('asagi milestone') && card.parentElement) {
+            const isRC = card.parentElement.classList.contains('rc') || (card.parentElement.dataset.zone && card.parentElement.dataset.zone.startsWith('rc'));
+            if (isRC) {
+                const vg = document.querySelector('.my-side .circle.vc .card');
+                const vgName = vg ? (vg.dataset.name || "").toLowerCase() : "";
+                if (vgName.includes('blue deathster') || vgName.includes('avantgarda')) {
+                    const dropAvants = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => parseInt(c.dataset.grade) >= 3 && (c.dataset.name || "").includes('Avantgarda'));
+                    if (dropAvants.length > 0) {
+                        if (await vgConfirm("Asagi Milestone: [CB1] เลือก 'Avantgarda' เกรด 3 ขึ้นไปจาก Drop ขึ้นมือ?")) {
+                            if (payCounterBlast(1)) {
+                                promptAddFromDropToHand((c) => parseInt(c.dataset.grade) >= 3 && (c.dataset.name || "").includes('Avantgarda'));
+                            }
                         }
                     }
                 }
@@ -5380,7 +5406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         viewerGrid.addEventListener('click', sel);
     }
 
-    function promptAddFromDropToHand(filterFn) {
+    function promptAddFromDropToHand(filterFn, onSuccess) {
         const dropZone = document.querySelector('.my-side .drop-zone');
         const cards = Array.from(dropZone.querySelectorAll('.card')).filter(filterFn);
         if (cards.length === 0) return;
@@ -5399,6 +5425,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendMoveData(originalCard);
                     updateDropCount();
                     alert(`นำ ${originalCard.dataset.name} ขึ้นมือสำเร็จ!`);
+                    if (onSuccess) onSuccess();
                 }
             }
         };
@@ -5556,6 +5583,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             oppDrop.appendChild(target);
                             sendData({ type: 'forceRetire', cardId: target.id.replace('opp-', '') });
                             alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
+                            if (card.dataset.isXoverDress === "true") {
+                                card.dataset.baurDriveCheck = "true";
+                                syncPowerDisplay(card);
+                                sendMoveData(card); // Sync the drive check flag
+                                alert("Baur Vairina: ได้รับ Drive +1 จนจบการต่อสู้ถัดไป!");
+                            }
                             document.body.classList.remove('targeting-mode');
                             document.removeEventListener('click', retireHander, true);
                         }
@@ -5585,6 +5618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             vc.appendChild(card);
                             card.classList.remove('rest');
                             card.dataset.inheritedAvantAct = "true";
+                            applyStaticBonuses(card); // Richter needs to check for Persona Ride bonus
                             if (!card.dataset.skill.includes('[ACT]')) {
                                 card.dataset.skill += " [ACT]";
                             }
@@ -6810,7 +6844,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pwrAdded = parseInt(attacker.dataset.baurPwrAdded);
             attacker.dataset.power = parseInt(attacker.dataset.power) - pwrAdded;
             attacker.dataset.baurPwrAdded = "0";
-            attacker.dataset.baurDriveCheck = "false";
+            attacker.dataset.baurDriveCheck = "false"; 
             attacker.dataset.driveAdded = "0";
             if (attacker.dataset.emmelineAtkBonus) {
                 attacker.dataset.power = (parseInt(attacker.dataset.power) - parseInt(attacker.dataset.emmelineAtkBonus)).toString();
