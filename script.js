@@ -5513,6 +5513,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                     document.removeEventListener('click', retireHandler, true);
                                     const dropZone = document.querySelector('.opponent-side .drop-zone');
                                     dropZone.appendChild(target);
+                                    // Send forceRetire so opponent also sees the retirement
+                                    const rawId = target.id.replace('opp-', '');
+                                    sendData({ type: 'forceRetire', cardId: rawId });
                                     sendMoveData(target);
                                     alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
                                 }
@@ -6371,6 +6374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         baseAvant.dataset.drive = "1";
                         baseAvant.dataset.avantStandReady = "true";
                         syncPowerDisplay(baseAvant);
+                        updateAllStaticBonuses();
                         updateSoulUI();
                         sendMoveData(baseAvant);
                         sendData({ type: 'syncBindCount', count: bindPool.length });
@@ -6409,6 +6413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         baseAvant.dataset.drive = "1";
                         baseAvant.dataset.avantStandReady = "true";
                         syncPowerDisplay(baseAvant);
+                        updateAllStaticBonuses();
                         updateSoulUI();
                         sendMoveData(baseAvant);
                         sendData({ type: 'syncBindCount', count: bindPool.length });

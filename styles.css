@@ -207,11 +207,12 @@ body {
   position: relative !important;
   top: auto !important;
   left: auto !important;
-  transform: scale(0.9) !important;
-  margin: 0 -15px !important;
-  /* Stack them slightly */
+  transform: scale(0.85) !important;
+  margin: 0 -5px !important;
   flex-shrink: 0;
   transition: all 0.2s;
+  cursor: pointer;
+  z-index: 10;
 }
 
 .guardian-circle .card:hover {
@@ -498,8 +499,7 @@ body {
 
 /* When card is just sitting in a zone relative to its parent */
 .zone .card,
-.circle .card,
-.guardian-circle .card {
+.circle .card {
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
