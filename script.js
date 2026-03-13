@@ -1235,8 +1235,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     const isElderActive = isMagnoliaElderSkillActive();
                     const isFromVC = parent.classList.contains('vc');
+                    const isFromGC = parent.classList.contains('guardian-circle') || parent.dataset.zone === 'gc_player';
                     const isInterceptable = isGrade2FrontRow || (isElderActive && isOnField && !isFromVC);
-                    if (!inHand && !isInterceptable) {
+                    if (!inHand && !isInterceptable && !isFromGC) {
                         e.preventDefault();
                         return;
                     }
@@ -1334,7 +1335,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentPhase = phases[currentPhaseIndex];
 
             // TAP TO MOVE (Mobile Friendly)
-            const canSelect = (isMyTurn && currentPhase !== 'battle') || isGuarding;
+            const isInGC = card.parentElement && (card.parentElement.classList.contains('guardian-circle') || card.parentElement.dataset.zone === 'gc_player');
+            const canSelect = (isMyTurn && currentPhase !== 'battle') || isGuarding || isInGC;
             if (canSelect && !card.classList.contains('opponent-card')) {
                 // If a card is already selected and we tap a card ON THE FIELD, assume we want to place it in that circle, 
                 // so don't steal the selection. Let it bubble to the zone listener.
