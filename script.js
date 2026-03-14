@@ -4141,6 +4141,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Alias so that updateAllStaticBonuses() works (called in Stand Phase reset)
+    function updateAllStaticBonuses() {
+        updateFinalRushStaticBonuses(true);
+    }
+
+    // Show a modal to let the player pick which column to restand (left / center / right)
+    function showColumnSelection(callback) {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.zIndex = '999999';
+        overlay.innerHTML = `
+            <div class="modal-content glass-panel" style="width: 90%; max-width: 420px; text-align: center; padding: 2rem; background: rgba(15, 15, 25, 0.95); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.5); font-family: 'Orbitron', sans-serif;">
+                <h3 style="color: var(--accent-vanguard); margin-top: 0; margin-bottom: 15px; font-size: 1.3rem; text-shadow:0 0 10px #f00;">SELECT COLUMN TO STAND</h3>
+                <p style="color: white; font-size: 1rem; margin-bottom: 20px; font-family: sans-serif;">เลือกคอลัมน์ที่ต้องการสแตน</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="col-pick-btn glass-btn" data-col="left" style="flex: 1; padding: 1rem; background: rgba(0,200,255,0.15); border: 1px solid #0cf; color: #0cf; font-size: 1rem; cursor: pointer; border-radius: 12px; font-weight: bold;">⬅ LEFT</button>
+                    <button class="col-pick-btn glass-btn" data-col="center" style="flex: 1; padding: 1rem; background: rgba(255,200,0,0.15); border: 1px solid #fc0; color: #fc0; font-size: 1rem; cursor: pointer; border-radius: 12px; font-weight: bold;">⬆ CENTER</button>
+                    <button class="col-pick-btn glass-btn" data-col="right" style="flex: 1; padding: 1rem; background: rgba(0,255,100,0.15); border: 1px solid #0f6; color: #0f6; font-size: 1rem; cursor: pointer; border-radius: 12px; font-weight: bold;">RIGHT ➡</button>
+                </div>
+                <button class="col-cancel-btn glass-btn" style="margin-top: 15px; padding: 0.7rem 2rem; background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid #444; font-size: 0.9rem; cursor: pointer;">CANCEL</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.col-pick-btn').forEach(btn => {
+            btn.onclick = () => {
+                overlay.remove();
+                if (callback) callback(btn.dataset.col);
+            };
+        });
+        overlay.querySelector('.col-cancel-btn').onclick = () => {
+            overlay.remove();
+            if (callback) callback(null);
+        };
+    }
+
+    // Restand all cards in the chosen column and give each +5000 power
+    function restandColumn(col) {
+        if (!col) return;
+        let zones = [];
+        if (col === 'left') zones = ['rc_front_left', 'rc_back_left'];
+        else if (col === 'right') zones = ['rc_front_right', 'rc_back_right'];
+        else if (col === 'center') zones = ['vc', 'rc_back_center'];
+
+        let stoodCount = 0;
+        zones.forEach(z => {
+            const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+            if (circle) {
+                const card = circle.querySelector('.card:not(.opponent-card)');
+                if (card) {
+                    // Stand the unit
+                    card.classList.remove('rest');
+                    card.dataset.stoodByEffect = "true";
+                    // Give +5000 power
+                    card.dataset.power = parseInt(card.dataset.power || 0) + 5000;
+                    syncPowerDisplay(card);
+                    sendMoveData(card);
+                    stoodCount++;
+                }
+            }
+        });
+
+        if (stoodCount > 0) {
+            alert(`FINAL BURST: ${col.toUpperCase()} column restood! +5000 Power to ${stoodCount} unit(s)!`);
+        } else {
+            alert(`No units found in ${col} column.`);
+        }
+    }
+
     function resetMyUnits() {
         console.log("Resetting unit power/critical for new turn...");
         personaRideActive = false; // Reset Persona Ride
