@@ -7287,13 +7287,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (oppGrade >= 3) {
                 isFinalBurst = true;
+                personaRideActive = true; // Final Burst includes Persona Ride
                 alert("DIABOLOS: Entering FINAL BURST state!");
             } else {
                 isFinalBurst = false;
                 alert("DIABOLOS: Entering FINAL RUSH state!");
             }
             updateStatusUI();
-            sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst });
+            // Apply power bonuses to all units on field
+            updateFinalRushStaticBonuses(true);
+            sendData({ type: 'bruceStatus', isFinalRush, isFinalBurst, isPersona: isFinalBurst });
         } else {
             // Optional: Alert the user why it failed if they expected it
             console.log("Diabolos Ability: Requirements not met (All units must be Diabolos).");
