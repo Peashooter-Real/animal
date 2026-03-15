@@ -23,37 +23,73 @@
             <h1 class="logo lobby-logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
             <p class="lobby-subtitle">Select your deck and invite a friend!</p>
 
-            <div class="deck-selection">
-                <h2>Choose Your Deck</h2>
-                <div class="deck-cards">
-                    <div class="deck-card active" data-deck="bruce">
+            <div class="deck-selection" id="nation-selection-screen">
+                <h2>Choose Your Nation</h2>
+                <div class="deck-cards" style="flex-wrap: wrap;">
+                    <div class="deck-card nation-card active" data-nation="Dark States">
+                        <div class="deck-art bruce-art"></div>
+                        <h3 class="deck-title">Dark States</h3>
+                    </div>
+                    <div class="deck-card nation-card" data-nation="Stoicheia">
+                        <div class="deck-art magnolia-art"></div>
+                        <h3 class="deck-title">Stoicheia</h3>
+                    </div>
+                    <div class="deck-card nation-card" data-nation="Dragon Empire">
+                        <div class="deck-art nirvana-art"></div>
+                        <h3 class="deck-title">Dragon Empire</h3>
+                    </div>
+                    <div class="deck-card nation-card" data-nation="Keter Sanctuary">
+                        <div class="deck-art majesty-art" style="background-image: linear-gradient(135deg, #d4af37, #777777); border-radius: 10px; margin-bottom: 1rem; height: 120px;"></div>
+                        <h3 class="deck-title">Keter Sanctuary</h3>
+                    </div>
+                    <div class="deck-card nation-card" data-nation="Brandt Gate">
+                        <div class="deck-art avant-art" style="background-image: linear-gradient(135deg, #4b6cb7, #182848); border-radius: 10px; margin-bottom: 1rem; height: 120px;"></div>
+                        <h3 class="deck-title">Brandt Gate</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deck-selection hidden" id="deck-selection-screen">
+                <h2 style="display: flex; justify-content: center; align-items: center; position: relative;">
+                    Choose Your Deck 
+                    <button id="back-to-nations" class="glass-btn highlight-btn" style="font-size: 0.8rem; padding: 0.3rem 0.8rem; position: absolute; right: 0;">Back</button>
+                </h2>
+                <div class="deck-cards" id="deck-cards-container" style="flex-wrap: wrap;">
+                    <div class="deck-card active" data-deck="bruce" data-nation="Dark States">
                         <div class="deck-art bruce-art"></div>
                         <h3 class="deck-title">Diabolos, "Violence" Bruce</h3>
                         <p class="deck-nation">Dark States</p>
                     </div>
-                    <div class="deck-card" data-deck="magnolia">
+                    <div class="deck-card" data-deck="magnolia" data-nation="Stoicheia">
                         <div class="deck-art magnolia-art"></div>
                         <h3 class="deck-title">Sylvan Horned Beast King, Magnolia</h3>
                         <p class="deck-nation">Stoicheia</p>
                     </div>
-                    <div class="deck-card" data-deck="nirvana">
+                    <div class="deck-card" data-deck="nirvana" data-nation="Dragon Empire">
                         <div class="deck-art nirvana-art"></div>
                         <h3 class="deck-title">Chakrabarthi Pheonix Dragon, Nirvana Jheva</h3>
                         <p class="deck-nation">Dragon Empire</p>
                     </div>
-                    <div class="deck-card" data-deck="majesty">
+                    <div class="deck-card" data-deck="majesty" data-nation="Keter Sanctuary">
                         <div class="deck-art majesty-art"
                             style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt05/d-bt05_004.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
                         </div>
                         <h3 class="deck-title">Majesty Lord Blaster</h3>
                         <p class="deck-nation">Keter Sanctuary</p>
                     </div>
-                    <div class="deck-card" data-deck="avantgarda">
+                    <div class="deck-card" data-deck="avantgarda" data-nation="Brandt Gate">
                         <div class="deck-art avant-art"
                             style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_004.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
                         </div>
                         <h3 class="deck-title">Blue Deathster, Avantgarda</h3>
                         <p class="deck-nation">Brandt Gate</p>
+                    </div>
+                    <div class="deck-card" data-deck="youthberk" data-nation="Keter Sanctuary">
+                        <div class="deck-art youth-art"
+                            style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_005.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
+                        </div>
+                        <h3 class="deck-title">Youthberk "Skyfall Arms"</h3>
+                        <p class="deck-nation">Keter Sanctuary</p>
                     </div>
                 </div>
             </div>
