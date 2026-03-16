@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let targetingType = null; // 'power' or 'critical' or 'both'
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
+    let currentAttackResolving = false; // Missing declaration fix
     let selectedCard = null; // Track selected card for tap-to-move
     let personaRideActive = false;
     let isOpponentPersonaRide = false;
@@ -5252,6 +5253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pendingPowerIncrease = 0;
             pendingCriticalIncrease = 0;
             isWaitingForGuard = false;
+            currentAttackResolving = false; // Reset resolution lock on turn start
             const statusText = document.getElementById('game-status-text');
             if (statusText) statusText.textContent = "Network Ready";
             document.body.classList.remove('targeting-mode');
@@ -5339,8 +5341,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
             return;
         }
-        if (isWaitingForGuard || currentAttackResolving) {
-            alert("กรุณารอให้การต่อสู้จบก่อน!");
+        // Allow end turn if in End phase even if flags are stuck, or if user forces it
+        if ((isWaitingForGuard || currentAttackResolving) && phases[currentPhaseIndex] !== 'end') {
+            alert("กรุณารอให้การต่อสู้จบก่อน! (หรือไปที่ End Phase เพื่อจบเทิร์น)");
             return;
         }
         currentTurn++;
