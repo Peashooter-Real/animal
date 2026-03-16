@@ -652,13 +652,14 @@ body {
 /* Placeholder Card Art */
 .card-art {
   flex: 1;
-  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
   display: flex;
   justify-content: center;
   align-items: center;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.15);
   font-size: 1.5rem;
   position: relative;
+  overflow: hidden;
 }
 
 .card-persona {

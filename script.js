@@ -490,13 +490,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Youthberk "Skyfall Arms"', grade: 3, power: 13000, persona: true, skill: '[RevolDress]－[AUTO](VC): At the end of the battle this unit attacked, choose up to one card with "RevolForm" in its card name from your hand, ride it as [Stand], and it gets drive -2 until end of turn.\n[ACT](VC)[1/turn]: [COST][Discard a card from hand], look at the top three cards of your deck, choose up to one card with "RevolForm" in its card name from among them and reveal it and put it into your hand, or choose up to one grade 2 or less card from among them and call it to (RC), and put the rest on the bottom of your deck in any order.' }),
             ...Array(4).fill({ name: 'Youthberk "RevolForm: Tempest"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO](VC): เมื่อวางบน (VC) โดย [RevolDress], แถวหน้าทั้งหมดของคุณได้รับพลัง +5000 จนจบเทิร์น จากนั้น [CB1] เปิดการ์ด 2 ใบจากบนสุดของกอง เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้าใต้กอง, และนำการ์ดที่เปิดทั้งหมดขึ้นมือ\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Youthberk "RevolForm: Gust"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO]: เมื่อวางบน (VC) โดยความสามารถ [RevolDress] หากแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า [COST][ทิ้งมือ 1 ใบ] ยูนิทนี้ได้รับ [Power]+10000 และ [Drive]+1 จนจบเทิร์น\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
-            ...Array(3).fill({ name: 'Knight of Fracture, Schneizal', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อลง (RC) แวนการ์ดมีคำว่า "Youth" โซลบลาส 1, ยูนิทนี้พลัง +5000 จนจบเทิร์น และถ้าคุณมีเรียร์การ์ดตั้งแต่ 3 ใบขึ้นไป ยูนิทนี้รับพลังเพิ่มอีก +5000\n[AUTO](RC): เมื่อแวนการ์ดที่มีคำว่า "RevolForm" ในชื่อโจมตี หรือถูกโจมตี, [ทิ้งการ์ดลงดรอป] รีไทร์ยูนิทนี้, ยูนิทนั้นจะได้รับพลัง +10000 จนจบแบตเทิล' }),
-            ...Array(3).fill({ name: 'Knight of Plowing, Dolbraig', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อโจมตี แวนการ์ดมีคำว่า "Youth", ถ้าโซลมี RevolForm, ยูนิทนี้พลัง +5000' }),
-            ...Array(2).fill({ name: 'Knight of Rendering Flash, Cairbre', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อโจมตี, ถ้ามีแวนการ์ดเกรด 3 หรือสูงกว่าที่มีชื่อ "Youth", เคาเตอร์บลาส 1, ยูนิทนี้ได้รับพลัง +5000' }),
-            ...Array(4).fill({ name: 'Witch of Accumulation, Sequana', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อสิ้นสุดแบทเทิลที่ยูนิทนี้บูสต์ แวนการ์ดมี RevolForm, ยูนิทนี้เข้าไปในโซล เคาเตอร์ชาจ 1\n[ACT](Drop): หากแวนการ์ดของคุณคือ Youthberk ให้นำการ์ดใบนี้กลับเข้ามือและทิ้ง 1 ใบ' }),
-            ...Array(4).fill({ name: 'Wayward Therapy Angel', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC): เมื่อคอล, โซลบลาส 1 ดู 3 ใบจากบนสุดของกอง เลือก 1 ใบเอาเข้ามือ ทิ้งที่เหลือ หาก ทิ้ง ตัวที่มีชื่อ RevolForm, ได้เกราะ+5000' }),
+            ...Array(3).fill({ name: 'Knight of Fracture, Schneizal', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 ที่มีชื่อ "Youthberk" 1 ใบขึ้นมือ สับกอง ยูนิทนี้พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตีแวนการ์ด หากแวนการ์ดของคุณถูกวางเทิร์นนี้โดยไรด์จาก G3 เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Knight of Plowing, Dolbraig', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](แถวหน้า RC): เมื่อแวนการ์ดถูกวางโดย [RevolDress] เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตียูนิท G3 หรือสูงกว่า [COST][SB1 การ์ดที่มี RevolForm ในชื่อ] ยูนิทนี้พลัง +10000 จนจบแบทเทิล' }),
+            ...Array(2).fill({ name: 'Knight of Rendering Flash, Cairbre', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1 & SB1] ดู 3 ใบจากบนสุดของกอง เลือก 1 ใบ หากเป็นยูนิท G2 หรือต่ำกว่า คอลลง (RC) หากไม่ใช่ นำขึ้นมือ สับกอง' }),
+            ...Array(4).fill({ name: 'Witch of Accumulation, Sequana', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): เทิร์นเรา หากแวนการ์ดมีชื่อ "Youthberk" ยูนิทนี้พลัง +2000\n[AUTO](RC): เมื่อยูนิทถูกวางบน (VC) โดย [RevolDress] [COST][นำยูนิทนี้เข้าโซล] เลือกแวนการ์ด 1 ใบ ปรับ Drive เป็น 1 จนจบเทิร์น' }),
+            ...Array(4).fill({ name: 'Wayward Therapy Angel', grade: 1, power: 8000, shield: 5000, skill: '[CONT]: การ์ดใบนี้ไม่สามารถถูกไรด์หรือคอลปกติจากมือ\n[AUTO]: เมื่อการ์ดใบนี้ถูกทิ้งจากมือในเทิร์นของคุณ หากแวนการ์ด G3+ [COST][SB1] คอลการ์ดใบนี้ลงแถวหลัง (RC)' }),
             ...Array(4).fill({ name: 'Palladium Zeal Dragon (PG)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)\n[AUTO]: เมื่อยูนิทนี้เข้าสู่ G เลือกยูนิทคุณ 1 ใบ ยูนิทนั้นไม่ถูกฮิตจนจบการต่อสู้ ถ้าคุณมีการ์ดในมือตั้งแต่ 2 ใบขึ้นไป ทิ้งการ์ด 1 ใบ' }),
-            
+
             ...Array(8).fill({ name: 'Critical Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(3).fill({ name: 'Front Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
             ...Array(4).fill({ name: 'Heal Trigger (Keter)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
@@ -1035,14 +1035,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); done(); return; }
                             const top3 = deckPool.slice(0, 3);
                             deckPool.splice(0, 3);
-                            
+
                             openViewer("เลือก Youthberk ขึ้นมือ หรือ การ์ดเกรด <= 2 ลงช่อง RC (หากไม่เลือก ให้กดปิดเพื่อนำการ์ดทั้งหมดไว้ใต้กอง)", top3);
-                            
+
                             let isResolved = false;
                             const cleanupAndDone = () => {
                                 if (!isResolved) {
                                     isResolved = true;
-                                    while(top3.length > 0) {
+                                    while (top3.length > 0) {
                                         deckPool.push(top3.shift());
                                     }
                                     updateDeckCounter();
@@ -1059,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         const cardData = top3[idx];
                                         const isYouthberk = cardData.name.toLowerCase().includes('youthberk');
                                         const isG2OrLessUnit = parseInt(cardData.grade) <= 2 && !cardData.skill?.includes('[Set Order]');
-                                        
+
                                         if (isYouthberk && !isG2OrLessUnit) {
                                             const removed = top3.splice(idx, 1)[0];
                                             const cardElem = createCardElement(removed);
@@ -1089,19 +1089,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                         } else {
                                             alert(`ไม่สามารถเลือกใบนี้ได้ (${cardData.name})`);
                                         }
-                                        
+
                                         function rcCallFlow(cardIdx) {
                                             alert(`เลือกคอล ${top3[cardIdx].name} กรุณาคลิกช่องวงกลม (RC) ที่ต้องการลง`);
                                             zoneViewer.classList.add('hidden');
                                             document.body.classList.add('targeting-mode');
-                                            
+
                                             const rcCallListener = (ev) => {
                                                 const circle = ev.target.closest('.circle.rc');
                                                 if (circle) {
                                                     ev.stopPropagation();
                                                     document.removeEventListener('click', rcCallListener, true);
                                                     document.body.classList.remove('targeting-mode');
-                                                    
+
                                                     const removed = top3.splice(cardIdx, 1)[0];
                                                     const existing = circle.querySelector('.card:not(.opponent-card)');
                                                     if (existing) {
@@ -1125,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                 }
                             };
-                            
+
                             viewerGrid.addEventListener('click', selListener);
                             closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); viewerGrid.removeEventListener('click', selListener); cleanupAndDone(); };
                         } else {
@@ -1149,25 +1149,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             const dropZone = document.querySelector('.my-side .drop-zone');
                             const dropCards = Array.from(dropZone.querySelectorAll('.card'));
                             const validCards = dropCards.filter(c => parseInt(c.dataset.grade) >= 2);
-                            
+
                             if (validCards.length === 0) {
                                 alert("ไม่มีการ์ดเกรด 2 หรือสูงกว่าในช่องดรอป");
                                 done();
                                 return;
                             }
-                            
+
                             viewerTitle.textContent = "เลือกการ์ดเกรด 2 หรือสูงกว่า 1 ใบขึ้นมือ";
                             viewerGrid.innerHTML = '';
                             zoneViewer.classList.remove('hidden');
-                            
+
                             const cleanupDropAndDone = () => { zoneViewer.classList.add('hidden'); done(); };
-                            
+
                             validCards.forEach(c => {
                                 const clone = c.cloneNode(true);
                                 clone.classList.remove('dragging', 'rest', 'opponent-card');
                                 clone.style.position = 'relative';
                                 clone.style.cursor = 'pointer';
-                                
+
                                 clone.onclick = () => {
                                     c.remove();
                                     const newHandCard = createCardElement(JSON.parse(c.dataset.cardData));
@@ -1621,7 +1621,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pZone = parent.id;
                 }
             }
-            
+
             if (!pZone) {
                 if (soulPool.includes(card)) pZone = 'soul';
                 else if (deckPool.includes(card)) pZone = 'deck';
@@ -2328,18 +2328,41 @@ document.addEventListener('DOMContentLoaded', () => {
             totalPower += 2000;
             alert("Determined to Break Away: [CONT] พลัง +2000 ระหว่างการต่อสู้!");
         }
-        if (uName.includes('Dolbraig') && vName.includes('Youth')) {
-            const hasRevolSoul = soulPool.some(c => c.dataset.name.includes('RevolForm'));
-            if (hasRevolSoul) {
-                totalPower += 5000;
-                alert("Dolbraig: พลัง +5000!");
+
+        // --- Schneizal [AUTO](RC): When this unit attacks a VG, if your VG was placed this turn by riding from G3, VG gets +5000 ---
+        if (uName.includes('Schneizal') && parentZone.startsWith('rc')) {
+            const target = document.querySelector('.opponent-side .circle.vc .card');
+            if (target && attacker.parentElement && window.rodeFromG3ThisTurn) {
+                const vgCard = document.querySelector('.my-side .circle.vc .card');
+                if (vgCard) {
+                    vgCard.dataset.power = (parseInt(vgCard.dataset.power) + 5000).toString();
+                    vgCard.dataset.turnEndBuffPower = (parseInt(vgCard.dataset.turnEndBuffPower || "0") + 5000).toString();
+                    vgCard.dataset.turnEndBuffActive = "true";
+                    syncPowerDisplay(vgCard);
+                    sendMoveData(vgCard);
+                    alert("Schneizal: [AUTO](RC) แวนการ์ดถูกไรด์จาก G3 เทิร์นนี้! VG พลัง +5000!");
+                }
             }
         }
-        if (uName.includes('Cairbre') && vName.includes('Youth')) {
-            const vGrade = vNode ? parseInt(vNode.dataset.grade || "0") : 0;
-            if (vGrade >= 3 && await vgConfirm("Cairbre: [CB1] เพื่อรับพลัง +5000?")) {
-                if (payCounterBlast(1)) {
-                    totalPower += 5000;
+
+        // --- Dolbraig [AUTO](RC): When attacking G3+ unit, [SB1 RevolForm] power +10000 ---
+        if (uName.includes('Dolbraig') && parentZone.startsWith('rc')) {
+            const targetCard = document.querySelector('.opponent-side .circle.vc .card') ||
+                document.querySelector('.opponent-side .circle.rc .card');
+            const targetGrade = targetCard ? parseInt(targetCard.dataset.grade || "0") : 0;
+            if (targetGrade >= 3) {
+                const revolSoulIdx = soulPool.findIndex(c => c.dataset.name.includes('RevolForm'));
+                if (revolSoulIdx !== -1) {
+                    if (await vgConfirm("Dolbraig: [AUTO](RC) โจมตียูนิท G3+ [SB1 การ์ด RevolForm] พลัง +10000?")) {
+                        const soulCard = soulPool.splice(revolSoulIdx, 1)[0];
+                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        dropZone.appendChild(soulCard);
+                        sendMoveData(soulCard);
+                        updateSoulUI();
+                        updateDropCount();
+                        totalPower += 10000;
+                        alert("Dolbraig: SB RevolForm! พลัง +10000!");
+                    }
                 }
             }
         }
@@ -2883,6 +2906,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 zone.innerHTML = '';
                 zone.appendChild(card);
                 hasRiddenThisTurn = true;
+                // Track if rode from G3 (for Schneizal 2nd ability)
+                if (vanguardGrade >= 3) {
+                    window.rodeFromG3ThisTurn = true;
+                }
                 updateSoulUI();
 
                 const vanguardName = vanguard ? vanguard.dataset.name : "";
@@ -2965,6 +2992,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (cardGrade > vanguardGrade) { alert("Cannot call a unit with grade higher than your Vanguard!"); return false; }
 
+                // --- Wayward Therapy Angel [CONT]: Cannot be normal called from hand ---
+                if (isFromHand && card.dataset.name && card.dataset.name.includes('Wayward Therapy Angel')) {
+                    alert("Wayward Therapy Angel: [CONT] การ์ดใบนี้ไม่สามารถคอลปกติจากมือได้! (ใช้ความสามารถ discard เพื่อคอลลงแถวหลังแทน)");
+                    return false;
+                }
+
                 const dropZone = document.querySelector('.my-side .drop-zone');
                 zone.querySelectorAll('.card:not(.opponent-card)').forEach(c => {
                     // Drop Materials first
@@ -3041,12 +3074,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             }, 800);
                         }, 500);
 
-                        } else {
-                            alert(`No Grade ${nextGrade} unit found in your Ride Deck!`);
-                            return false;
-                        }
+                    } else {
+                        alert(`No Grade ${nextGrade} unit found in your Ride Deck!`);
+                        return false;
                     }
                 }
+            }
 
             if (card.unitSoul && card.unitSoul.length > 0) {
                 card.unitSoul.forEach(m => {
@@ -3084,6 +3117,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (card.dataset.asagiBonusApplied === "true") {
                 card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
                 card.dataset.asagiBonusApplied = "false";
+            }
+        }
+
+        // --- Sequana [CONT](RC): +2000 during your turn if VG has "Youthberk" ---
+        if (name.includes('Sequana') && zone.startsWith('rc')) {
+            const vgCard = document.querySelector('.my-side .circle.vc .card');
+            const vgHasYouthberk = vgCard && vgCard.dataset.name && vgCard.dataset.name.toLowerCase().includes('youthberk');
+            if (isMyTurn && vgHasYouthberk) {
+                if (card.dataset.sequanaBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 2000).toString();
+                    card.dataset.sequanaBuffApplied = "true";
+                }
+            } else if (card.dataset.sequanaBuffApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 2000).toString();
+                card.dataset.sequanaBuffApplied = "false";
             }
         }
 
@@ -3480,7 +3528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const powerVal = parseInt(card.dataset.power || "0");
             const cVal = parseInt(card.dataset.critical || "1");
             let dCrit = cVal > 1 ? `<span style="color:gold;">★${cVal}</span>` : '';
-            pSpan.innerHTML = `⚔️${powerVal >= 1000000 ? (powerVal/1000000).toFixed(1) + 'M' : powerVal} ${dCrit}`;
+            pSpan.innerHTML = `⚔️${powerVal >= 1000000 ? (powerVal / 1000000).toFixed(1) + 'M' : powerVal} ${dCrit}`;
         }
         const sSpan = card.querySelector('.card-shield');
         if (sSpan) {
@@ -3856,7 +3904,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); return; }
                     const top3 = deckPool.slice(0, 3);
                     deckPool.splice(0, 3);
-                    
+
                     openViewer("เลือก 1 ใบขึ้นมือ (ทิ้งที่เหลือ)", top3);
                     await new Promise(res => {
                         const sel = (e) => {
@@ -3870,15 +3918,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                     playerHand.appendChild(cardNode);
                                     updateHandSpacing();
                                     sendMoveData(cardNode);
-                                    
+
                                     const dropZone = document.querySelector('.my-side .drop-zone');
                                     top3.forEach(cData => {
                                         const cElem = createCardElement(cData);
                                         dropZone.appendChild(cElem);
                                         sendMoveData(cElem);
                                         if (cData.name.toLowerCase().includes('revolform')) {
-                                             card.dataset.shield = (parseInt(card.dataset.shield) + 5000).toString();
-                                             alert(`${card.dataset.name}: ทิ้ง RevolForm! ได้เกราะ +5000`);
+                                            card.dataset.shield = (parseInt(card.dataset.shield) + 5000).toString();
+                                            alert(`${card.dataset.name}: ทิ้ง RevolForm! ได้เกราะ +5000`);
                                         }
                                     });
                                     updateDropCount();
@@ -3895,18 +3943,148 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Schneizal [AUTO] ---
-        if (name.includes('Schneizal') && isRC && vgName.toLowerCase().includes('youth')) {
-            if (await vgConfirm("Schneizal: [AUTO] [SB1] พลัง +5000? (ถ้าเรียร์การ์ด 3+ ใบ พลัง +10000)")) {
-                if (await paySoulBlast(1)) {
-                    const unitCount = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)').length;
-                    const bonus = unitCount >= 3 ? 10000 : 5000;
-                    card.dataset.power = parseInt(card.dataset.power) + bonus;
-                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + bonus).toString();
+        // --- Schneizal [AUTO]: When placed on (RC), [CB1] look at top 5, search G3 "Youthberk", +5000 power ---
+        if (name.includes('Schneizal') && isRC) {
+            if (await vgConfirm("Schneizal: [AUTO] เมื่อวางบน (RC) [CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 \"Youthberk\" 1 ใบขึ้นมือ และยูนิทนี้พลัง +5000?")) {
+                if (payCounterBlast(1)) {
+                    // Power +5000
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
                     card.dataset.turnEndBuffActive = "true";
                     syncPowerDisplay(card);
                     sendMoveData(card);
-                    alert(`Schneizal: พลัง +${bonus}!`);
+                    alert("Schneizal: พลัง +5000!");
+
+                    // Search top 5 for G3 Youthberk
+                    if (deckPool.length > 0) {
+                        const top5 = deckPool.slice(0, Math.min(5, deckPool.length));
+                        const youthberkG3 = top5.filter(c => c.name.toLowerCase().includes('youthberk') && parseInt(c.grade) >= 3);
+
+                        if (youthberkG3.length > 0) {
+                            openViewer("เลือก G3 \"Youthberk\" 1 ใบขึ้นมือ (หรือปิดเพื่อไม่เลือก)", youthberkG3);
+                            await new Promise(resolve => {
+                                const pickHandler = (e) => {
+                                    const clicked = e.target.closest('.card');
+                                    if (clicked && clicked.parentElement === viewerGrid) {
+                                        const selectedName = clicked.dataset.name;
+                                        const idx = deckPool.findIndex(c => c.name === selectedName);
+                                        if (idx !== -1) {
+                                            const pickedData = deckPool.splice(idx, 1)[0];
+                                            const pickedCard = createCardElement(pickedData);
+                                            playerHand.appendChild(pickedCard);
+                                            updateHandSpacing();
+                                            updateHandCount();
+                                            sendMoveData(pickedCard);
+                                            alert(`Schneizal: ${pickedData.name} ขึ้นมือแล้ว!`);
+                                        }
+                                        deckPool.sort(() => 0.5 - Math.random());
+                                        updateDeckCounter();
+                                        viewerGrid.removeEventListener('click', pickHandler);
+                                        zoneViewer.classList.add('hidden');
+                                        resolve();
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', pickHandler);
+                                const closeH = () => {
+                                    deckPool.sort(() => 0.5 - Math.random());
+                                    updateDeckCounter();
+                                    zoneViewer.classList.add('hidden');
+                                    closeViewerBtn.removeEventListener('click', closeH);
+                                    resolve();
+                                };
+                                closeViewerBtn.addEventListener('click', closeH);
+                            });
+                        } else {
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                            alert("Schneizal: ไม่พบ G3 Youthberk ใน 5 ใบแรก!");
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Cairbre [AUTO]: When placed on (RC), [CB1 & SB1] look at top 3, choose 1 ---
+        if (name.includes('Cairbre') && isRC) {
+            if (await vgConfirm("Cairbre: [AUTO] เมื่อวางบน (RC) [CB1 & SB1] ดู 3 ใบจากบนสุดของกอง เลือก 1 ใบ (G2↓ unit คอลลง RC / อื่น ขึ้นมือ)?")) {
+                if (payCounterBlast(1) && await paySoulBlast(1)) {
+                    if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); return; }
+                    const top3 = deckPool.slice(0, 3);
+                    deckPool.splice(0, 3);
+
+                    openViewer("เลือก 1 ใบ (G2↓ unit: คอลลง RC / อื่น: ขึ้นมือ)", top3);
+                    await new Promise(resolve => {
+                        const pickHandler = async (e) => {
+                            const clicked = e.target.closest('.card');
+                            if (clicked && clicked.parentElement === viewerGrid) {
+                                const selectedName = clicked.dataset.name;
+                                const idx = top3.findIndex(c => c.name === selectedName);
+                                if (idx !== -1) {
+                                    const picked = top3.splice(idx, 1)[0];
+                                    const pickedGrade = parseInt(picked.grade || "0");
+                                    const isUnit = !picked.skill || !picked.skill.includes('[Order]');
+
+                                    if (pickedGrade <= 2 && isUnit) {
+                                        // Call to RC - let player choose a circle
+                                        alert(`Cairbre: คอล ${picked.name} (G${pickedGrade}) ลง (RC)! คลิกช่องที่ต้องการวาง`);
+                                        const calledCard = createCardElement(picked);
+                                        document.body.classList.add('targeting-mode');
+                                        await new Promise(callRes => {
+                                            const callListener = (ev) => {
+                                                const targetCircle = ev.target.closest('.my-side .circle.rc');
+                                                if (targetCircle) {
+                                                    ev.stopPropagation();
+                                                    // Retire existing card in that circle
+                                                    const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                                    if (existing) {
+                                                        const dropZone = document.querySelector('.my-side .drop-zone');
+                                                        dropZone.appendChild(existing);
+                                                        existing.classList.remove('rest');
+                                                        sendMoveData(existing);
+                                                        updateDropCount();
+                                                    }
+                                                    targetCircle.appendChild(calledCard);
+                                                    applyStaticBonuses(calledCard);
+                                                    sendMoveData(calledCard);
+                                                    document.body.classList.remove('targeting-mode');
+                                                    document.removeEventListener('click', callListener, true);
+                                                    alert(`Cairbre: ${picked.name} คอลลง RC สำเร็จ!`);
+                                                    callRes();
+                                                }
+                                            };
+                                            document.addEventListener('click', callListener, true);
+                                        });
+                                    } else {
+                                        // Add to hand
+                                        const pickedCard = createCardElement(picked);
+                                        playerHand.appendChild(pickedCard);
+                                        updateHandSpacing();
+                                        updateHandCount();
+                                        sendMoveData(pickedCard);
+                                        alert(`Cairbre: ${picked.name} ขึ้นมือแล้ว!`);
+                                    }
+
+                                    // Return remaining to bottom of deck
+                                    top3.forEach(c => deckPool.push(c));
+                                }
+                                deckPool.sort(() => 0.5 - Math.random());
+                                updateDeckCounter();
+                                viewerGrid.removeEventListener('click', pickHandler);
+                                zoneViewer.classList.add('hidden');
+                                resolve();
+                            }
+                        };
+                        viewerGrid.addEventListener('click', pickHandler);
+                        const closeH = () => {
+                            top3.forEach(c => deckPool.push(c));
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                            zoneViewer.classList.add('hidden');
+                            closeViewerBtn.removeEventListener('click', closeH);
+                            resolve();
+                        };
+                        closeViewerBtn.addEventListener('click', closeH);
+                    });
                 }
             }
         }
@@ -4178,15 +4356,87 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('targeting-mode');
         let selectedCount = 0;
         const result = await new Promise(resolve => {
-            const handler = (e) => {
+            const handler = async (e) => {
                 const target = e.target.closest('.card:not(.opponent-card)');
                 if (target && target.parentElement && target.parentElement.dataset.zone === 'hand') {
                     e.stopPropagation();
                     const dropZone = document.querySelector('.my-side .drop-zone');
-                    dropZone.appendChild(target);
-                    sendMoveData(target);
-                    updateHandCount();
-                    updateDropCount();
+
+                    // --- Wayward Therapy Angel AUTO: When discarded during your turn, if VG G3+, [SB1] call to back row RC ---
+                    const isWayward = target.dataset.name && target.dataset.name.includes('Wayward Therapy Angel');
+                    const vg = document.querySelector('.my-side .circle.vc .card');
+                    const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
+
+                    if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
+                        // First move to drop, then ask if they want to activate
+                        dropZone.appendChild(target);
+                        sendMoveData(target);
+                        updateHandCount();
+                        updateDropCount();
+
+                        if (await vgConfirm("Wayward Therapy Angel: [AUTO] ถูกทิ้งจากมือ! [SB1] คอลลง แถวหลัง (RC)?")) {
+                            if (await paySoulBlast(1)) {
+                                // Remove from drop zone
+                                target.remove();
+
+                                // Find empty back row RC
+                                const backRows = ['rc_back_left', 'rc_back_center', 'rc_back_right'];
+                                const emptyBackRow = backRows.find(z => {
+                                    const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+                                    return circle && !circle.querySelector('.card:not(.opponent-card)');
+                                });
+
+                                if (emptyBackRow) {
+                                    const circle = document.querySelector(`.my-side .circle[data-zone="${emptyBackRow}"]`);
+                                    circle.appendChild(target);
+                                    target.classList.remove('rest');
+                                    applyStaticBonuses(target);
+                                    sendMoveData(target);
+                                    updateDropCount();
+                                    alert(`Wayward Therapy Angel: คอลลงแถวหลัง ${emptyBackRow} สำเร็จ!`);
+                                } else {
+                                    // Let player choose which back row to override
+                                    alert("เลือกช่องแถวหลังเพื่อวาง Wayward Therapy Angel");
+                                    document.body.classList.add('targeting-mode');
+                                    await new Promise(callRes => {
+                                        const callListener = (ev) => {
+                                            const targetCircle = ev.target.closest('.my-side .circle.rc');
+                                            if (targetCircle) {
+                                                const circleZone = targetCircle.dataset.zone || "";
+                                                if (circleZone.includes('back')) {
+                                                    ev.stopPropagation();
+                                                    const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                                    if (existing) {
+                                                        dropZone.appendChild(existing);
+                                                        existing.classList.remove('rest');
+                                                        sendMoveData(existing);
+                                                    }
+                                                    targetCircle.appendChild(target);
+                                                    target.classList.remove('rest');
+                                                    applyStaticBonuses(target);
+                                                    sendMoveData(target);
+                                                    updateDropCount();
+                                                    document.body.classList.remove('targeting-mode');
+                                                    document.removeEventListener('click', callListener, true);
+                                                    alert(`Wayward Therapy Angel: คอลลงแถวหลังสำเร็จ!`);
+                                                    callRes();
+                                                } else {
+                                                    alert("เลือกได้เฉพาะช่องแถวหลังเท่านั้น!");
+                                                }
+                                            }
+                                        };
+                                        document.addEventListener('click', callListener, true);
+                                    });
+                                }
+                            }
+                        }
+                    } else {
+                        dropZone.appendChild(target);
+                        sendMoveData(target);
+                        updateHandCount();
+                        updateDropCount();
+                    }
+
                     selectedCount++;
                     if (selectedCount >= count) {
                         document.body.classList.remove('targeting-mode');
@@ -4532,7 +4782,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'actUsed', 'fromHand', 'asagiBonusApplied', 'avantSkillBuffApplied', 'killshroudPowerBuffApplied',
                 'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
                 'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
-                'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed'
+                'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -5111,6 +5361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset "Until end of turn" flags
         window.promptedEndTurn = false;
+        window.rodeFromG3ThisTurn = false;
         resetMyUnits();
 
         // --- Youthberk RevolDress End Turn Cleanup ---
@@ -5125,11 +5376,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     revolVG.remove();
                     soulPool.push(revolVG);
                     revolVG.dataset.isRevolDressRide = "false";
-                    
+
                     vc.appendChild(skyfall);
                     skyfall.classList.add('rest');
                     skyfall.style.transform = 'rotate(90deg)';
-                    
+
                     sendMoveData(revolVG, 'soul');
                     sendMoveData(skyfall);
                     updateSoulUI();
@@ -5986,7 +6237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 e.stopPropagation();
                                 document.body.classList.remove('targeting-mode');
                                 document.removeEventListener('click', discardListener, true);
-                                
+
                                 const dropZone = document.querySelector('.my-side .drop-zone');
                                 dropZone.appendChild(tgt);
                                 sendMoveData(tgt);
@@ -6001,14 +6252,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); return; }
                     const top3 = deckPool.slice(0, 3);
                     deckPool.splice(0, 3);
-                    
-                    openViewer("เลือก \"RevolForm\" ขึ้นมือ หรือ การ์ดเกรด <= 2 ลงช่อง RC (หากไม่เลือก ให้กดปิดเพื่อนำการ์ดทั้งหมดไว้ใต้กอง)", top3.map(c => ({...c, dataset: {name: c.name, grade: c.grade, skill: c.skill}})));
-                    
+
+                    openViewer("เลือก \"RevolForm\" ขึ้นมือ หรือ การ์ดเกรด <= 2 ลงช่อง RC (หากไม่เลือก ให้กดปิดเพื่อนำการ์ดทั้งหมดไว้ใต้กอง)", top3.map(c => ({ ...c, dataset: { name: c.name, grade: c.grade, skill: c.skill } })));
+
                     let isResolved = false;
                     const cleanupAndDone = () => {
                         if (!isResolved) {
                             isResolved = true;
-                            while(top3.length > 0) {
+                            while (top3.length > 0) {
                                 deckPool.push(top3.shift());
                             }
                             updateDeckCounter();
@@ -6025,7 +6276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const cardData = top3[idx];
                                 const isRevolForm = cardData.name.toLowerCase().includes('revolform');
                                 const isG2OrLessUnit = parseInt(cardData.grade) <= 2 && !cardData.skill?.includes('[Set Order]');
-                                
+
                                 if (isRevolForm && !isG2OrLessUnit) {
                                     const removed = top3.splice(idx, 1)[0];
                                     const cardElem = createCardElement(removed);
@@ -6055,20 +6306,20 @@ document.addEventListener('DOMContentLoaded', () => {
                                 } else {
                                     alert(`ไม่สามารถเลือกใบนี้ได้ (${cardData.name})`);
                                 }
-                                
+
                                 function rcCallFlow(cardIdx) {
                                     const cData = top3[cardIdx];
                                     alert(`เลือกคอล ${cData.name} กรุณาคลิกช่องวงกลม (RC) ที่ต้องการลง`);
                                     zoneViewer.classList.add('hidden');
                                     document.body.classList.add('targeting-mode');
-                                    
+
                                     const rcCallListener = (ev) => {
                                         const circle = ev.target.closest('.circle.rc');
                                         if (circle) {
                                             ev.stopPropagation();
                                             document.removeEventListener('click', rcCallListener, true);
                                             document.body.classList.remove('targeting-mode');
-                                            
+
                                             const removed = top3.splice(cardIdx, 1)[0];
                                             const existing = circle.querySelector('.card:not(.opponent-card)');
                                             if (existing) {
@@ -6092,7 +6343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     };
-                    
+
                     viewerGrid.addEventListener('click', selListener);
                     closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); viewerGrid.removeEventListener('click', selListener); cleanupAndDone(); };
                 }
@@ -6659,7 +6910,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attackData.guardRestrictCount && attackData.guardRestrictCount > 1 && fromHandCount > 0 && fromHandCount < attackData.guardRestrictCount) {
                 alert(`GUARD RESTRICT: ต้อง Guard ด้วยการ์ดจากบนมืออย่างน้อย ${attackData.guardRestrictCount} ใบ! (ตอนนี้เลือกไว้ ${fromHandCount} ใบ)`);
                 alert("ระบบจะส่งการ์ดกลับขึ้นมือเพื่อให้คุณเลือก Guard ใหม่อีกครั้ง");
-                
+
                 // Return all guards to hand if restriction not met
                 guardCards.forEach(c => {
                     const hand = document.getElementById('player-hand');
@@ -6673,7 +6924,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; // Keep isGuarding = true and the button visible
             }
 
-                        // If check passed, proceed to finish guarding
+            // If check passed, proceed to finish guarding
             isGuarding = false;
             document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.remove('zone-highlight'));
 
@@ -6901,28 +7152,28 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (clicked && clicked.parentElement === viewerGrid) {
                                 viewerGrid.removeEventListener('click', selListener);
                                 zoneViewer.classList.add('hidden');
-                                
+
                                 const chosenName = clicked.dataset.name;
                                 const handCard = handRevolForms.find(c => c.dataset.name === chosenName);
                                 if (handCard) {
                                     handCard.remove();
                                     updateHandSpacing();
-                                    
+
                                     const vc = document.querySelector('.my-side .circle.vc');
                                     attacker.remove();
                                     soulPool.push(attacker);
                                     sendMoveData(attacker, 'soul');
-                                    
+
                                     vc.appendChild(handCard);
                                     handCard.classList.remove('rest');
                                     handCard.dataset.fromHand = "true";
                                     let currentDrive = parseInt(handCard.dataset.drive || "2");
                                     handCard.dataset.drive = Math.max(0, currentDrive - 2);
                                     handCard.dataset.isRevolDressRide = "true";
-                                    
+
                                     // Trigger On-Place RevolDress Skills
                                     await checkRevolDressOnPlace(handCard);
-                                    
+
                                     updateSoulUI();
                                     applyStaticBonuses(handCard);
                                     sendMoveData(handCard);
@@ -7227,8 +7478,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Baur Vairina Reset ---
-        attacker.dataset.baurDriveCheck = "false"; 
-        attacker.dataset.baurDriveUsed = "false"; 
+        attacker.dataset.baurDriveCheck = "false";
+        attacker.dataset.baurDriveUsed = "false";
         attacker.dataset.driveAdded = "0";
 
         if (attacker.dataset.baurPwrAdded && attacker.dataset.baurPwrAdded !== "0") {
@@ -7258,7 +7509,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attacker.dataset.guardRestrictCount = "0";
     }
 
-        function counterCharge(count) {
+    function counterCharge(count) {
         const closedCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card.face-down'));
         const toTurn = Math.min(count, closedCards.length);
         for (let i = 0; i < toTurn; i++) {
@@ -7378,7 +7629,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (targetZone) {
             let cardId = (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) ? `opp-${data.cardId}` : `opp-${data.cardId}`;
-            
+
             // Check if the card is already on our side but not as an opponent card
             const myCard = document.getElementById(data.cardId);
             // Strong Safety: Never let remote commands move our own Vanguard
@@ -7388,7 +7639,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn("Blocked remote move attempt on local Vanguard:", data.cardId);
                     return;
                 }
-                
+
                 // If it's another unit of ours being moved (retired), allow only to non-VC zones
                 if (data.zone !== 'vc') {
                     targetZone.appendChild(myCard);
@@ -7427,7 +7678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const powerSpan = card.querySelector('.card-power');
                     if (powerSpan) {
                         let displayCritical = parseInt(card.dataset.critical) > 1 ? `<span style="color:gold;">★${card.dataset.critical}</span>` : '';
-                        powerSpan.innerHTML = `⚔️${parseInt(card.dataset.power) >= 1000000 ? (parseInt(card.dataset.power)/1000000).toFixed(1) + 'M' : card.dataset.power} ${displayCritical}`;
+                        powerSpan.innerHTML = `⚔️${parseInt(card.dataset.power) >= 1000000 ? (parseInt(card.dataset.power) / 1000000).toFixed(1) + 'M' : card.dataset.power} ${displayCritical}`;
                     }
                 }
             }
@@ -7788,13 +8039,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendMoveData(u);
                 }
             });
-            
+
             if (await vgConfirm("Tempest: [CB1] เพื่อเปิดใบบนสุด 2 ใบ เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้ากอง และนำ 2 ใบนั้นขึ้นมือ?")) {
                 if (payCounterBlast(1)) {
                     if (deckPool.length < 2) alert("การ์ดในกองไม่พอ!");
                     const revealed = deckPool.splice(0, Math.min(2, deckPool.length));
                     updateDeckCounter();
-                    
+
                     if (revealed.length > 0) {
                         const revealedGrades = revealed.map(c => parseInt(c.grade));
                         openViewer("เปิดการ์ด 2 ใบ (ปิดหน้าต่างนี้เพื่อไปต่อ)", revealed);
@@ -7806,10 +8057,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             };
                             closeViewerBtn.addEventListener('click', handler);
                         });
-                        
+
                         const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
                         const validRGs = oppRGs.filter(c => revealedGrades.includes(parseInt(c.dataset.grade || "0")));
-                        
+
                         if (validRGs.length > 0) {
                             if (await vgConfirm(`พบยูนิทเป้าหมาย ${validRGs.length} ใบ ต้องการเลือกนำกลับเข้ากองหรือไม่?`)) {
                                 alert("คลิกเป้าหมายเพื่อนำกลับเข้าใต้กอง");
@@ -7822,7 +8073,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 e.stopPropagation();
                                                 document.body.classList.remove('targeting-mode');
                                                 document.removeEventListener('click', sel, true);
-                                                
+
                                                 const rawId = tgt.id.replace('opp-', '');
                                                 sendData({ type: 'forcePutBottom', cardId: rawId });
                                                 tgt.remove();
@@ -7839,7 +8090,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             alert("ไม่มีเรียร์การ์ดคู่แข่งที่เกรดตรงกับการ์ดที่เปิดได้!");
                         }
-                        
+
                         // เอาการ์ดขึ้นมือ
                         revealed.forEach(cData => {
                             const cElem = createCardElement(cData);
@@ -7863,6 +8114,42 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
                         alert("Gust: ได้รับ Drive +1 สำเร็จ!");
                     }
+                }
+            }
+        }
+
+        // --- Dolbraig [AUTO](Front Row RC): When VG placed by RevolDress, VG gets +5000 ---
+        const frontRowDolbraigs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        for (const dolb of frontRowDolbraigs) {
+            if (dolb.dataset.name && dolb.dataset.name.includes('Dolbraig')) {
+                const dolbZone = dolb.parentElement ? dolb.parentElement.dataset.zone : "";
+                const isFrontRow = dolbZone === 'rc_front_left' || dolbZone === 'rc_front_right';
+                if (isFrontRow) {
+                    alert(`Dolbraig: [AUTO](แถวหน้า RC) แวนการ์ดถูกวางโดย RevolDress! VG พลัง +5000!`);
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                    card.dataset.turnEndBuffActive = "true";
+                    syncPowerDisplay(card);
+                    sendMoveData(card);
+                }
+            }
+        }
+
+        // --- Sequana [AUTO](RC): When unit placed on VC by RevolDress, put self into soul, set VG drive to 1 ---
+        const sequanas = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        for (const seq of sequanas) {
+            if (seq.dataset.name && seq.dataset.name.includes('Sequana')) {
+                if (await vgConfirm(`Sequana: [AUTO](RC) เมื่อ RevolDress เกิดขึ้น [COST][นำ Sequana เข้าโซล] ปรับ Drive แวนการ์ดเป็น 1?`)) {
+                    // Put Sequana into soul
+                    seq.remove();
+                    soulPool.push(seq);
+                    sendMoveData(seq, 'soul');
+                    updateSoulUI();
+
+                    // Set VG drive to 1
+                    card.dataset.drive = "1";
+                    alert(`Sequana: เข้าโซลแล้ว! VG Drive ปรับเป็น 1`);
+                    break; // Only one Sequana activation
                 }
             }
         }
