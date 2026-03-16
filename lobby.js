@@ -1,11 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const deckCards = document.querySelectorAll('.deck-card');
+    const nationSelectionScreen = document.getElementById('nation-selection-screen');
+    const deckSelectionScreen = document.getElementById('deck-selection-screen');
+    const backToNationsBtn = document.getElementById('back-to-nations');
+    const nationCards = document.querySelectorAll('.nation-card');
+    const deckCards = document.querySelectorAll('#deck-cards-container .deck-card');
+
     const createRoomBtn = document.getElementById('create-room-btn');
     const joinGameBtn = document.getElementById('join-game-btn');
     const startGameBtn = document.getElementById('start-game-btn');
     const joinPeerIdInput = document.getElementById('join-peer-id-input');
 
     let selectedDeck = 'bruce';
+
+    // Nation Selection
+    nationCards.forEach(card => {
+        card.addEventListener('click', () => {
+            nationCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            
+            const selectedNation = card.dataset.nation;
+            
+            // Show only the decks for this nation
+            deckCards.forEach(deckCard => {
+                if(deckCard.dataset.nation === selectedNation) {
+                    deckCard.style.display = 'block';
+                } else {
+                    deckCard.style.display = 'none';
+                }
+            });
+
+            // First available deck becomes active
+            let firstFound = null;
+            deckCards.forEach(dc => dc.classList.remove('active'));
+            for(let i=0; i<deckCards.length; i++) {
+                if(deckCards[i].dataset.nation === selectedNation) {
+                    firstFound = deckCards[i];
+                    break;
+                }
+            }
+            
+            if(firstFound) {
+                firstFound.classList.add('active');
+                selectedDeck = firstFound.dataset.deck;
+            }
+
+            // Sub-screen switch
+            nationSelectionScreen.classList.add('hidden');
+            deckSelectionScreen.classList.remove('hidden');
+        });
+    });
+
+    backToNationsBtn.addEventListener('click', () => {
+        deckSelectionScreen.classList.add('hidden');
+        nationSelectionScreen.classList.remove('hidden');
+    });
 
     // Deck Selection
     deckCards.forEach(card => {
