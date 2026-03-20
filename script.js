@@ -3124,7 +3124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Sequana [CONT](RC): +2000 during your turn if VG has "Youthberk" ---
         if (name.includes('Sequana') && zone.startsWith('rc')) {
             const vgCard = document.querySelector('.my-side .circle.vc .card');
-            const vgHasYouthberk = vgCard && vgCard.dataset.name && vgCard.dataset.name.toLowerCase().includes('youthberk');
+            const vgHasYouthberk = vgCard && vgCard.dataset.name && vgCard.dataset.name.includes('Youthberk');
             if (isMyTurn && vgHasYouthberk) {
                 if (card.dataset.sequanaBuffApplied !== "true") {
                     card.dataset.power = (parseInt(card.dataset.power) + 2000).toString();
@@ -3784,6 +3784,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const vgName = (vg && vg.dataset.name) ? vg.dataset.name : "";
         const hasBlueDeathsterOrAvant = vgName.includes('Blue Deathster') || vgName.includes('Avantgarda');
 
+        // --- Diabolos Buckler, Jamil [AUTO]: When placed on (RC), if VG Bruce, [CB1 & SC1], call G3- Diabolos from Soul ---
+        if (name.includes('Jamil') && isRC) {
+            const currentVG = document.querySelector('.my-side .circle.vc .card');
+            const currentVGName = currentVG ? currentVG.dataset.name : "";
+            if (currentVGName.includes('Bruce')) {
+                if (await vgConfirm("Jamil: [AUTO] เมื่อวางบน (RC) แวนการ์ดเป็น Bruce! จ่าย [CB1] เพื่อ [SC1] และคอลการ์ด 'Diabolos' เกรด 3 หรือต่ำกว่า 1 ใบจากโซล?")) {
+                    if (payCounterBlast(1)) {
+                        soulCharge(1);
+                        alert("Jamil: [Soul-Charge 1] สำเร็จ! เลือกการ์ด 'Diabolos' เกรด 3 หรือต่ำกว่า 1 ใบจากโซลเพื่อคอล");
+                        promptSoulCall('rc', () => {}, true);
+                    }
+                }
+            }
+        }
+
         // --- Ala Dargente [AUTO]: เมื่อวางบน (RC) [SB1] ค้นหา Strategy Card จากกอง ---
         if (name.includes('Ala Dargente') && isRC && isFromHand) {
             if (soulPool.length > 0) {
@@ -3898,55 +3913,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Wayward Therapy Angel [AUTO] ---
-        if (name.includes('Wayward Therapy Angel') && isRC) {
-            if (await vgConfirm("Wayward Therapy Angel: [AUTO] [SB1] ดู 3 ใบ เลือก 1 เข้ามือ ทิ้งที่เหลือ?")) {
-                if (await paySoulBlast(1)) {
-                    if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); return; }
-                    const top3 = deckPool.slice(0, 3);
-                    deckPool.splice(0, 3);
 
-                    openViewer("เลือก 1 ใบขึ้นมือ (ทิ้งที่เหลือ)", top3);
-                    await new Promise(res => {
-                        const sel = (e) => {
-                            const clicked = e.target.closest('.card');
-                            if (clicked && clicked.parentElement === viewerGrid) {
-                                const tName = clicked.dataset.name;
-                                const idx = top3.findIndex(c => c.name === tName);
-                                if (idx !== -1) {
-                                    const picked = top3.splice(idx, 1)[0];
-                                    const cardNode = createCardElement(picked);
-                                    playerHand.appendChild(cardNode);
-                                    updateHandSpacing();
-                                    sendMoveData(cardNode);
 
-                                    const dropZone = document.querySelector('.my-side .drop-zone');
-                                    top3.forEach(cData => {
-                                        const cElem = createCardElement(cData);
-                                        dropZone.appendChild(cElem);
-                                        sendMoveData(cElem);
-                                        if (cData.name.toLowerCase().includes('revolform')) {
-                                            card.dataset.shield = (parseInt(card.dataset.shield) + 5000).toString();
-                                            alert(`${card.dataset.name}: ทิ้ง RevolForm! ได้เกราะ +5000`);
-                                        }
-                                    });
-                                    updateDropCount();
-                                    updateDeckCounter();
-                                    zoneViewer.classList.add('hidden');
-                                    viewerGrid.removeEventListener('click', sel);
-                                    res();
-                                }
-                            }
-                        };
-                        viewerGrid.addEventListener('click', sel);
-                    });
-                }
-            }
-        }
-
-        // --- Schneizal [AUTO]: When placed on (RC), [CB1] look at top 5, search G3 "Youthberk", +5000 power ---
+        // --- Schneizal [AUTO]: เมื่อวางบน (RC) [CB1] ดู 5 ใบจากบนสุดของกอง เลือก "Youthberk" 1 ใบขึ้นมือ ---
         if (name.includes('Schneizal') && isRC) {
-            if (await vgConfirm("Schneizal: [AUTO] เมื่อวางบน (RC) [CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 \"Youthberk\" 1 ใบขึ้นมือ และยูนิทนี้พลัง +5000?")) {
+            if (await vgConfirm("Schneizal: [AUTO] เมื่อวางบน (RC) [CB1] ดู 5 ใบจากบนสุดของกอง เลือกการ์ดที่มีชื่อ \"Youthberk\" 1 ใบขึ้นมือ พร้อมทั้งยูนิทนี้พลัง +5000?")) {
                 if (payCounterBlast(1)) {
                     // Power +5000
                     card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
@@ -3956,13 +3927,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendMoveData(card);
                     alert("Schneizal: พลัง +5000!");
 
-                    // Search top 5 for G3 Youthberk
                     if (deckPool.length > 0) {
                         const top5 = deckPool.slice(0, Math.min(5, deckPool.length));
-                        const youthberkG3 = top5.filter(c => c.name.toLowerCase().includes('youthberk') && parseInt(c.grade) >= 3);
+                        const youthberkCards = top5.filter(c => c.name.includes('Youthberk'));
 
-                        if (youthberkG3.length > 0) {
-                            openViewer("เลือก G3 \"Youthberk\" 1 ใบขึ้นมือ (หรือปิดเพื่อไม่เลือก)", youthberkG3);
+                        if (youthberkCards.length > 0) {
+                            openViewer("เลือกการ์ดที่มีชื่อ \"Youthberk\" 1 ใบขึ้นมือ (หรือปิดเพื่อไม่เลือก)", youthberkCards);
                             await new Promise(resolve => {
                                 const pickHandler = (e) => {
                                     const clicked = e.target.closest('.card');
@@ -3998,7 +3968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             deckPool.sort(() => 0.5 - Math.random());
                             updateDeckCounter();
-                            alert("Schneizal: ไม่พบ G3 Youthberk ใน 5 ใบแรก!");
+                            alert("Schneizal: ไม่พบการ์ดที่มีชื่อ \"Youthberk\" ใน 5 ใบแรก!");
                         }
                     }
                 }
@@ -4031,7 +4001,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         const calledCard = createCardElement(picked);
                                         document.body.classList.add('targeting-mode');
                                         await new Promise(callRes => {
-                                            const callListener = (ev) => {
+                                            const callListener = async (ev) => {
                                                 const targetCircle = ev.target.closest('.my-side .circle.rc');
                                                 if (targetCircle) {
                                                     ev.stopPropagation();
@@ -4050,6 +4020,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     document.body.classList.remove('targeting-mode');
                                                     document.removeEventListener('click', callListener, true);
                                                     alert(`Cairbre: ${picked.name} คอลลง RC สำเร็จ!`);
+                                                    await checkOnPlaceAbilities(calledCard);
                                                     callRes();
                                                 }
                                             };
@@ -4368,7 +4339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const vg = document.querySelector('.my-side .circle.vc .card');
                     const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
 
-                    if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
+                    if (isWayward && (isMyTurn || true) && vgGrade >= 3 && soulPool.length > 0) {
                         // First move to drop, then ask if they want to activate
                         dropZone.appendChild(target);
                         sendMoveData(target);
@@ -4400,7 +4371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     alert("เลือกช่องแถวหลังเพื่อวาง Wayward Therapy Angel");
                                     document.body.classList.add('targeting-mode');
                                     await new Promise(callRes => {
-                                        const callListener = (ev) => {
+                                        const callListener = async (ev) => {
                                             const targetCircle = ev.target.closest('.my-side .circle.rc');
                                             if (targetCircle) {
                                                 const circleZone = targetCircle.dataset.zone || "";
@@ -4420,6 +4391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     document.body.classList.remove('targeting-mode');
                                                     document.removeEventListener('click', callListener, true);
                                                     alert(`Wayward Therapy Angel: คอลลงแถวหลังสำเร็จ!`);
+                                                    await checkOnPlaceAbilities(target);
                                                     callRes();
                                                 } else {
                                                     alert("เลือกได้เฉพาะช่องแถวหลังเท่านั้น!");
@@ -5358,41 +5330,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Bruce's Start of Battle Phase Ability
                 checkBruceBattleAbility();
             } else if (currentPhaseName === 'end') {
-                // --- Youthberk RevolDress End Turn Cleanup ---
+                const endQueue = [];
+
+                // 1. Youthberk RevolDress End Turn Revert
                 const revolVG = document.querySelector('.my-side .circle.vc .card');
                 if (revolVG && revolVG.dataset.isRevolDressRide === "true") {
-                    const vc = revolVG.parentElement;
-                    if (soulPool.length > 0) {
-                        // Find a card with Skyfall Arms or [RevolDress] specifically
-                        let revolDressIdx = soulPool.findIndex(c => (c.dataset.name || "").includes('Skyfall Arms'));
-                        if (revolDressIdx === -1) {
-                            revolDressIdx = soulPool.findIndex(c => (c.dataset.skill || "").includes('[RevolDress]'));
-                        }
-                                                
-                        if (revolDressIdx !== -1) {
-                            const skyfall = soulPool.splice(revolDressIdx, 1)[0];
-                            revolVG.remove();
-                            soulPool.push(revolVG);
-                            revolVG.dataset.isRevolDressRide = "false";
+                    endQueue.push({
+                        name: `RevolForm Revert: ${revolVG.dataset.name}`,
+                        description: `เมื่อจบเทิร์น ไรด์ร่างหลักที่มี [RevolDress] จากโซลกลับมาแทนในสภาพ [Rest]`,
+                        resolve: async (done) => {
+                            const vc = revolVG.parentElement;
+                            if (soulPool.length > 0) {
+                                // Find a card with Skyfall Arms or [RevolDress] specifically
+                                let revolDressIdx = soulPool.findIndex(c => (c.dataset.name || "").includes('Skyfall Arms'));
+                                if (revolDressIdx === -1) {
+                                    revolDressIdx = soulPool.findIndex(c => (c.dataset.skill || "").includes('[RevolDress]'));
+                                }
+                                                        
+                                if (revolDressIdx !== -1) {
+                                    const skyfall = soulPool.splice(revolDressIdx, 1)[0];
+                                    revolVG.remove();
+                                    soulPool.push(revolVG);
+                                    revolVG.dataset.isRevolDressRide = "false";
 
-                            vc.appendChild(skyfall);
-                            skyfall.classList.add('rest');
-                            skyfall.style.transform = 'none';
+                                    vc.appendChild(skyfall);
+                                    skyfall.classList.add('rest');
+                                    skyfall.style.transform = 'none';
 
-                            sendMoveData(revolVG, 'soul');
-                            sendMoveData(skyfall);
-                            updateSoulUI();
-                            alert(`RevolDress สิ้นสุดผล: ${revolVG.dataset.name} กลับเข้าโซล และไรด์ ${skyfall.dataset.name} ตัวหลักกลับมาแทนในสภาพ [Rest]`);
+                                    sendMoveData(revolVG, 'soul');
+                                    sendMoveData(skyfall);
+                                    updateSoulUI();
+                                    alert(`RevolDress สิ้นสุดผล: ${revolVG.dataset.name} กลับเข้าโซล และไรด์ ${skyfall.dataset.name} ตัวหลักกลับมาแทนในสภาพ [Rest]`);
+                                }
+                            }
+                            if (done) done();
                         }
-                    }
+                    });
                 }
 
-                // Inlet Pulse Dragon [AUTO](RC) End of Turn Ability
+                // 2. Inlet Pulse Dragon [AUTO](RC) End of Turn Ability
                 const inletPluseUnits = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
                     .filter(c => c.dataset.name.includes('Inlet Pulse Dragon'));
 
                 if (inletPluseUnits.length > 0 && turnAttackCount >= 4) {
-                    await processInletPulse(inletPluseUnits);
+                    endQueue.push({
+                        name: "Inlet Pulse Dragon: End Turn Skill",
+                        description: "[นำยูนิทนี้เข้าโซล] จั่วการ์ด 1 ใบ (ทำพร้อมกันทุกลำ)",
+                        resolve: async (done) => {
+                            await processInletPulse(inletPluseUnits);
+                            if (done) done();
+                        }
+                    });
+                }
+
+                if (endQueue.length > 0) {
+                    await resolveAbilityQueue(endQueue);
                 }
             }
         }
@@ -6569,23 +6561,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        // --- Sequana [ACT](Drop) ---
-        if (name.includes('Sequana') && card.parentElement.classList.contains('drop-zone')) {
-            const vgNode = document.querySelector('.my-side .circle.vc .card');
-            if (vgNode && vgNode.dataset.name.toLowerCase().includes('youthberk')) {
-                if (await vgConfirm("Sequana: [ACT](Drop) นำกลับเข้ามือและทิ้ง 1 ใบ?")) {
-                    if (await payDiscard(1)) {
-                        playerHand.appendChild(card);
-                        updateHandSpacing();
-                        updateHandCount();
-                        updateDropCount();
-                        sendMoveData(card);
-                        alert("Sequana: กลับเข้ามือสำเร็จ!");
-                        return true;
-                    }
-                }
-            }
-        }
+
     }
 
     if (closeSkillBtn) {
@@ -7430,6 +7406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             c.classList.remove('rest');
                                             applyStaticBonuses(c);
                                             sendMoveData(c);
+                                            await checkOnPlaceAbilities(c, 'soul'); // For Wayward/Cairbre
                                         }
                                     }
                                 }
@@ -7445,6 +7422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             c.classList.remove('rest');
                                             applyStaticBonuses(c);
                                             sendMoveData(c);
+                                            await checkOnPlaceAbilities(c, 'soul'); // For Wayward/Cairbre
                                         }
                                     }
                                 }
@@ -8066,153 +8044,156 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkRevolDressOnPlace(card) {
         const name = card.dataset.name;
+        const queue = [];
+
+        // 1. Tempest Skill
         if (name.includes('Tempest')) {
-            alert("Youthberk \"RevolForm: Tempest\": [AUTO] เมื่อวางโดย RevolDress แถวหน้าทั้งหมดพลัง +5000!");
-            document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(u => {
-                const z = u.parentElement.dataset.zone || "";
-                if (z === 'vc' || z === 'rc_front_left' || z === 'rc_front_right') {
-                    u.dataset.power = parseInt(u.dataset.power) + 5000;
-                    syncPowerDisplay(u);
-                    sendMoveData(u);
+            queue.push({
+                name: 'RevolForm: Tempest Skill',
+                description: 'แถวหน้าพลัง +5000 / [CB1] ดู 2 ใบ รีไทร์คู่แข่งและจั่ว',
+                resolve: async (done) => {
+                    alert("Youthberk \"RevolForm: Tempest\": [AUTO] เมื่อวางโดย RevolDress แถวหน้าทั้งหมดพลัง +5000!");
+                    document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(u => {
+                        const z = u.parentElement.dataset.zone || "";
+                        if (z === 'vc' || z === 'rc_front_left' || z === 'rc_front_right') {
+                            u.dataset.power = parseInt(u.dataset.power) + 5000;
+                            syncPowerDisplay(u);
+                            sendMoveData(u);
+                        }
+                    });
+
+                    if (await vgConfirm("Tempest: [CB1] เพื่อเปิดใบบนสุด 2 ใบ เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น และนำทั้ง 2 ใบขึ้นมือ?")) {
+                        if (payCounterBlast(1)) {
+                            if (deckPool.length < 2) alert("การ์ดในกองไม่พอ!");
+                            const revealed = deckPool.splice(0, Math.min(2, deckPool.length));
+                            updateDeckCounter();
+
+                            if (revealed.length > 0) {
+                                const revealedGrades = revealed.map(c => parseInt(c.grade));
+                                openViewer("เปิดการ์ด 2 ใบ (ปิดหน้าต่างนี้เพื่อไปต่อ)", revealed);
+                                await new Promise(res => {
+                                    const handler = () => {
+                                        zoneViewer.classList.add('hidden');
+                                        closeViewerBtn.removeEventListener('click', handler);
+                                        res();
+                                    };
+                                    closeViewerBtn.addEventListener('click', handler);
+                                });
+
+                                const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
+                                const validRGs = oppRGs.filter(c => revealedGrades.includes(parseInt(c.dataset.grade || "0")));
+
+                                if (validRGs.length > 0) {
+                                    if (await vgConfirm(`พบเป้าหมาย ${validRGs.length} ใบ ต้องการเลือกนำกลับเข้ากองหรือไม่?`)) {
+                                        alert("คลิกเป้าหมายเพื่อนำกลับเข้าใต้กอง");
+                                        document.body.classList.add('targeting-mode');
+                                        await new Promise(res => {
+                                            const sel = (e) => {
+                                                const tgt = e.target.closest('.opponent-side .circle.rc .card');
+                                                if (tgt && revealedGrades.includes(parseInt(tgt.dataset.grade || "0"))) {
+                                                    e.stopPropagation();
+                                                    document.body.classList.remove('targeting-mode');
+                                                    document.removeEventListener('click', sel, true);
+                                                    const rawId = tgt.id.replace('opp-', '');
+                                                    sendData({ type: 'forcePutBottom', cardId: rawId });
+                                                    tgt.remove();
+                                                    alert("นำยูนิทคู่แข่งกลับเข้ากองแล้ว!");
+                                                    res();
+                                                }
+                                            };
+                                            document.addEventListener('click', sel, true);
+                                        });
+                                    }
+                                }
+                                revealed.forEach(cData => {
+                                    const cElem = createCardElement(cData);
+                                    playerHand.appendChild(cElem);
+                                    sendMoveData(cElem);
+                                });
+                                updateHandSpacing();
+                                updateHandCount();
+                            }
+                        }
+                    }
+                    if (done) done();
                 }
             });
-
-            if (await vgConfirm("Tempest: [CB1] เพื่อเปิดใบบนสุด 2 ใบ เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้ากอง และนำ 2 ใบนั้นขึ้นมือ?")) {
-                if (payCounterBlast(1)) {
-                    if (deckPool.length < 2) alert("การ์ดในกองไม่พอ!");
-                    const revealed = deckPool.splice(0, Math.min(2, deckPool.length));
-                    updateDeckCounter();
-
-                    if (revealed.length > 0) {
-                        const revealedGrades = revealed.map(c => parseInt(c.grade));
-                        openViewer("เปิดการ์ด 2 ใบ (ปิดหน้าต่างนี้เพื่อไปต่อ)", revealed);
-                        await new Promise(res => {
-                            const handler = () => {
-                                zoneViewer.classList.add('hidden');
-                                closeViewerBtn.removeEventListener('click', handler);
-                                res();
-                            };
-                            closeViewerBtn.addEventListener('click', handler);
-                        });
-
-                        const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
-                        const validRGs = oppRGs.filter(c => revealedGrades.includes(parseInt(c.dataset.grade || "0")));
-
-                        if (validRGs.length > 0) {
-                            if (await vgConfirm(`พบยูนิทเป้าหมาย ${validRGs.length} ใบ ต้องการเลือกนำกลับเข้ากองหรือไม่?`)) {
-                                alert("คลิกเป้าหมายเพื่อนำกลับเข้าใต้กอง");
-                                document.body.classList.add('targeting-mode');
-                                await new Promise(res => {
-                                    const sel = (e) => {
-                                        const tgt = e.target.closest('.opponent-side .circle.rc .card');
-                                        if (tgt) {
-                                            if (revealedGrades.includes(parseInt(tgt.dataset.grade || "0"))) {
-                                                e.stopPropagation();
-                                                document.body.classList.remove('targeting-mode');
-                                                document.removeEventListener('click', sel, true);
-
-                                                const rawId = tgt.id.replace('opp-', '');
-                                                sendData({ type: 'forcePutBottom', cardId: rawId });
-                                                tgt.remove();
-                                                alert("นำยูนิทคู่แข่งกลับเข้ากองแล้ว!");
-                                                res();
-                                            } else {
-                                                alert("เกรดไม่ตรงกับการ์ดที่เปิดได้! เลือกใบอื่น");
-                                            }
-                                        }
-                                    };
-                                    document.addEventListener('click', sel, true);
-                                });
-                            }
-                        } else {
-                            alert("ไม่มีเรียร์การ์ดคู่แข่งที่เกรดตรงกับการ์ดที่เปิดได้!");
-                        }
-
-                        // เอาการ์ดขึ้นมือ
-                        revealed.forEach(cData => {
-                            const cElem = createCardElement(cData);
-                            playerHand.appendChild(cElem);
-                            sendMoveData(cElem);
-                        });
-                        updateHandSpacing();
-                        updateHandCount();
-                    }
-                }
-            }
         }
-        let gustPending = false;
+
+        // 2. Gust Skill
         if (name.includes('Gust')) {
-            card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
-            syncPowerDisplay(card);
-            alert("Youthberk \"RevolForm: Gust\": [AUTO] วางโดย RevolDress พลัง +10000!");
-            gustPending = true;
-        }
-
-        // --- Dolbraig [AUTO](Front Row RC): When VG placed by RevolDress, VG gets +5000 ---
-        const frontRowDolbraigs = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
-        for (const dolb of frontRowDolbraigs) {
-            if (dolb.dataset.name && dolb.dataset.name.includes('Dolbraig')) {
-                const dolbZone = dolb.parentElement ? dolb.parentElement.dataset.zone : "";
-                const isFrontRow = dolbZone === 'rc_front_left' || dolbZone === 'rc_front_right';
-                if (isFrontRow) {
-                    alert(`Dolbraig: [AUTO](แถวหน้า RC) แวนการ์ดถูกวางโดย RevolDress! VG พลัง +5000!`);
-                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
-                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
-                    card.dataset.turnEndBuffActive = "true";
+            queue.push({
+                name: 'RevolForm: Gust Skill',
+                description: '[ทิ้ง 1 ใบ] พลัง +10000 / Drive +1 (แวนคู่แข่ง G3+)',
+                resolve: async (done) => {
+                    card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
                     syncPowerDisplay(card);
-                    sendMoveData(card);
-                }
-            }
-        }
-
-        // --- Sequana [AUTO](RC): When unit placed on VC by RevolDress, put self into soul, set VG drive to 1 ---
-        const sequanas = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
-        for (const seq of sequanas) {
-            if (seq.dataset.name && seq.dataset.name.includes('Sequana')) {
-                let doSequanaFirst = true;
-                if (gustPending) {
-                    doSequanaFirst = await vgConfirm("คุณมีสกิลของ Gust และ Sequana ทำงานพร้อมกัน\nต้องการให้ Sequana ทำงาน [เซ็ต Drive เป็น 1] *ก่อน* รีดึง Drive ของ Gust ไหม?\n(กด OK = Sequana ก่อน, Gust ทีหลัง | กด Cancel = Gust ก่อน, Sequana ทีหลังทับ Drive เป็น 1)");
-                }
-
-                if (!doSequanaFirst && gustPending) {
-                    const vGrade = parseInt(document.querySelector('.opponent-side .circle.vc .card')?.dataset.grade || "0");
-                    if (vGrade >= 3) {
-                        if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ ต้องการ [ทิ้งมือ 1 ใบ] เพื่อรับโบนัส Drive +1?")) {
+                    alert("Youthberk \"RevolForm: Gust\": พลัง +10000!");
+                    
+                    const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+                    if (oppVG && parseInt(oppVG.dataset.grade || "0") >= 3) {
+                        if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ จ่าย [ทิ้งมือ 1 ใบ] เพื่อรับ Drive +1?")) {
                             if (await payDiscard(1)) {
                                 card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
                                 alert("Gust: ได้รับ Drive +1 สำเร็จ!");
+                                sendMoveData(card);
                             }
                         }
                     }
-                    gustPending = false; // Gust used
+                    if (done) done();
                 }
-
-                if (await vgConfirm(`Sequana: [AUTO](RC) เมื่อ RevolDress เกิดขึ้น [COST][นำ Sequana เข้าโซล] ปรับ Drive แวนการ์ดเป็น 1?`)) {
-                    // Put Sequana into soul
-                    seq.remove();
-                    soulPool.push(seq);
-                    sendMoveData(seq, 'soul');
-                    updateSoulUI();
-
-                    // Set VG drive to 1
-                    card.dataset.drive = "1";
-                    alert(`Sequana: เข้าโซลแล้ว! VG Drive ปรับเป็น 1`);
-                }
-                break; // Only one Sequana activation
-            }
+            });
         }
 
-        if (gustPending) {
-            const vGrade = parseInt(document.querySelector('.opponent-side .circle.vc .card')?.dataset.grade || "0");
-            if (vGrade >= 3) {
-                if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ ต้องการ [ทิ้งมือ 1 ใบ] เพื่อรับโบนัส Drive +1?")) {
-                    if (await payDiscard(1)) {
-                        card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
-                        alert("Gust: ได้รับ Drive +1 สำเร็จ!");
+        // 3. Sequana Skill
+        const sequanas = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+        sequanas.forEach(seq => {
+            if (seq.dataset.name && seq.dataset.name.includes('Sequana')) {
+                queue.push({
+                    name: `Witch of Accumulation, Sequana: ${seq.id}`,
+                    description: '[นำเข้าโซล] ปรับแวนการ์ดให้มี 1 ไดรฟ์ (ใช้เพื่อปรับลำดับการเพิ่มไดรฟ์ของ Gust)',
+                    resolve: async (done) => {
+                        if (await vgConfirm(`ใช้สกิล Sequana (${seq.id}): [COST][นำยูนิทนี้เข้าโซล] ปรับแวนการ์ดไดรฟ์เป็น 1?`)) {
+                            soulPool.push(seq);
+                            seq.remove();
+                            updateSoulUI();
+                            card.dataset.drive = "1";
+                            sendMoveData(card);
+                            alert("Sequana: ปรับแวนการ์ดไดรฟ์เป็น 1 สำเร็จ!");
+                        }
+                        if (done) done();
                     }
-                }
+                });
             }
+        });
+
+        // 4. Dolbraig Skills
+        const frontRowDolbraigs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
+            .filter(d => d.dataset.name && d.dataset.name.includes('Dolbraig'));
+        
+        frontRowDolbraigs.forEach(dolb => {
+            const z = dolb.parentElement?.dataset.zone || "";
+            if (z === 'rc_front_left' || z === 'rc_front_right') {
+                queue.push({
+                    name: `Knight of Plowing, Dolbraig: ${dolb.id}`,
+                    description: 'เมื่อแวนถูกวางโดย RevolDress, แวนการ์ดพลัง +5000',
+                    resolve: async (done) => {
+                        alert(`Dolbraig: แวนการ์ดถูกวางโดย RevolDress! VG พลัง +5000!`);
+                        card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                        card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                        card.dataset.turnEndBuffActive = "true";
+                        syncPowerDisplay(card);
+                        sendMoveData(card);
+                        if (done) done();
+                    }
+                });
+            }
+        });
+
+        if (queue.length > 0) {
+            await resolveAbilityQueue(queue);
         }
+        updatePhaseUI(true);
     }
 
     if (closeViewerBtn) {
