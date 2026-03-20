@@ -4650,16 +4650,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
+    // Bruce Final Burst Trigger
     async function checkBruceBattleAbility() {
-        // Implement Bruce's start of battle phase ability here
-        console.log("Checking Bruce's Battle Phase ability...");
         if (isFinalRush && !isFinalBurst) {
-            if (await vgConfirm("Bruce: Enter Final Burst? (Also activates Persona Ride!)")) {
+            if (await vgConfirm("Bruce: เข้าสู่ Final Burst?")) {
                 isFinalBurst = true;
-                personaRideActive = true; // Final Burst includes Persona Ride
                 alert("Bruce: FINAL BURST activated!");
                 updateFinalRushStaticBonuses(true);
-                sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true, isPersona: true });
+                sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
             }
         }
     }
