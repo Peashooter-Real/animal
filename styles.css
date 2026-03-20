@@ -2107,3 +2107,100 @@ body.targeting-mode::after {
   }
 }
 
+/* AI Mode & Setup UI */
+.lobby-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.divider-text {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin: 1rem 0;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider-text:not(:empty)::before {
+  margin-right: 1rem;
+}
+
+.divider-text:not(:empty)::after {
+  margin-left: 1rem;
+}
+
+.setup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease;
+}
+
+.setup-card {
+  background: #151525;
+  border: 1px solid var(--accent-blue);
+  padding: 2.5rem;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 0 50px rgba(0, 229, 255, 0.2);
+}
+
+.setup-card h3 {
+  font-family: var(--font-cyber);
+  color: var(--accent-blue);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.setup-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.setup-row label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.glass-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.glass-select option {
+  background: #151525;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+. c a r d . s e l e c t e d - f o r - r i d e   {   b o r d e r :   3 p x   s o l i d   g o l d   ! i m p o r t a n t ;   b o x - s h a d o w :   0   0   1 5 p x   g o l d ;   t r a n s f o r m :   t r a n s l a t e Y ( - 1 0 p x ) ;   z - i n d e x :   1 0 0 0 ;   }  
+ 

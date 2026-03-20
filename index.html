@@ -19,18 +19,67 @@
                 <h1 id="matchmaking-title" class="logo lobby-logo">Vanguard <span class="highlight">overDress</span>
                 </h1>
                 <p id="matchmaking-subtitle" class="lobby-subtitle">Initializing connection...</p>
-                <div id="id-display-box" class="id-display hidden">
-                    <span class="label">SHARE THIS ID WITH FRIEND:</span>
-                    <span id="game-peer-id" class="id-text">...</span>
-                    <button id="copy-game-id-btn" class="icon-btn">📋</button>
-                </div>
-                <div class="connection-status">
-                    <div class="status-info-row">
-                        <span class="status-dot"></span>
-                        <span id="game-status-text">Initializing...</span>
+                <div id="lobby-actions" class="lobby-actions">
+                    <div id="id-display-box" class="id-display hidden">
+                        <span class="label">SHARE THIS ID WITH FRIEND:</span>
+                        <span id="game-peer-id" class="id-text">...</span>
+                        <button id="copy-game-id-btn" class="icon-btn">📋</button>
                     </div>
                 </div>
-                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem;">Return
+
+                <div class="mode-selection" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                    <div class="connection-status">
+                        <div class="status-info-row">
+                            <span class="status-dot"></span>
+                            <span id="game-status-text">Initializing...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="multiplayer-controls">
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Waiting for a friend to connect...</p>
+                    </div>
+
+                    <div class="divider-text">OR</div>
+
+                    <button id="start-ai-mode-btn" class="glass-btn highlight-btn" style="width: 100%;">🤖 PLAY SOLO VS AI</button>
+                </div>
+
+                <!-- Deck Selection (Show when starting AI mode) -->
+                <div id="ai-setup-overlay" class="setup-overlay hidden">
+                    <div class="setup-card">
+                        <h3>GAME SETUP</h3>
+                        <div class="setup-row">
+                            <label>YOUR DECK:</label>
+                            <select id="player-deck-select" class="glass-select">
+                                <option value="bruce">Diabolos, Bruce</option>
+                                <option value="magnolia">Sylvan Horned Beast, Magnolia</option>
+                                <option value="youthberk">Youthberk</option>
+                                <option value="avantgarda">Blue Deathster, Avantgarda</option>
+                                <option value="majesty">Majesty Lord Blaster</option>
+                                <option value="nirvana">Nirvana Jheva</option>
+                            </select>
+                        </div>
+                        <div class="setup-row">
+                            <label>AI DECK:</label>
+                            <select id="ai-deck-select" class="glass-select">
+                                <option value="bruce">Diabolos, Bruce (Aggro)</option>
+                                <option value="magnolia">Sylvan, Magnolia (6-Attack)</option>
+                                <option value="youthberk">Youthberk (Combo)</option>
+                                <option value="avantgarda">Avantgarda (Strategy)</option>
+                            </select>
+                        </div>
+                        <div class="setup-row">
+                            <label>DIFFICULTY:</label>
+                            <select id="ai-difficulty" class="glass-select">
+                                <option value="hard">Hard (Heuristic AI)</option>
+                                <option value="easy">Easy (Random Moves)</option>
+                            </select>
+                        </div>
+                        <button id="confirm-ai-start-btn" class="glass-btn primary-btn" style="margin-top: 1rem;">START BATTLE</button>
+                    </div>
+                </div>
+
+                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem; opacity: 0.5;">Return
                     to Lobby</button>
             </div>
         </div>
