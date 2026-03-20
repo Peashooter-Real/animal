@@ -4846,6 +4846,54 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         closeViewerBtn.addEventListener('click', closeH);
     }
+    function promptSearchAndCall(cardName) {
+        const matches = deckPool.filter(c => c.name.includes(cardName));
+        if (matches.length === 0) {
+            alert(`ไม่พบ ${cardName} ในกองการ์ด!`);
+            return;
+        }
+
+        openViewer(`Select 1 ${cardName} to CALL`, matches);
+
+        const selHandler = (e) => {
+            const clicked = e.target.closest('.card');
+            if (clicked && clicked.parentElement === viewerGrid) {
+                const targetName = clicked.dataset.name;
+                const idx = deckPool.findIndex(c => c.name === targetName);
+                if (idx !== -1) {
+                    const cardData = deckPool.splice(idx, 1)[0];
+                    zoneViewer.classList.add('hidden');
+                    viewerGrid.removeEventListener('click', selHandler);
+
+                    const card = createCardElement(cardData);
+                    alert(`เลือกช่อง RC ที่ว่างอยู่เพื่อคอล ${cardData.name}`);
+                    document.body.classList.add('targeting-mode');
+
+                    const callHandler = (ev) => {
+                        const circle = ev.target.closest('.circle.rc');
+                        if (circle && !circle.querySelector('.card')) {
+                            ev.stopPropagation();
+                            circle.appendChild(card);
+                            card.classList.remove('rest');
+                            card.style.transform = 'none';
+                            applyStaticBonuses(card);
+                            sendMoveData(card);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callHandler, true);
+                            alert(`คอล ${cardData.name} สำเร็จ!`);
+
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                        } else if (circle) {
+                            alert("ช่องนั้นไม่ว่าง! กรุณาเลือกช่อง RC ที่ว่าง");
+                        }
+                    };
+                    document.addEventListener('click', callHandler, true);
+                }
+            }
+        };
+        viewerGrid.addEventListener('click', selHandler);
+    }
 
     function promptSearchAndAddHand(filterFn, title = "Select a card to add to Hand") {
         const matches = deckPool.filter(filterFn);
@@ -5372,8 +5420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (revolVG && revolVG.dataset.isRevolDressRide === "true") {
             const vc = revolVG.parentElement;
             if (soulPool.length > 0) {
-                // Find a RevolDress unit in soul
-                const revolDressIdx = soulPool.findIndex(c => c.dataset.skill && c.dataset.skill.includes('[RevolDress]'));
+                // Find Skyfall Arms unit in soul
+                const revolDressIdx = soulPool.findIndex(c => c.dataset.name && (c.dataset.name.includes('Skyfall Arms') || c.dataset.name.includes('Youthberk')));
                 if (revolDressIdx !== -1) {
                     const skyfall = soulPool.splice(revolDressIdx, 1)[0];
                     revolVG.remove();
@@ -5382,7 +5430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     vc.appendChild(skyfall);
                     skyfall.classList.add('rest');
-                    skyfall.style.transform = 'rotate(90deg)';
+                    skyfall.style.transform = 'none';
 
                     sendMoveData(revolVG, 'soul');
                     sendMoveData(skyfall);
@@ -8105,20 +8153,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-        } else if (name.includes('Gust')) {
+        }
+        let gustPending = false;
+        if (name.includes('Gust')) {
             card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
             syncPowerDisplay(card);
             alert("Youthberk \"RevolForm: Gust\": [AUTO] วางโดย RevolDress พลัง +10000!");
-
-            const vGrade = parseInt(document.querySelector('.opponent-side .circle.vc .card')?.dataset.grade || "0");
-            if (vGrade >= 3) {
-                if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ ต้องการ [ทิ้งมือ 1 ใบ] เพื่อรับโบนัส Drive +1?")) {
-                    if (await payDiscard(1)) {
-                        card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
-                        alert("Gust: ได้รับ Drive +1 สำเร็จ!");
-                    }
-                }
-            }
+            gustPending = true;
         }
 
         // --- Dolbraig [AUTO](Front Row RC): When VG placed by RevolDress, VG gets +5000 ---
@@ -8142,6 +8183,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const sequanas = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
         for (const seq of sequanas) {
             if (seq.dataset.name && seq.dataset.name.includes('Sequana')) {
+                let doSequanaFirst = true;
+                if (gustPending) {
+                    doSequanaFirst = await vgConfirm("คุณมีสกิลของ Gust และ Sequana ทำงานพร้อมกัน\nต้องการให้ Sequana ทำงาน [เซ็ต Drive เป็น 1] *ก่อน* รีดึง Drive ของ Gust ไหม?\n(กด OK = Sequana ก่อน, Gust ทีหลัง | กด Cancel = Gust ก่อน, Sequana ทีหลังทับ Drive เป็น 1)");
+                }
+
+                if (!doSequanaFirst && gustPending) {
+                    const vGrade = parseInt(document.querySelector('.opponent-side .circle.vc .card')?.dataset.grade || "0");
+                    if (vGrade >= 3) {
+                        if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ ต้องการ [ทิ้งมือ 1 ใบ] เพื่อรับโบนัส Drive +1?")) {
+                            if (await payDiscard(1)) {
+                                card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
+                                alert("Gust: ได้รับ Drive +1 สำเร็จ!");
+                            }
+                        }
+                    }
+                    gustPending = false; // Gust used
+                }
+
                 if (await vgConfirm(`Sequana: [AUTO](RC) เมื่อ RevolDress เกิดขึ้น [COST][นำ Sequana เข้าโซล] ปรับ Drive แวนการ์ดเป็น 1?`)) {
                     // Put Sequana into soul
                     seq.remove();
@@ -8152,7 +8211,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Set VG drive to 1
                     card.dataset.drive = "1";
                     alert(`Sequana: เข้าโซลแล้ว! VG Drive ปรับเป็น 1`);
-                    break; // Only one Sequana activation
+                }
+                break; // Only one Sequana activation
+            }
+        }
+
+        if (gustPending) {
+            const vGrade = parseInt(document.querySelector('.opponent-side .circle.vc .card')?.dataset.grade || "0");
+            if (vGrade >= 3) {
+                if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ ต้องการ [ทิ้งมือ 1 ใบ] เพื่อรับโบนัส Drive +1?")) {
+                    if (await payDiscard(1)) {
+                        card.dataset.drive = (parseInt(card.dataset.drive || "2") + 1).toString();
+                        alert("Gust: ได้รับ Drive +1 สำเร็จ!");
+                    }
                 }
             }
         }
