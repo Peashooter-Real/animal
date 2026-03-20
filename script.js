@@ -5358,6 +5358,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Bruce's Start of Battle Phase Ability
                 checkBruceBattleAbility();
             } else if (currentPhaseName === 'end') {
+                // --- Youthberk RevolDress End Turn Cleanup ---
+                const revolVG = document.querySelector('.my-side .circle.vc .card');
+                if (revolVG && revolVG.dataset.isRevolDressRide === "true") {
+                    const vc = revolVG.parentElement;
+                    if (soulPool.length > 0) {
+                        // Find a card with Skyfall Arms or [RevolDress] specifically
+                        let revolDressIdx = soulPool.findIndex(c => (c.dataset.name || "").includes('Skyfall Arms'));
+                        if (revolDressIdx === -1) {
+                            revolDressIdx = soulPool.findIndex(c => (c.dataset.skill || "").includes('[RevolDress]'));
+                        }
+                                                
+                        if (revolDressIdx !== -1) {
+                            const skyfall = soulPool.splice(revolDressIdx, 1)[0];
+                            revolVG.remove();
+                            soulPool.push(revolVG);
+                            revolVG.dataset.isRevolDressRide = "false";
+
+                            vc.appendChild(skyfall);
+                            skyfall.classList.add('rest');
+                            skyfall.style.transform = 'none';
+
+                            sendMoveData(revolVG, 'soul');
+                            sendMoveData(skyfall);
+                            updateSoulUI();
+                            alert(`RevolDress สิ้นสุดผล: ${revolVG.dataset.name} กลับเข้าโซล และไรด์ ${skyfall.dataset.name} ตัวหลักกลับมาแทนในสภาพ [Rest]`);
+                        }
+                    }
+                }
+
                 // Inlet Pulse Dragon [AUTO](RC) End of Turn Ability
                 const inletPluseUnits = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
                     .filter(c => c.dataset.name.includes('Inlet Pulse Dragon'));
@@ -5414,31 +5443,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.promptedEndTurn = false;
         window.rodeFromG3ThisTurn = false;
         resetMyUnits();
-
-        // --- Youthberk RevolDress End Turn Cleanup ---
-        const revolVG = document.querySelector('.my-side .circle.vc .card');
-        if (revolVG && revolVG.dataset.isRevolDressRide === "true") {
-            const vc = revolVG.parentElement;
-            if (soulPool.length > 0) {
-                // Find Skyfall Arms unit in soul
-                const revolDressIdx = soulPool.findIndex(c => c.dataset.name && (c.dataset.name.includes('Skyfall Arms') || c.dataset.name.includes('Youthberk')));
-                if (revolDressIdx !== -1) {
-                    const skyfall = soulPool.splice(revolDressIdx, 1)[0];
-                    revolVG.remove();
-                    soulPool.push(revolVG);
-                    revolVG.dataset.isRevolDressRide = "false";
-
-                    vc.appendChild(skyfall);
-                    skyfall.classList.add('rest');
-                    skyfall.style.transform = 'none';
-
-                    sendMoveData(revolVG, 'soul');
-                    sendMoveData(skyfall);
-                    updateSoulUI();
-                    alert(`RevolDress สิ้นสุดผล: ${revolVG.dataset.name} กลับเข้าโซล และไรด์ ${skyfall.dataset.name} ตัวหลักกลับมาแทนในสภาพ [Rest]`);
-                }
-            }
-        }
 
         window.otStoicheiaActive = false;
         window.killshroudDebuffActive = false;
@@ -7242,7 +7246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Richter End of Battle: Choose between own skill or Avantgarda Restand ---
+        // --- Richter End of Battle: Order abilities ---
         if (name.includes('richter') && attacker.dataset.avantStandReady === "true") {
             const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
             const baseAvant = bindPool.find(c => c.dataset.name.includes('"Skyrender" Avantgarda'));
@@ -7252,94 +7256,76 @@ document.addEventListener('DOMContentLoaded', () => {
             const canUseRichterSkill = hasSora && baseAvant && playerHand.querySelectorAll('.card').length >= 2;
             const canUseAvantRestand = (isHitVG || isPersona);
 
-            if (canUseRichterSkill && canUseAvantRestand) {
-                const choice = await vgConfirm(
-                    "เลือกสกิลที่จะใช้:\n" +
-                    "✅ CONFIRM = Richter: [ทิ้ง 2 ใบ] ไรด์ Avantgarda จากไบนด์ Stand + Power+10000 + Drive-1\n" +
-                    "❌ CANCEL = Avantgarda Restand: [CB1 + ทิ้ง 1 ใบ] Stand + Drive-1"
-                );
+            // New approach: use resolveAbilityQueue
+            const queue = [];
 
-                if (choice) {
-                    if (await payDiscard(2)) {
-                        const idx = bindPool.indexOf(baseAvant);
-                        bindPool.splice(idx, 1);
-                        const vc = document.querySelector('.my-side .circle.vc');
-                        attacker.remove();
-                        soulPool.push(attacker);
-                        sendMoveData(attacker, 'soul');
-                        vc.appendChild(baseAvant);
-                        baseAvant.classList.remove('rest');
-                        baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
-                        baseAvant.dataset.drive = "1";
-                        baseAvant.dataset.avantStandReady = "true";
-                        syncPowerDisplay(baseAvant);
-                        updateAllStaticBonuses();
-                        updateSoulUI();
-                        sendMoveData(baseAvant);
-                        sendData({ type: 'syncBindCount', count: bindPool.length });
-                        alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
-                        return;
+            if (canUseAvantRestand) {
+                queue.push({
+                    name: "Avantgarda (Inherited AUTO): Restand",
+                    description: "[CB1 & ทิ้ง 1 ใบ] Stand และ Drive-1 (แนะนำให้ใช้ก่อน Ride back)",
+                    resolve: async (done) => {
+                        const handCount = playerHand.querySelectorAll('.card').length;
+                        const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
+                        if (handCount >= 1 && openDamage >= 1) {
+                            if (await vgConfirm("Avantgarda Skill: [CB1 & ทิ้งมือ 1 ใบ] เพื่อ Stand?")) {
+                                if (await payDiscard(1)) {
+                                    if (payCounterBlast(1)) {
+                                        attacker.classList.remove('rest');
+                                        attacker.dataset.avantStandReady = "false";
+                                        let currentDrive = parseInt(attacker.dataset.drive || "2");
+                                        attacker.dataset.drive = Math.max(0, currentDrive - 1).toString();
+                                        alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
+                                        sendMoveData(attacker);
+                                    }
+                                }
+                            }
+                        } else {
+                            alert("คอสต์ไม่เพียงพอสำหรับ Restand! (ต้องการ CB1 + ทิ้ง 1 ใบ)");
+                        }
+                        if (done) done();
                     }
-                } else {
-                    const handCount = playerHand.querySelectorAll('.card').length;
-                    const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
-                    if (handCount >= 1 && openDamage >= 1) {
-                        if (await payDiscard(1)) {
-                            if (payCounterBlast(1)) {
-                                attacker.classList.remove('rest');
-                                attacker.dataset.avantStandReady = "false";
-                                let currentDrive = parseInt(attacker.dataset.drive || "2");
-                                attacker.dataset.drive = Math.max(0, currentDrive - 1).toString();
-                                alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
-                                sendMoveData(attacker);
-                                return;
+                });
+            }
+
+            if (canUseRichterSkill) {
+                queue.push({
+                    name: "Richter AUTO: Ride Back",
+                    description: "[ทิ้งการ์ด 2 ใบ] ไรด์ Avantgarda จากไบนด์แบบ Stand + Power+10000 + Drive-1",
+                    resolve: async (done) => {
+                        if (await vgConfirm("Richter: [ทิ้ง 2 ใบ] ไรด์ Avantgarda จากไบนด์แบบ [Stand]?")) {
+                            if (await payDiscard(2)) {
+                                const idx = bindPool.indexOf(baseAvant);
+                                bindPool.splice(idx, 1);
+                                const vc = document.querySelector('.my-side .circle.vc');
+                                
+                                // Store attacker data before removal to know if it was Richter
+                                const oldAttacker = attacker;
+                                
+                                oldAttacker.remove();
+                                soulPool.push(oldAttacker);
+                                sendMoveData(oldAttacker, 'soul');
+                                
+                                vc.appendChild(baseAvant);
+                                baseAvant.classList.remove('rest');
+                                baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
+                                baseAvant.dataset.drive = "1";
+                                baseAvant.dataset.avantStandReady = "true";
+                                syncPowerDisplay(baseAvant);
+                                updateAllStaticBonuses();
+                                updateSoulUI();
+                                sendMoveData(baseAvant);
+                                sendData({ type: 'syncBindCount', count: bindPool.length });
+                                alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
                             }
                         }
-                    } else {
-                        alert("คอสต์ไม่เพียงพอ! (ต้องการ CB1 + ทิ้ง 1 ใบ)");
+                        if (done) done();
                     }
-                }
-            } else if (canUseRichterSkill) {
-                if (await vgConfirm("Richter: [AUTO] [ทิ้งการ์ด 2 ใบจากมือ] ไรด์ Avantgarda จากไบนด์แบบ [Stand]?")) {
-                    if (await payDiscard(2)) {
-                        const idx = bindPool.indexOf(baseAvant);
-                        bindPool.splice(idx, 1);
-                        const vc = document.querySelector('.my-side .circle.vc');
-                        attacker.remove();
-                        soulPool.push(attacker);
-                        sendMoveData(attacker, 'soul');
-                        vc.appendChild(baseAvant);
-                        baseAvant.classList.remove('rest');
-                        baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
-                        baseAvant.dataset.drive = "1";
-                        baseAvant.dataset.avantStandReady = "true";
-                        syncPowerDisplay(baseAvant);
-                        updateAllStaticBonuses();
-                        updateSoulUI();
-                        sendMoveData(baseAvant);
-                        sendData({ type: 'syncBindCount', count: bindPool.length });
-                        alert("Avantgarda: Ride จาก Bind สำเร็จ! Power +10000 / Drive -1 / Restand!");
-                        return;
-                    }
-                }
-            } else if (canUseAvantRestand) {
-                const handCount = playerHand.querySelectorAll('.card').length;
-                const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
-                if (handCount >= 1 && openDamage >= 1) {
-                    if (await vgConfirm("Richter (Avantgarda Skill): [CB1 & ทิ้งมือ 1 ใบ] Stand + Drive -1?")) {
-                        if (await payDiscard(1)) {
-                            if (payCounterBlast(1)) {
-                                attacker.classList.remove('rest');
-                                attacker.dataset.avantStandReady = "false";
-                                let currentDrive = parseInt(attacker.dataset.drive || "2");
-                                attacker.dataset.drive = Math.max(0, currentDrive - 1).toString();
-                                alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
-                                sendMoveData(attacker);
-                                return;
-                            }
-                        }
-                    }
-                }
+                });
+            }
+
+            if (queue.length > 0) {
+                await resolveAbilityQueue(queue);
+                return;
             }
         }
 
