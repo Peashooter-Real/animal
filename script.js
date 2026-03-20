@@ -3085,11 +3085,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. Drop Zone Validation (Discard for Ride Cost)
         if (zone.classList.contains('drop-zone')) {
             if (isFromHand) {
-                const isRidePhase = currentPhase === 'ride';
+                const isRidePhase = currentPhase === 'ride' || phases[currentPhaseIndex] === 'ride';
                 const canAutoRide = isRidePhase && !hasDiscardedThisTurn && !hasRiddenThisTurn;
                 const isDefending = isGuarding;
+                const isClickToRide = isRidePhase && document.querySelector('.player-hand .card.selected-for-ride') === card;
 
-                if (!canAutoRide && !isDefending) {
+                if (!canAutoRide && !isDefending && !isClickToRide) {
                     alert("Movement Blocked: You can only discard from hand to pay for a Ride cost or when Guarding.");
                     return false;
                 }
@@ -5514,13 +5515,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 case 'end':
                     // AI End Turn
-                    aiEndTurn();
+                    await aiEndTurn();
                     break;
             }
         } catch (e) {
             console.error("AI Error:", e);
         } finally {
             aiThinking = false;
+            // If it's still AI's turn, proceed to the next phase after a short delay
+            if (isAIMode && !isMyTurn) {
+                setTimeout(runAITurn, 500);
+            }
         }
     }
 
@@ -5607,7 +5612,190 @@ document.addEventListener('DOMContentLoaded', () => {
         vc.appendChild(newNode);
         alert(`AI ไรด์: ${nextCard.name}! (ทิ้งการ์ด 1 ใบเพื่อไรด์จาก Ride Deck)`);
         syncAIStateToUI();
+        await handleAIRideAbilities(newNode, oldCard, discarded);
         await aiWait(1000);
+    }
+
+    async function handleAIRideAbilities(newVanguard, oldVanguard, discardedCard) {
+        if (!newVanguard) return;
+        const newName = (newVanguard.dataset.name || "").toLowerCase();
+        const oldName = oldVanguard ? (oldVanguard.dataset.name || "").toLowerCase() : "";
+        const discName = discardedCard ? (discardedCard.name || "").toLowerCase() : "";
+
+        // 1. Habitable Zone
+        if (discName.includes('habitable zone') && aiSoul.length >= 1) {
+            aiDrop.push(aiSoul.shift());
+            aiDeck.push(discardedCard);
+            if (aiDeck.length > 0) aiHand.push(aiDeck.shift());
+            alert("AI Habitable Zone: SB1, ได้รับ 1 จั่ว!");
+            await aiWait(800);
+        }
+
+        // 2. Bruce Ride Line
+        if (aiDeckType === 'bruce') {
+            if (newName.includes('steve') || newName.includes('richard')) {
+                if (aiSoul.length > 0) {
+                    aiDrop.push(aiSoul.shift());
+                    if (newName.includes('richard') && aiDeck.length > 0) {
+                        aiHand.push(aiDeck.shift());
+                        alert("AI Richard: SB1, ได้รับ 1 จั่ว!");
+                    } else {
+                        if (aiDeck.length > 0) aiSoul.push(aiDeck.shift());
+                        alert("AI Steve: Soul Charge 1!");
+                    }
+                    await aiWait(800);
+                }
+            }
+        }
+        
+        // 3. Youthberk Ride Line
+        if (aiDeckType === 'youthberk') {
+            if (newName.includes('determined to break away')) {
+                // G1 Youth Skill: SB1 look top 3
+                if (aiSoul.length > 0 && aiDeck.length >= 3) {
+                    aiDrop.push(aiSoul.shift());
+                    const top3 = aiDeck.splice(0, 3);
+                    const choice = top3.find(c => c.name.toLowerCase().includes('youthberk') || parseInt(c.grade) <= 2);
+                    if (choice) {
+                        aiHand.push(choice);
+                        alert(`AI Youthberk (G1): ค้นหา ${choice.name} และนำขึ้นมือสำเร็จ!`);
+                        const remaining = top3.filter(c => c !== choice);
+                        aiDeck.push(...remaining);
+                    } else {
+                        aiDeck.push(...top3);
+                        alert("AI Youthberk (G1): พิจารณาแล้วไม่พบเป้าหมายที่ต้องการ");
+                    }
+                    await aiWait(800);
+                }
+            } else if (newName.includes('determined defiance')) {
+                if (!isFirstPlayer && aiDeck.length > 0) {
+                    aiHand.push(aiDeck.shift());
+                    alert("AI Youthberk: โบนัสเริ่มทีหลังเป้าหมายสำเร็จ ได้รับ 1 จั่ว!");
+                    await aiWait(800);
+                }
+            } else if (newName.includes('protofall arms') || newName.includes('skyfall arms')) {
+                const revolIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('revolform'));
+                if (revolIdx !== -1) {
+                    aiHand.push(aiDeck.splice(revolIdx, 1)[0]);
+                    alert(`AI ${newName.includes('proto') ? 'Protofall' : 'Skyfall'}: ค้นหา RevolForm ขึ้นมือสำเร็จ!`);
+                    if (newName.includes('skyfall arms') && aiHand.length > 0) {
+                        aiDrop.push(aiHand.shift());
+                    }
+                    await aiWait(800);
+                }
+            }
+        }
+
+        // 4. Magnolia Ride Line
+        if (aiDeckType === 'magnolia') {
+            if (newName.includes('giunosla') && aiSoul.length > 0) {
+                aiDrop.push(aiSoul.shift());
+                alert("AI Giunosla: SB1!");
+                await aiWait(800);
+            }
+        }
+
+        // 5. Nirvana Jheva Ride Line
+        if (aiDeckType === 'nirvana') {
+            if (newName.includes('reiyu') && oldName.includes('rino')) {
+                const trickIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('trickstar'));
+                if (trickIdx !== -1) {
+                    const trick = aiDeck.splice(trickIdx, 1)[0];
+                    const emptyRC = [1, 2, 4, 5].find(i => !document.querySelector(`.opponent-side .circle.rc[data-zone="rc${i}"] .card`));
+                    if (emptyRC !== undefined) {
+                        const circle = document.querySelector(`.opponent-side .circle.rc[data-zone="rc${emptyRC}"]`);
+                        circle.appendChild(createOpponentCardElement(trick));
+                        alert("AI Reiyu: ค้นหา Trickstar และคอลลง RC สำเร็จ!");
+                        await aiWait(800);
+                    }
+                }
+            } else if (newName.includes('nirvana jheva') && oldName.includes('reiyu')) {
+                const prayerIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('prayer dragon') || c.name.toLowerCase().includes('equip'));
+                if (prayerIdx !== -1) {
+                    aiHand.push(aiDeck.splice(prayerIdx, 1)[0]);
+                    alert("AI Nirvana Jheva: ค้นหา Prayer Dragon ขึ้นมือสำเร็จ!");
+                    await aiWait(800);
+                }
+            }
+        }
+
+        // 6. Avantgarda Ride Line
+        if (aiDeckType === 'avantgarda') {
+            const hasSora = aiSoul.some(c => c.name.toLowerCase().includes('sora period'));
+            if (hasSora) {
+                if (newName.includes('stelvane')) {
+                    const stratIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('strategy') && parseInt(c.grade) === 1);
+                    if (stratIdx !== -1) {
+                        aiHand.push(aiDeck.splice(stratIdx, 1)[0]);
+                        alert("AI Stelvane: ค้นหาเกรด 1 Strategy ขึ้นมือสำเร็จ!");
+                    } else {
+                        const emptyRC = [1, 2, 4, 5].find(i => !document.querySelector(`.opponent-side .circle.rc[data-zone="rc${i}"] .card`));
+                        if (emptyRC !== undefined) {
+                            const circle = document.querySelector(`.opponent-side .circle.rc[data-zone="rc${emptyRC}"]`);
+                            circle.appendChild(createOpponentCardElement(oldVanguard));
+                            alert("AI Stelvane: ไม่พบ Strategy, คอล Findanis ลง RC แทน!");
+                        }
+                    }
+                    await aiWait(800);
+                } else if (newName.includes('avantgarda')) {
+                    const stratIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('strategy') && parseInt(c.grade) === 2);
+                    if (stratIdx !== -1) {
+                        aiHand.push(aiDeck.splice(stratIdx, 1)[0]);
+                        alert("AI Avantgarda: ค้นหาเกรด 2 Strategy ขึ้นมือสำเร็จ!");
+                    } else {
+                        const emptyRC = [1, 2, 4, 5].find(i => !document.querySelector(`.opponent-side .circle.rc[data-zone="rc${i}"] .card`));
+                        if (emptyRC !== undefined) {
+                            const circle = document.querySelector(`.opponent-side .circle.rc[data-zone="rc${emptyRC}"]`);
+                            circle.appendChild(createOpponentCardElement(oldVanguard));
+                            alert("AI Avantgarda: ไม่พบ Strategy, คอล Stelvane ลง RC แทน!");
+                        }
+                    }
+                    await aiWait(800);
+                }
+            }
+        }
+
+        // 7. Majesty Ride Line
+        if (aiDeckType === 'majesty') {
+            if (newName.includes('maron') && !isFirstPlayer && aiDeck.length > 0) {
+                aiHand.push(aiDeck.shift());
+                alert("AI Maron: โบนัสเเริ่มทีหลังสำเร็จ จั่ว 1!");
+            } else if (newName.toLowerCase().includes('blaster') && oldName.includes('maron')) {
+                const blasterIdx = aiDeck.findIndex(c => c.name.toLowerCase().includes('blaster') && parseInt(c.grade) === 2);
+                if (blasterIdx !== -1) {
+                    aiHand.push(aiDeck.splice(blasterIdx, 1)[0]);
+                    alert("AI Maron: ค้นหา Blaster G2 ขึ้นมือสำเร็จ!");
+                } else if (aiSoul.length > 0) {
+                    const wingulIdx = aiSoul.findIndex(c => c.name.toLowerCase().includes('wingul'));
+                    if (wingulIdx !== -1) {
+                        const wingul = aiSoul.splice(wingulIdx, 1)[0];
+                        const emptyRC = [1, 2, 4, 5].find(i => !document.querySelector(`.opponent-side .circle.rc[data-zone="rc${i}"] .card`));
+                        if (emptyRC !== undefined) {
+                            const circle = document.querySelector(`.opponent-side .circle.rc[data-zone="rc${emptyRC}"]`);
+                            circle.appendChild(createOpponentCardElement(wingul));
+                            alert("AI Maron: คอล Wingul Brave จากโซลสำเร็จ!");
+                        }
+                    }
+                }
+                await aiWait(800);
+            } else if (newName.includes('blaster blade')) {
+                // AI Blaster Blade: Retire one player RG OR Draw 1
+                const playerRGs = document.querySelectorAll('.my-side .circle.rc .card');
+                if (playerRGs.length > 0 && aiSoul.length >= 1) { // Simple check, suppose CB1 == soul check for AI for now or just generic
+                    const target = playerRGs[0];
+                    alert(`AI Blaster Blade: รีไทร์ ${target.dataset.name}!`);
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    if (dropZone) dropZone.appendChild(target);
+                    sendMoveData(target);
+                } else {
+                    if (aiDeck.length > 0) aiHand.push(aiDeck.shift());
+                    alert("AI Blaster Blade: จั่วการ์ด 1 ใบ!");
+                }
+                await aiWait(800);
+            }
+        }
+        
+        syncAIStateToUI();
     }
 
     async function performAIMainPhase() {
@@ -5698,6 +5886,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function evaluateAIHitResult(attacker, targetId, crit) {
+        const target = document.querySelector(`.my-side .circle.${targetId} .card`);
+        if (attacker && target) {
+            const finalPower = parseInt(attacker.dataset.power);
+            let playerShield = 0;
+            let isPG = false;
+            
+            if (isAIMode && !isMyTurn) {
+                playerShield = window.playerGuardShield || 0;
+                isPG = window.playerGuardIsPG || false;
+            } else {
+                playerShield = parseInt(document.getElementById('gc-shield-display').textContent.split(': ')[1] || "0");
+            }
+            
+            const playerPower = parseInt(target.dataset.power) + playerShield;
+            const isVanguardTarget = targetId === 'vc';
+            
+            let isHit = false;
+            if (isPG) {
+                alert("ATTACK BLOCKED BY PERFECT GUARD!");
+                isHit = false;
+            } else {
+                isHit = finalPower >= playerPower;
+                alert(`AI Attack Result: ${finalPower} vs ${playerPower}. Hit: ${isHit}`);
+            }
+            
+            if (isHit && isVanguardTarget) {
+                processPlayerDamage(crit);
+            } else if (isHit && !isVanguardTarget) {
+                alert(`AI destroyed your Rear-guard ${target.dataset.name}!`);
+                const dropZone = document.querySelector('.my-side .drop-zone');
+                if (dropZone) dropZone.appendChild(target);
+                sendMoveData(target);
+            }
+        }
+    }
+
     async function executeAIAttack(unit) {
         if (unit.classList.contains('rest')) return;
         
@@ -5721,6 +5946,8 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`AI ATTACKS ${target === 'vc' ? 'Vanguard' : 'Rear-guard'} with ${unit.dataset.name} (Power: ${power})!`);
         await aiWait(1000);
         
+        window.aiCurrentAttackTarget = target;
+        
         // Trigger Player Guarding Phase
         const isVanguardTarget = target === 'vc';
         await startPlayerGuardPhase(unit, power, isVanguardTarget);
@@ -5729,23 +5956,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (unit.parentElement.classList.contains('vc')) {
             const driveCount = parseInt(unit.dataset.tripleDrive === "true" ? "3" : (parseInt(unit.dataset.grade || "0") >= 3 ? "2" : "1"));
             await aiDriveCheck(driveCount, parseInt(unit.dataset.critical || "1"));
+        } else {
+            await evaluateAIHitResult(unit, target, parseInt(unit.dataset.critical || "1"));
         }
 
         unit.classList.remove('attacking-glow');
         unit.classList.add('rest');
-        await aiWait(1000);
+        await aiWait(1000); // Pause after attack finishes
     }
 
-    async function startPlayerGuardPhase(attacker, power, isVanguardTarget = true) {
+    async function startPlayerGuardPhase(attacker, power, isVanguardTarget) {
         // This is where we prompt the player to guard
+        const target = document.querySelector(`.my-side .circle.${isVanguardTarget ? 'vc' : 'rc'} .card`);
         const attackData = {
-            cardName: attacker.dataset.name,
-            power: power,
-            critical: parseInt(attacker.dataset.critical || "1"),
-            isVanguard: attacker.parentElement.classList.contains('vc'),
-            targetId: isVanguardTarget ? 'vc' : 'rc' // Simplified for AI mode
+            attackerName: attacker.dataset.name,
+            attackerId: attacker.id,
+            totalPower: power,
+            totalCritical: parseInt(attacker.dataset.critical || "1"),
+            isVanguardAttacker: attacker.parentElement.classList.contains('vc'),
+            targetName: target ? target.dataset.name : (isVanguardTarget ? "Vanguard" : "Rear-guard"),
+            targetId: isVanguardTarget ? 'vc' : 'rc'
         };
         
+        isWaitingForGuard = true;
         await showGuardDecision(attackData);
         // Wait for player to finish guarding (this is handled by internal game logic via buttons)
         return new Promise(resolve => {
@@ -5955,6 +6188,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (aDeckKey === 'magnolia') aiFullDeck = magnoliaDeck;
         else if (aDeckKey === 'youthberk') aiFullDeck = youthberkDeck;
         else if (aDeckKey === 'avantgarda') aiFullDeck = avantgardaDeck;
+        else if (aDeckKey === 'nirvana') aiFullDeck = nirvanaDeck;
+        else if (aDeckKey === 'majesty') aiFullDeck = majestyDeck;
 
         aiRideDeck = [...aiFullDeck.rideDeck];
         aiDeck = [...aiFullDeck.mainDeck].sort(() => 0.5 - Math.random());
@@ -6133,19 +6368,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (count <= 0) {
             // Hit check
             const attacker = document.querySelector('.opponent-side .circle.vc .card');
-            const target = document.querySelector('.my-side .circle.vc .card');
-            if (attacker && target) {
-                const finalPower = parseInt(attacker.dataset.power);
-                const playerShield = parseInt(document.getElementById('gc-shield-display').textContent.split(': ')[1] || "0");
-                const playerPower = parseInt(target.dataset.power) + playerShield;
-                
-                const isHit = finalPower >= playerPower;
-                alert(`AI Attack Result: ${finalPower} vs ${playerPower}. Hit: ${isHit}`);
-                
-                if (isHit) {
-                    processPlayerDamage(crit);
-                }
-            }
+            const targetId = window.aiCurrentAttackTarget || 'vc';
+            await evaluateAIHitResult(attacker, targetId, crit);
             return;
         }
 
@@ -6179,19 +6403,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Hit check
             const attacker = document.querySelector('.opponent-side .circle.vc .card');
-            const target = document.querySelector('.my-side .circle.vc .card');
-            if (attacker && target) {
-                const finalPower = parseInt(attacker.dataset.power);
-                const playerShield = parseInt(document.getElementById('gc-shield-display').textContent.split(': ')[1] || "0");
-                const playerPower = parseInt(target.dataset.power) + playerShield;
-                
-                const isHit = finalPower >= playerPower;
-                alert(`AI Attack Result: ${finalPower} vs ${playerPower}. Hit: ${isHit}`);
-                
-                if (isHit) {
-                    processPlayerDamage(crit);
-                }
-            }
+            const targetId = window.aiCurrentAttackTarget || 'vc';
+            await evaluateAIHitResult(attacker, targetId, crit);
         }
     }
 
@@ -7668,7 +7881,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-no-guard').addEventListener('click', () => {
             overlay.style.display = 'none';
             window.currentIncomingAttack = null;
-            sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
+            if (isAIMode && !isMyTurn) {
+                window.playerGuardShield = 0;
+                window.playerGuardIsPG = false;
+                isWaitingForGuard = false;
+            } else {
+                sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
+            }
         });
 
         overlay.style.display = 'flex';
@@ -7735,12 +7954,18 @@ document.addEventListener('DOMContentLoaded', () => {
             updateGCShield();
 
             btn.remove();
-            sendData({
-                type: 'finishGuard',
-                attackData: attackData,
-                totalShield: totalShieldAdded,
-                isPG: isPGActivated
-            });
+            if (isAIMode && !isMyTurn) {
+                window.playerGuardShield = totalShieldAdded;
+                window.playerGuardIsPG = isPGActivated;
+                isWaitingForGuard = false;
+            } else {
+                sendData({
+                    type: 'finishGuard',
+                    attackData: attackData,
+                    totalShield: totalShieldAdded,
+                    isPG: isPGActivated
+                });
+            }
         };
         document.body.appendChild(btn);
     }
