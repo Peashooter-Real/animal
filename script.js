@@ -4678,7 +4678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const vg = document.querySelector('.my-side .circle.vc .card');
                     const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
 
-                    if (isWayward && (isMyTurn || true) && vgGrade >= 3 && soulPool.length > 0) {
+                    if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
                         // First move to drop, then ask if they want to activate
                         dropZone.appendChild(target);
                         sendMoveData(target);
@@ -4705,6 +4705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     sendMoveData(target);
                                     updateDropCount();
                                     alert(`Wayward Therapy Angel: คอลลงแถวหลัง ${emptyBackRow} สำเร็จ!`);
+                                    await checkOnPlaceAbilities(target);
                                 } else {
                                     // Let player choose which back row to override
                                     alert("เลือกช่องแถวหลังเพื่อวาง Wayward Therapy Angel");
@@ -4718,7 +4719,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     ev.stopPropagation();
                                                     const existing = targetCircle.querySelector('.card:not(.opponent-card)');
                                                     if (existing) {
-                                                        dropZone.appendChild(existing);
+                                                        const drop = document.querySelector('.my-side .drop-zone');
+                                                        drop.appendChild(existing);
                                                         existing.classList.remove('rest');
                                                         sendMoveData(existing);
                                                     }
@@ -4759,30 +4761,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     selectedCount += discardInc;
                     
-                    if (discardInc > 1) { // Means Halbe was used as 2
+                    if (discardInc > 1 || (target.dataset.name && target.dataset.name.includes('Dragritter, Halbe') && isMyTurn)) {
                         if (await vgConfirm("Halbe: [AUTO] เมื่อถูกทิ้งเป็นคอสต์ คอลลงช่องแถวหลัง (RC) และรับพลัง +5000 จนจบเทิร์น?")) {
                             target.dataset.power = (parseInt(target.dataset.power) + 5000).toString();
                             target.dataset.turnEndBuffPower = (parseInt(target.dataset.turnEndBuffPower || "0") + 5000).toString();
                             target.dataset.turnEndBuffActive = "true";
                             syncPowerDisplay(target);
                             
-                            const backRows = ['rc_back_left', 'rc_back_center', 'rc_back_right'];
-                            const emptyBackRow = backRows.find(z => {
-                                const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
-                                return circle && !circle.querySelector('.card:not(.opponent-card)');
+                            alert("เลือกช่องแถวหลังเพื่อวาง Dragritter, Halbe");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(halbeRes => {
+                                const halbeListener = async (ev) => {
+                                    const targetCircle = ev.target.closest('.my-side .circle.rc');
+                                    if (targetCircle) {
+                                        const circleZone = targetCircle.dataset.zone || "";
+                                        if (circleZone.includes('back')) {
+                                            ev.stopPropagation();
+                                            const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                            if (existing) {
+                                                const drop = document.querySelector('.my-side .drop-zone');
+                                                drop.appendChild(existing);
+                                                existing.classList.remove('rest');
+                                                sendMoveData(existing);
+                                            }
+                                            targetCircle.appendChild(target);
+                                            target.classList.remove('rest');
+                                            applyStaticBonuses(target);
+                                            sendMoveData(target);
+                                            updateDropCount();
+                                            document.body.classList.remove('targeting-mode');
+                                            document.removeEventListener('click', halbeListener, true);
+                                            alert(`Halbe: คอลลงแถวหลังสำเร็จ!`);
+                                            await checkOnPlaceAbilities(target);
+                                            halbeRes();
+                                        } else {
+                                            alert("เลือกได้เฉพาะช่องแถวหลังเท่านั้น!");
+                                        }
+                                    }
+                                };
+                                document.addEventListener('click', halbeListener, true);
                             });
-                            
-                            if (emptyBackRow) {
-                                target.remove();
-                                const circle = document.querySelector(`.my-side .circle[data-zone="${emptyBackRow}"]`);
-                                circle.appendChild(target);
-                                applyStaticBonuses(target);
-                                sendMoveData(target);
-                                updateDropCount();
-                                alert(`Halbe: คอลลงแถวหลัง ${emptyBackRow} เรียบร้อย!`);
-                            } else {
-                                alert("ช่องแถวหลังเต็ม โปรดเลือกช่องที่มีเพื่อทับหรือวางในพื้นที่ที่ว่าง!");
-                            }
                         }
                     }
 
@@ -6513,9 +6531,16 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
             return;
         }
+
+        // --- NEW: Trigger End Phase abilities before ending turn ---
+        if (phases[currentPhaseIndex] !== 'end') {
+            currentPhaseIndex = phases.indexOf('end');
+            await updatePhaseUI(true);
+        }
+
         // Allow end turn if in End phase even if flags are stuck, or if user forces it
-        if ((isWaitingForGuard || currentAttackResolving) && phases[currentPhaseIndex] !== 'end') {
-            alert("กรุณารอให้การต่อสู้จบก่อน! (หรือไปที่ End Phase เพื่อจบเทิร์น)");
+        if ((isWaitingForGuard || currentAttackResolving)) {
+            alert("กรุณารอให้การต่อสู้จบก่อน!");
             return;
         }
         currentTurn++;
@@ -8546,8 +8571,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let restrictMsg = "";
+        let isTotalRestrict = false;
         if (attackData.guardRestrictGrades && attackData.guardRestrictGrades.length > 0) {
-            restrictMsg += `<p style="color:#ff2a6d; font-weight:bold; margin-top:10px;">GUARD RESTRICT: ยูนิทมือเกรด ${attackData.guardRestrictGrades.join(', ')} คอลไม่ได้!</p>`;
+            // Check if all grades (0-5) are restricted
+            const gradesStr = attackData.guardRestrictGrades.map(g => g.toString());
+            if (["0", "1", "2", "3", "4", "5"].every(g => gradesStr.includes(g))) {
+                isTotalRestrict = true;
+                restrictMsg = `<p style="color:#ff2a6d; font-weight:bold; font-size: 1.1rem; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px;">!! GUARD RESTRICT !!<br><span style="font-size: 0.9rem;">ไม่สามารถคอลการ์ดจากมือลง (GC) ได้!</span></p>`;
+            } else {
+                restrictMsg += `<p style="color:#ff2a6d; font-weight:bold; margin-top:10px;">GUARD RESTRICT: ยูนิทมือเกรด ${attackData.guardRestrictGrades.join(', ')} คอลไม่ได้!</p>`;
+            }
         }
         if (attackData.guardRestrictCount && attackData.guardRestrictCount > 1) {
             restrictMsg += `<p style="color:#ff2a6d; font-weight:bold; margin-top:5px;">GUARD RESTRICT: ต้อง Guard ด้วยการ์ดจากมือครั้งละ ${attackData.guardRestrictCount} ใบขึ้นไป!</p>`;
@@ -8561,8 +8594,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </h2>
                 ${restrictMsg}
                 <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <button id="btn-guard" class="glass-btn highlight-btn" style="padding: 1.2rem; font-size: 1.3rem; background: var(--accent-blue); color: #001020; border: none; width: 100%;">GUARD</button>
-                    <button id="btn-no-guard" class="glass-btn" style="padding: 1.2rem; font-size: 1.3rem; background: rgba(248, 113, 113, 0.2); color: #fecaca; border: 1px solid #f87171; width: 100%;">NO GUARD</button>
+                    <button id="btn-guard" class="glass-btn highlight-btn" style="padding: 1.2rem; font-size: 1.3rem; background: ${isTotalRestrict ? '#333' : 'var(--accent-blue)'}; color: ${isTotalRestrict ? '#777' : '#001020'}; border: ${isTotalRestrict ? '1px solid #555' : 'none'}; width: 100%; pointer-events: ${isTotalRestrict ? 'none' : 'auto'};" ${isTotalRestrict ? 'disabled' : ''}>${isTotalRestrict ? 'CANNOT GUARD' : 'GUARD'}</button>
+                    <button id="btn-no-guard" class="glass-btn" style="padding: 1.2rem; font-size: 1.3rem; background: ${isTotalRestrict ? 'rgba(255, 42, 109, 0.3)' : 'rgba(248, 113, 113, 0.2)'}; color: ${isTotalRestrict ? '#fff' : '#fecaca'}; border: 1px solid ${isTotalRestrict ? 'var(--accent-vanguard)' : '#f87171'}; width: 100%; font-weight: ${isTotalRestrict ? 'bold' : 'normal'}; animation: ${isTotalRestrict ? 'pulse-vanguard 2s infinite' : 'none'};">NO GUARD</button>
                 </div>
             </div>
         `;
