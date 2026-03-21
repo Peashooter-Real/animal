@@ -1914,8 +1914,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function finishDamageProcess() {
             if (cardData.trigger === 'Over') {
-                alert("Over Trigger ออกตอนเช็คดาเมจ! นำการ์ดออกจากเกม และฟื้นฟู/ไม่รับดาเมจนี้เพิ่ม");
+                alert("Over Trigger ออกตอนเช็คดาเมจ! นำการ์ดไปยัง Remove Zone (Bind) และฟื้นฟู/ไม่รับดาเมจนี้เพิ่ม");
+                bindPool.push(cardData);
                 checkCard.remove();
+                updateCountsUI();
+                sendData({ type: 'syncBindCount', count: bindPool.length });
 
                 // Assuming OverTrigger removes itself and nullifies this point of damage.
                 // We don't add it to damage zone.
@@ -2163,11 +2166,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkCard.remove();
                 // Check if it's an Over Trigger - if so, move to Remove Zone (or just hide it), otherwise move to hand
                 if (cardData.trigger === 'Over') {
-                    alert("Over Trigger! Removing from game as per rules.");
-                    const removeZone = document.querySelector('.my-side .drop-zone'); // Using drop zone as fallback or just remove it
-                    // Search for a remove-zone if it exists, otherwise just remove it.
-                    // For now, let's just not add it to hand.
+                    alert("Over Trigger! Moving to Remove Zone (Bind) as per rules.");
+                    bindPool.push(checkCard);
                     checkCard.remove();
+                    updateCountsUI();
+                    sendData({ type: 'syncBindCount', count: bindPool.length });
                 } else {
                     const cardInHand = createCardElement(cardData);
                     playerHand.appendChild(cardInHand);
@@ -3498,15 +3501,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Little Sage, Maron [CONT] (+2000 Power if 3+ units) ---
         if (name.includes('Little Sage, Maron') && zone.startsWith('rc')) {
-            const unitCount = document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').length;
-            if (isMyTurn && unitCount >= 3) {
+            const myUnits = document.querySelectorAll('.my-side .circle .card').length;
+            if (isMyTurn && myUnits >= 3) {
                 if (card.dataset.maronBonusApplied !== "true") {
-                    card.dataset.power = parseInt(card.dataset.power) + 2000;
+                    card.dataset.power = (parseInt(card.dataset.power) + 2000).toString();
                     card.dataset.maronBonusApplied = "true";
                 }
             } else if (card.dataset.maronBonusApplied === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 2000;
+                card.dataset.power = (parseInt(card.dataset.power) - 2000).toString();
                 card.dataset.maronBonusApplied = "false";
+            }
+        }
+
+        // --- Dragonic Overlord the End [CONT](VC): +5000 if "Dragonic Overlord" in soul ---
+        if (name.toLowerCase().includes('the end') && zone === 'vc') {
+            const hasOverlordInSoul = soulPool.some(c => c.dataset.name === 'Dragonic Overlord');
+            if (isMyTurn && hasOverlordInSoul) {
+                if (card.dataset.doteSoulBonusApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.doteSoulBonusApplied = "true";
+                    syncPowerDisplay(card);
+                }
+            } else if (card.dataset.doteSoulBonusApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.doteSoulBonusApplied = "false";
+                syncPowerDisplay(card);
             }
         }
 
@@ -7656,7 +7675,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Dragon Knight, Nehalem (Overlord) [ACT](RC) ---
-        if (name.includes('Dragon Knight, Nehalem')) {
+        if (name.toLowerCase().includes('nehalem')) {
             const vgCard = document.querySelector('.my-side .circle.vc .card');
             if (vgCard && vgCard.dataset.name.includes('Overlord')) {
                 if (await vgConfirm("Nehalem: [ACT](RC) [SB1] แวนการ์ดและยูนิตนี้ พลัง +5000 จนจบเทิร์น?")) {
@@ -8274,9 +8293,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const oqDrop = document.getElementById('opp-quick-drop-num');
                 const oqDamage = document.getElementById('opp-quick-damage-num');
                 const oqOrder = document.getElementById('opp-quick-order-num');
+                const oqBind = document.getElementById('opp-quick-bind-num');
                 if (oqDrop) oqDrop.textContent = data.drop;
                 if (oqDamage) oqDamage.textContent = data.damage;
                 if (oqOrder) oqOrder.textContent = data.order || 0;
+                if (oqBind) oqBind.textContent = data.bind || 0;
                 if (oppSoulBadge) {
                     if (data.soul > 0) {
                         oppSoulBadge.classList.remove('hidden');
@@ -8371,6 +8392,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.count > 0) bBadge.classList.remove('hidden');
                     else bBadge.classList.add('hidden');
                 }
+                const oqBind = document.getElementById('opp-quick-bind-num');
+                if (oqBind) oqBind.textContent = data.count || 0;
                 break;
             }
             case 'retireOpponentRG': // New case for Eden's skill
@@ -8950,7 +8973,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         attacker.classList.remove('rest');
                         attacker.dataset.doteStandUsed = "true";
                         
-                        const hasDOBase = soulPool.some(c => c.dataset.name === 'Dragonic Overlord');
+                        const hasDOBase = soulPool.some(c => c.dataset.name.includes('Dragonic Overlord') && !c.dataset.name.includes('the End'));
                         if (!hasDOBase) {
                             attacker.dataset.drive = Math.max(0, parseInt(attacker.dataset.drive || "2") - 1);
                             alert("Dragonic Overlord the End Stand! (Drive -1)");
