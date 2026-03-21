@@ -2015,7 +2015,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // AI Mode: If player hits AI Vanguard
-            if (isAIMode && isHit && currentAttackData.targetId === 'vc') {
+            if (isAIMode && isHit && currentAttackData.isTargetVanguard) {
                 aiDamageCheck(finalCritical);
             }
         }
@@ -6012,6 +6012,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = document.createElement('img');
         img.src = cardImages[cardData.name] || 'https://via.placeholder.com/150';
         div.appendChild(img);
+
+        const cardName = (cardData.name || "").trim();
+        const artUrl = cardData.imageUrl || cardImages[cardName] || '';
+        const artText = cardData.name.substring(0, 3).toUpperCase();
+        const artStyle = artUrl ? `style="background-image: url('${artUrl}'); background-size: cover; background-position: center;"` : '';
+        const artDisplay = artUrl ? '' : artText;
+        const triggerIcon = cardData.trigger ? `<div class="card-trigger bg-${cardData.trigger.toLowerCase()}">${cardData.trigger[0]}</div>` : '';
+        const personaIcon = cardData.persona ? `<div class="card-persona">Persona</div>` : '';
+        const displayPower = cardData.power;
+        const displayCritical = parseInt(cardData.critical || "1") > 1 ? `<span style="color:gold;">★${cardData.critical}</span>` : '';
+
+        div.innerHTML = `
+            <div class="card-header">
+                <span class="card-grade">G${cardData.grade}</span>
+                ${triggerIcon}
+            </div>
+            <div class="card-art" ${artStyle}>${artDisplay}</div>
+            ${personaIcon}
+            <div class="card-details">
+                <span class="card-power">⚔️${displayPower} ${displayCritical}</span>
+                <span class="card-shield">🛡️${cardData.shield || 0}</span>
+            </div>
+        `;
+        
+        // Re-append image if needed (but innerHTML replaced it)
+        // Wait, the original code used img.src. In createCardElement it uses background-image.
+        // I'll stick to the createCardElement style for consistency.
+
+        // --- NEW: Add listeners for Attacking and Skill Viewing in AI Mode ---
+        div.addEventListener('click', (e) => {
+            const currentTime = new Date().getTime();
+            const tapGap = currentTime - (div.lastClickTime || 0);
+            div.lastClickTime = currentTime;
+
+            // Double Click for Skill
+            if (tapGap < 350 && tapGap > 0) {
+                openSkillViewer(div);
+                return;
+            }
+
+            // Attacking Logic
+            if (isMyTurn && phases[currentPhaseIndex] === 'battle' && attackingCard) {
+                if (attackingCard !== div) {
+                    performAttack(attackingCard, div);
+                    attackingCard.classList.remove('attacking-glow');
+                    attackingCard = null;
+                }
+            }
+        });
+
+        // Long Press / Context Menu for Skill View
+        let lpTimer;
+        div.addEventListener('mousedown', () => {
+            lpTimer = setTimeout(() => openSkillViewer(div), 1000);
+        });
+        div.addEventListener('mouseup', () => clearTimeout(lpTimer));
+        div.addEventListener('mouseleave', () => clearTimeout(lpTimer));
+        div.addEventListener('touchstart', () => {
+            lpTimer = setTimeout(() => openSkillViewer(div), 1000);
+        }, { passive: true });
+        div.addEventListener('touchend', () => clearTimeout(lpTimer));
+
+        div.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            openSkillViewer(div);
+        });
         
         return div;
     }
@@ -6796,10 +6862,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'resolveAttack':
                 // Handle attack resolution when player attacks AI
-                // Process AI damage if the attack hit the AI's vanguard
-                if (data.attackData && data.attackData.isHit && data.attackData.targetId === 'vc') {
-                    const crit = parseInt(data.attackData.totalCritical || "1");
-                    await aiDamageCheck(crit);
+                if (data.attackData && data.attackData.isHit) {
+                    if (data.attackData.isTargetVanguard) {
+                        const crit = parseInt(data.attackData.totalCritical || "1");
+                        await aiDamageCheck(crit);
+                    } else {
+                        // AI Rearguard hit -> Retire
+                        const targetId = data.attackData.targetId;
+                        const targetNode = document.getElementById('opp-' + targetId) || document.getElementById(targetId);
+                        if (targetNode) {
+                            alert(`AI เรียร์การ์ดถูกรีไทร์: ${targetNode.dataset.name}`);
+                            const dropZone = document.querySelector('.opponent-side .drop-zone');
+                            if (dropZone) dropZone.appendChild(targetNode);
+                            targetNode.classList.remove('rest', 'attacking-glow');
+                            // AI state sync (optional but good for consistency)
+                            updateDropCount();
+                        }
+                    }
                 }
                 break;
             case 'revealDrive':
@@ -6956,15 +7035,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use the stored attackData from handleAIGuardDecision
         const storedAttackData = aiCurrentGuardAttackData || {};
         
-        if (isPG || guards.length === 0) {
-            // No guard or PG
+        if (guards.length === 0 && !isPG) {
+            // No guard
             handleGuardDecision({
                 type: 'guardDecision',
                 decision: 'no-guard',
                 attackData: storedAttackData
             });
         } else {
-            // Normal guard with shield
+            // Normal guard with shield OR Perfect Guard
             handleGuardDecision({
                 type: 'guardDecision',
                 decision: 'guard',
@@ -7091,6 +7170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (units.length > 0) {
             const target = units.find(u => u.parentElement.classList.contains('vc')) || units[0];
             target.dataset.power = (parseInt(target.dataset.power) + 10000).toString();
+            syncPowerDisplay(target);
             alert(`AI gives +10,000 to ${target.dataset.name}!`);
         }
 
