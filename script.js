@@ -2095,13 +2095,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAttackData = null;
         pendingCriticalIncrease = 0;
 
-        // Bug Fix: Reset guard waiting flags after battle resolution
-        setTimeout(() => {
-            isWaitingForGuard = false;
-            currentAttackResolving = false;
-            // Check auto end turn after attack resolves
-            checkAllAttackersRested();
-        }, 500);
+        // Ensure flags are reset AFTER battle resolution logic completes
+        isWaitingForGuard = false;
+        currentAttackResolving = false;
+        checkAllAttackersRested();
     }
 
 
@@ -5165,7 +5162,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'actUsed', 'fromHand', 'asagiBonusApplied', 'avantSkillBuffApplied', 'killshroudPowerBuffApplied',
                 'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
                 'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
-                'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied'
+                'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied',
+                'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -8825,12 +8823,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
+                await handleEndOfBattle(attacker, attackData);
             }
-            setTimeout(() => {
-                currentAttackResolving = false;
-                isWaitingForGuard = false;
-                checkAllAttackersRested();
-            }, 500);
+            currentAttackResolving = false;
+            isWaitingForGuard = false;
+            checkAllAttackersRested();
         } else if (decision === 'guard') {
             alert("Opponent chose: GUARD! They are placing defending units now. Await their confirmation.");
         }
