@@ -7194,6 +7194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (type === 'Front') {
             document.querySelectorAll('.opponent-side .front-row .circle .card').forEach(u => {
                 u.dataset.power = (parseInt(u.dataset.power) + 10000).toString();
+                syncPowerDisplay(u);
             });
             alert("AI front row units get +10,000 Power!");
         }
