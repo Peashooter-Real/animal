@@ -20,23 +20,31 @@
                 </h1>
                 <p id="matchmaking-subtitle" class="lobby-subtitle">Initializing connection...</p>
                 <div id="lobby-actions" class="lobby-actions">
-                    <div id="id-display-box" class="id-display hidden">
-                        <span class="label">SHARE THIS ID WITH FRIEND:</span>
-                        <span id="game-peer-id" class="id-text">...</span>
-                        <button id="copy-game-id-btn" class="icon-btn">📋</button>
+                    <div id="id-display-box" class="id-display-card hidden">
+                        <div class="card-glow-bg"></div>
+                        <span class="label">SHARE THIS ACCESS ID</span>
+                        <div class="id-main-row">
+                            <span id="game-peer-id" class="id-text">...</span>
+                            <button id="copy-game-id-btn" class="copy-icon-btn">📋</button>
+                        </div>
+                        <div class="scanner-line"></div>
                     </div>
                 </div>
 
-                <div class="mode-selection" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                <div class="mode-selection" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
                     <div class="connection-status">
-                        <div class="status-info-row">
-                            <span class="status-dot"></span>
-                            <span id="game-status-text">Initializing...</span>
-                        </div>
+                        <div class="loading-spinner-cyber"></div>
+                        <p id="game-status-text" class="status-msg-cyber">Initializing neural link...</p>
                     </div>
                     
-                    <div id="multiplayer-controls">
-                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Waiting for a friend to connect...</p>
+                    <div id="multiplayer-controls" class="waiting-box">
+                        <div class="searching-animation">
+                            <div class="radar-circle"></div>
+                            <div class="radar-circle"></div>
+                            <div class="radar-circle"></div>
+                        </div>
+                        <p class="waiting-text">SEARCHING FOR RIVAL...</p>
+                        <a href="lobby.html" class="glass-btn secondary-btn" style="margin-top: 1rem; display: inline-block; text-decoration: none;">BACK TO LOBBY</a>
                     </div>
 
                     <div class="divider-text">OR</div>
@@ -364,6 +372,7 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="script.js"></script>
 </body>
 

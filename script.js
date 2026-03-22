@@ -6854,7 +6854,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Activating Game UI and listeners...");
         gameStarted = true;
 
-        if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
+        if (matchmakingOverlay) {
+            matchmakingOverlay.classList.add('fade-out');
+            setTimeout(() => matchmakingOverlay.classList.add('hidden'), 800);
+        }
         gameContainer.classList.remove('hidden');
         gameContainer.classList.add('page-enter'); // Add smooth page enter animation
 
@@ -6907,7 +6910,10 @@ document.addEventListener('DOMContentLoaded', () => {
         aiDrop = [];
 
         // Hide overlay and show game
-        matchmakingOverlay.classList.add('hidden');
+        if (matchmakingOverlay) {
+            matchmakingOverlay.classList.add('fade-out');
+            setTimeout(() => matchmakingOverlay.classList.add('hidden'), 800);
+        }
         gameContainer.classList.remove('hidden');
         networkInfo.textContent = `Solo vs AI (${diff.toUpperCase()})`;
         
