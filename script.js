@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Knight of Rendering Flash, Cairbre': 'youthberk/cairbre.png',
         'Witch of Accumulation, Sequana': 'youthberk/sequana.png',
         'Wayward Therapy Angel': 'youthberk/wayward.png',
-        
+
         // Dragon Empire - Dragonic Overlord the End
         'Lizard Runner, Undeux': 'overlord/undeux.png',
         'Embodiment of Armor, Bahr': 'overlord/bahr.png',
@@ -374,7 +374,26 @@ document.addEventListener('DOMContentLoaded', () => {
         'Dragon Empire Critical Trigger': 'overlord/crit.png',
         'Dragon Empire Draw Trigger': 'overlord/draw.png',
         'Dragon Empire Heal Trigger': 'overlord/heal.png',
-        'Dragveda': 'overlord/over.png'
+        'Dragveda': 'overlord/over.png',
+
+        // Dark States - Greedon
+        'Desire Devil, Taida': 'greedon/taida.png',
+        'Desire Devil, Gouman': 'greedon/gouman.png',
+        'Desire Devil, Boshokku': 'greedon/boshokku.png',
+        'Avaricious Demonic Dragon, Greedon': 'greedon/greedon.png',
+        'Avaricious Demonic Dragon King, Greedon Masques': 'greedon/greedon_masques.png',
+        'Masque of Hydragrum': 'greedon/masque_hydragrum.png',
+        'Desire Devil, Fuujo': 'greedon/fuujo.png',
+        'Desire Devil, Mucca': 'greedon/mucca.png',
+        'Desire Devil, Bubetsuu': 'greedon/bubetsuu.png',
+        'Desire Devil, Heekou': 'greedon/heekou.png',
+        'Desire Devil, Xitto': 'greedon/xitto.png',
+
+        'Critical Trigger (Dark States)': 'picture/bruce/crit.png',
+        'Draw Trigger (Dark States)': 'picture/bruce/draw.png',
+        'Front Trigger (Dark States)': 'picture/bruce/front.png',
+        'Heal Trigger (Dark States)': 'picture/bruce/heal.png',
+        'Hades Dragon Deity, Gallmageveld': 'picture/bruce/over.png'
     };
 
     // --- Deck Definitions ---
@@ -583,6 +602,31 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Dragon Empire Draw Trigger', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Dragon Empire Heal Trigger', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
             { name: 'Dragveda', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
+    };
+
+    const greedonDeck = {
+        rideDeck: [
+            { name: 'Desire Devil, Taida', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Desire Devil, Gouman', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: When rode upon by "Desire Devil, Boshokku", [COST][reveal an "Avaricious Demonic Dragon, Greedon" from your ride deck], and draw a card.\n[AUTO]: เมื่อยูนิทนี้ถูกนำเข้าสู่โซลโดยความสามารถแวนการ์ดของคุณ หากแวนการ์ดคู่แข่งเกรด 3+, [COST][CB1], จนจบเทิร์น เมื่อคู่แข่งจะคอลการ์ดจากมือลง (GC) ต้องคอล 2 ใบขึ้นไปพร้อมกัน' },
+            { name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: When rode upon by "Avaricious Demonic Dragon, Greedon", [COST][put a card from your hand into your soul], search your deck for a card with the same card name, reveal it and put it into your hand, and shuffle.\n[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' },
+            { name: 'Avaricious Demonic Dragon, Greedon', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): หากในโซลมี "Avaricious Demonic Dragon, Greedon", Damage Limit ของคุณจะเป็น 7\n[AUTO](VC): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี [COST][SB2 & นำเรียร์การ์ด 4 ใบที่แผ่นอยู่เข้าโซล] Stand ยูนิทนี้ หากในโซลมี 10 ใบขึ้นไป พลัง +15000 จนจบเทิร์น' }
+        ],
+        mainDeck: [
+            ...Array(4).fill({ name: 'Avaricious Demonic Dragon King, Greedon Masques', grade: 3, power: 13000, persona: true, skill: '[CONT]: ยูนิทนี้จะไรด์ได้เฉพาะจากเกรด 3 ที่มี Greedon ในชื่อ\n[CONT](VC): Damage Limit ของคุณจะเป็น 7\n[ACT](VC)[1/Turn]: [COST][นำการ์ดที่มี Greedon ในชื่อที่ต่างจากยูนิทนี้จากมือ/โซล/ดรอป ออกนอกเกม] ดู 7 ใบ เลือก Desire Devil 1 ใบขึ้นมือ\n[AUTO](VC)[1/Turn]: เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี หากในโซลมี Desire Devil 3 ใบขึ้นไป [COST][นำเรียร์การ์ด 3 ใบที่สแตนด์อยู่เข้าโซล] Stand ยูนิทนี้ พลัง +5000' }),
+            ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, type: 'Normal Order', skill: '[ACT]: ดู 5 ใบ เลือกยูนิทที่มี Dragontree หรือ Masques ในชื่อ 1 ใบขึ้นมือ\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
+            ...Array(3).fill({ name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้ถูกนำเข้าสู่โซลโดยความสามารถแวนการ์ด "Greedon" จั่วการ์ด 1 ใบ\n[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' }),
+            ...Array(4).fill({ name: 'Desire Devil, Fuujo', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดที่มี "Greedon" ในชื่อการ์ด เลือกเรียร์การ์ดของคู่แข่ง 1 ใบ และคุณสามารถรีไทร์มันได้\n[AUTO](โซล): เมื่อแวนการ์ดที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์การ์ดนี้] และจนจบการต่อสู้นั้น เมื่อคู่แข่งจะคอลการ์ดจากบนมือลง (GC) พวกเขาต้องคอล 2 ใบขึ้นไปพร้อมกัน' }),
+            ...Array(4).fill({ name: 'Desire Devil, Mucca', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้วางลงบน (RC) จากบนมือ หากแวนการ์ดของคุณเป็น "Avaricious Demonic Dragon, Greedon" [จ่ายคอส][Counter-Blast 1 & Soul-Blast 2] เลือกการ์ด 1 ใบจากโซลของคุณ และคอลลงบน (RC)\n[AUTO](RC): เมื่อแวนการ์ดของคุณโจมตี หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกแวนการ์ด 1 ใบ และมันจะได้รับ [Power] +5000 จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Desire Devil, Bubetsuu', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC)[1/turn]: เมื่อเรียร์การ์ดใบอื่นของคุณถูกนำเข้าสู่โซลโดยความสามารถของแวนการ์ดในระหว่างเทิร์นของคุณ [จ่ายคอส][Counter-Blast 1] เลือกการ์ด 1 ใบจากบนมือ คอลลงบน (RC) ที่ว่างอยู่ และหากในโซลของคุณมีการ์ด 10 ใบขึ้นไป จั่วการ์ด 1 ใบ (สามารถใช้ได้แม้ว่ายูนิทนี้จะถูกนำเข้าสู่โซลพร้อมกับยูนิทอื่น)' }),
+            ...Array(4).fill({ name: 'Desire Devil, Heekou', grade: 1, power: 8000, shield: 5000, skill: '[AUTO][โซล]: เมื่อแวนการ์ดเกรด 3 ขึ้นไปที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์ "Desire Devil, Heekou" ใบอื่น 1 ใบจากโซลของคุณในสภาพหงายหน้า] และคอลการ์ดนี้ลงบน (RC) แถวหลัง' }),
+            ...Array(2).fill({ name: 'Desire Devil, Xitto', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดของคุณ เลือกการ์ด 1 ใบจากดรอปของคุณ และนำเข้าสู่โซล' }),
+            ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
+
+            ...Array(8).fill({ name: 'Critical Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(3).fill({ name: 'Draw Trigger (Dark States)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Hades Dragon Deity, Gallmageveld', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random())
     };
 
@@ -979,6 +1023,94 @@ document.addEventListener('DOMContentLoaded', () => {
                             alert("ไม่พบ Nehalem ในโซล!");
                         }
                     }
+                    if (done) done();
+                }
+            });
+        }
+
+        // --- Greedon Ride Line Specifics ---
+        if (oldName.includes('gouman') && newName.includes('boshokku')) {
+            queue.push({
+                name: 'Gouman Ride Skill',
+                description: "เมื่อ Boshokku ไรด์ทับ Reveal 'Avaricious Demonic Dragon, Greedon' จาก Ride Deck เพื่อจั่วการ์ด 1 ใบ",
+                resolve: async (done) => {
+                    const greedonInRideDeck = rides.some(c => c.name.includes('Greedon'));
+                    if (greedonInRideDeck) {
+                        if (await vgConfirm("Gouman: Reveal 'Greedon' จาก Ride Deck และจั่วการ์ด 1 ใบ?")) {
+                            drawCard(true);
+                        }
+                    } else {
+                        // Fallback
+                        if (await vgConfirm("Gouman: จั่วการ์ด 1 ใบ? (ถูก Boshokku ไรด์ทับ)")) {
+                            drawCard(true);
+                        }
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
+        if (oldName.includes('boshokku') && newName.includes('greedon')) {
+            queue.push({
+                name: 'Boshokku Ride Skill',
+                description: "เมื่อ Greedon ไรด์ทับ [COST][นำการ์ดจากมือ 1 ใบเข้าโซล] ค้นหา Boshokku จากกองขึ้นมือ",
+                resolve: async (done) => {
+                    const cardsInHand = Array.from(playerHand.querySelectorAll('.card'));
+                    if (cardsInHand.length > 0) {
+                        if (await vgConfirm("Boshokku: นำการ์ดจากมือ 1 ใบเข้าโซล เพื่อค้นหา Boshokku จากกองขึ้นมือ?")) {
+                            openViewer("เลือกการ์ดจากมือ 1 ใบเพื่อเข้าโซล", cardsInHand);
+                            await new Promise(resolvePickHand => {
+                                const handListener = (e) => {
+                                    const card = e.target.closest('.card');
+                                    if (card && card.parentElement === viewerGrid) {
+                                        const selectedId = card.dataset.originalId || card.id;
+                                        const actualCard = cardsInHand.find(c => c.id === selectedId);
+                                        if (actualCard) {
+                                            soulPool.push(actualCard);
+                                            actualCard.remove();
+                                            sendMoveData(actualCard, 'soul');
+                                            updateSoulUI();
+
+                                            // Search Deck for Boshokku
+                                            const targets = deckPool.filter(c => c.name.toLowerCase().includes('boshokku'));
+                                            if (targets.length > 0) {
+                                                const searchEffect = async () => {
+                                                    openViewer("ค้นหา Boshokku 1 ใบ", targets);
+                                                    const deckListener = (ev) => {
+                                                        const deckCard = ev.target.closest('.card');
+                                                        if (deckCard && deckCard.parentElement === viewerGrid) {
+                                                            const targetName = deckCard.dataset.name;
+                                                            const idx = deckPool.findIndex(c => c.name === targetName);
+                                                            if (idx !== -1) {
+                                                                const found = deckPool.splice(idx, 1)[0];
+                                                                const el = createCardElement(found);
+                                                                playerHand.appendChild(el);
+                                                                sendMoveData(el);
+                                                                updateHandSpacing();
+                                                                updateDeckCounter();
+                                                                alert(`นำ ${found.name} ขึ้นมือแล้ว!`);
+                                                            }
+                                                            viewerGrid.removeEventListener('click', deckListener);
+                                                            zoneViewer.classList.add('hidden');
+                                                            resolvePickHand();
+                                                        }
+                                                    };
+                                                    viewerGrid.addEventListener('click', deckListener);
+                                                };
+                                                searchEffect();
+                                            } else {
+                                                alert("ไม่พบ Boshokku ในกองการ์ด!");
+                                                zoneViewer.classList.add('hidden');
+                                                resolvePickHand();
+                                            }
+                                        }
+                                        viewerGrid.removeEventListener('click', handListener);
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', handListener);
+                            });
+                        } else { resolvePickHand(); }
+                    } else { alert("ไม่มีการ์ดในมือเพื่อจ่ายคอสต์!"); resolvePickHand(); }
                     if (done) done();
                 }
             });
@@ -1944,8 +2076,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sendData({ type: 'syncDamageCount', count: damageCount });
             updateDamageCount();
 
-            if (damageCount >= 6) {
-                alert("6 Damage! You lose.");
+            const vanguardChild = document.querySelector('.my-side .circle.vc .card');
+            const vanguardName = vanguardChild ? vanguardChild.dataset.name : "";
+            const hasBaseGreedonInSoul = soulPool.some(c => c.dataset.name && c.dataset.name === 'Avaricious Demonic Dragon, Greedon');
+            const maxDamage = (vanguardName.includes('Greedon Masques') || (vanguardName === 'Avaricious Demonic Dragon, Greedon' && hasBaseGreedonInSoul)) ? 7 : 6;
+
+            if (damageCount >= maxDamage) {
+                alert(`${maxDamage} Damage! You lose.`);
                 showGameOver('Lose');
                 return;
             }
@@ -2451,6 +2588,71 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleMajestyAttackSkills(attacker);
         }
 
+        // --- Desire Devil, Fuujo [AUTO](Soul) & Desire Devil, Mucca [AUTO](RC) ---
+        if (attackerParentCircle.classList.contains('vc')) {
+            // Fuujo (Soul)
+            const fuujoInSoul = soulPool.find(c => (c.dataset.name || "").includes('Fuujo'));
+            if (fuujoInSoul && attacker.dataset.name.includes('Greedon')) {
+                if (await vgConfirm("Desire Devil, Fuujo: [AUTO](Soul) แวนการ์ด Greedon โจมตี [Bind การ์ดนี้] เพื่อให้คู่แข่งต้องคอลการ์ดป้องกัน 2 ใบขึ้นไปพร้อมกัน?")) {
+                    const idx = soulPool.indexOf(fuujoInSoul);
+                    soulPool.splice(idx, 1);
+                    bindPool.push(fuujoInSoul);
+                    sendData({ type: 'moveCard', cardId: fuujoInSoul.id, zone: 'bind' });
+                    updateSoulUI();
+                    updateCountsUI();
+                    attacker.dataset.guardRestrictCount = "2";
+                    alert("Fuujo: เปิดใช้งาน Guard Restrict! (คู่แข่งต้องคอล 2 ใบขึ้นไป)");
+                }
+            }
+
+            // Mucca (RC)
+            if (personaRideActive) {
+                const muccaRCs = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c => c.dataset.name.includes('Mucca'));
+                for (const mucca of muccaRCs) {
+                    if (await vgConfirm("Desire Devil, Mucca: [AUTO](RC) แวนการ์ดโจมตี (เทิร์น Persona Ride) เลือกแวนการ์ดของคุณ 1 ใบ พลัง +5000?")) {
+                        attacker.dataset.power = (parseInt(attacker.dataset.power) + 5000).toString();
+                        attacker.dataset.turnEndBuffPower = (parseInt(attacker.dataset.turnEndBuffPower || "0") + 5000).toString();
+                        attacker.dataset.turnEndBuffActive = "true";
+                        syncPowerDisplay(attacker);
+                        alert("Mucca: แวนการ์ด พลัง +5000!");
+                    }
+                }
+            }
+
+            // Heekou (Soul)
+            const heekousInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Heekou'));
+            if (heekousInSoul.length >= 2 && attacker.dataset.name.includes('Greedon') && parseInt(attacker.dataset.grade) >= 3) {
+                if (await vgConfirm("Desire Devil, Heekou: [AUTO][Soul] แวนการ์ด Greedon โจมตี [Bind Heekou ใบอื่น 1 ใบจากโซล] เพื่อคอลการ์ดนี้ลงช่อง Back Row (RC)?")) {
+                    const idx1 = soulPool.indexOf(heekousInSoul[0]);
+                    const bindCard = soulPool.splice(idx1, 1)[0];
+                    bindPool.push(bindCard);
+                    sendData({ type: 'moveCard', cardId: bindCard.id, zone: 'bind' });
+
+                    const idx2 = soulPool.indexOf(heekousInSoul[1]);
+                    const callCard = soulPool.splice(idx2, 1)[0];
+
+                    alert("เลือกช่อง Back Row (RC) ที่ว่างอยู่เพื่อคอล Heekou");
+                    document.body.classList.add('targeting-mode');
+                    const callListener = (e) => {
+                        const circle = e.target.closest('.my-side .circle.rc');
+                        if (circle && circle.dataset.zone.includes('back') && !circle.querySelector('.card')) {
+                            e.stopPropagation();
+                            circle.appendChild(callCard);
+                            sendMoveData(callCard);
+                            updateSoulUI();
+                            updateCountsUI();
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', callListener, true);
+                            alert("คอล Heekou สำเร็จ!");
+                        } else if (circle) {
+                            alert("ช่องนี้ไม่ใช่ Back Row (RC) หรือมีใบอื่นวางอยู่!");
+                        }
+                    };
+                    document.addEventListener('click', callListener, true);
+                }
+            }
+        }
+
         // --- Knight of Inheritance, Emmeline [AUTO](RC) Trigger ---
         if (attacker.dataset.name.includes('Blaster')) {
             document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(unit => {
@@ -2929,7 +3131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 baurDriveCheck: attacker.dataset.baurDriveCheck === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
                 guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null,
-                guardRestrictCount: parseInt(attacker.dataset.guardRestrictCount || "0"),
+                guardRestrictCount: Math.max(parseInt(attacker.dataset.guardRestrictCount || "0"), window.activeGuardRestrictCount || 0),
                 bomberNoIntercept: isVanguardAttacker && bomberDustingNoIntercept,
                 bomberNoBlitz: isVanguardAttacker && bomberDustingNoBlitz
             };
@@ -3175,6 +3377,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Allow exact same grade if it's G3 or G4 (Persona Ride or G4 re-ride)
                 const isSameGradeAllowed = cardGrade >= 3 && cardGrade === vanguardGrade;
+
+                // --- Greedon Masques Ride Constraint ---
+                if (card.dataset.name.includes("Masques") && card.dataset.name.includes("Greedon")) {
+                    if (vanguardGrade !== 3 || !vanguard.dataset.name.includes("Greedon")) {
+                        alert("Greedon Masques สามารถไรด์ทับได้เฉพาะเกรด 3 ที่ติดชื่อ 'Greedon' เท่านั้น!");
+                        return false;
+                    }
+                }
+
                 if (cardGrade !== vanguardGrade + 1 && !isSameGradeAllowed && !(cardGrade === 4 && vanguardGrade === 3)) {
                     alert(`ไม่สามารถไรด์เกรด ${cardGrade} ทับเกรด ${vanguardGrade} ได้!`);
                     return false;
@@ -3431,6 +3642,23 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
             card.dataset.avantSkillBuffApplied = "false";
             syncPowerDisplay(card);
+        }
+
+        // --- Greedon (Boshokku Soul Bonus) (+5000) ---
+        if (card.dataset.name && card.dataset.name.includes('Greedon') && isMyTurn && zone === 'vc') {
+            const hasBoshokkuInSoul = soulPool.some(c => c.dataset.name && c.dataset.name.includes('Boshokku'));
+            const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
+            if (hasBoshokkuInSoul && damageCount >= 4) {
+                if (card.dataset.greedonSoulBonusApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.greedonSoulBonusApplied = "true";
+                    syncPowerDisplay(card);
+                }
+            } else if (card.dataset.greedonSoulBonusApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.greedonSoulBonusApplied = "false";
+                syncPowerDisplay(card);
+            }
         }
 
         // --- Disruption Strategy: Killshroud Power Buff (+5000) ---
@@ -4136,7 +4364,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Diabolos Buckler, Jamil [AUTO]: When placed on (RC), if VG Bruce, [CB1 & SC1], call G3- Diabolos from Soul ---
+        // --- Desire Devil, Mucca [AUTO]: เมื่อวางบน RC จากมือ ถ้าแวนการ์ดคือ Greedon [CB1 & SB2] คอล 1 ใบจากโซล ---
+        if (name.includes('Mucca') && isRC && isFromHand) {
+            if (vgName === 'Avaricious Demonic Dragon, Greedon') {
+                if (await vgConfirm("Desire Devil, Mucca: [AUTO] เมื่อลง RC จากมือ จ่าย [CB1 & SB2] เพื่อคอลการ์ด 1 ใบจากโซล?")) {
+                    if (payCounterBlast(1)) {
+                        if (await paySoulBlast(2)) {
+                            promptSoulCall(true, null); // isSelective=true
+                        }
+                    }
+                }
+            }
+        }
         if (name.includes('Jamil') && isRC) {
             const currentVG = document.querySelector('.my-side .circle.vc .card');
             const currentVGName = currentVG ? currentVG.dataset.name : "";
@@ -4145,7 +4384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (payCounterBlast(1)) {
                         soulCharge(1);
                         alert("Jamil: [Soul-Charge 1] สำเร็จ! เลือกการ์ด 'Diabolos' เกรด 3 หรือต่ำกว่า 1 ใบจากโซลเพื่อคอล");
-                        promptSoulCall('rc', () => {}, true);
+                        promptSoulCall('rc', () => { }, true);
                     }
                 }
             }
@@ -4804,13 +5043,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     selectedCount += discardInc;
-                    
+
                     if (discardInc > 1 || (target.dataset.name && target.dataset.name.includes('Dragritter, Halbe') && isMyTurn)) {
                         if (await vgConfirm("Halbe: [AUTO] เมื่อถูกทิ้งเป็นคอสต์ คอลลงช่องแถวหลัง (RC) และรับพลัง +5000 จนจบเทิร์น?")) {
                             target.dataset.turnEndBuffPower = (parseInt(target.dataset.turnEndBuffPower || "0") + 5000).toString();
                             target.dataset.turnEndBuffActive = "true";
                             syncPowerDisplay(target);
-                            
+
                             alert("เลือกช่องแถวหลังเพื่อวาง Dragritter, Halbe");
                             document.body.classList.add('targeting-mode');
                             await new Promise(halbeRes => {
@@ -5788,7 +6027,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (revolDressIdx === -1) {
                                     revolDressIdx = soulPool.findIndex(c => (c.dataset.skill || "").includes('[RevolDress]'));
                                 }
-                                                        
+
                                 if (revolDressIdx !== -1) {
                                     const skyfall = soulPool.splice(revolDressIdx, 1)[0];
                                     revolVG.remove();
@@ -5890,20 +6129,20 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (personaIdx !== -1 && aiHand.length >= 2) {
                                     const personaCard = aiHand.splice(personaIdx, 1)[0];
                                     // Discard 1 card for ride
-                                    const discardIdx = aiHand.findIndex(c => !!c.trigger) !== -1 ? 
+                                    const discardIdx = aiHand.findIndex(c => !!c.trigger) !== -1 ?
                                         aiHand.findIndex(c => !!c.trigger) : aiHand.length - 1;
                                     const discarded = aiHand.splice(discardIdx, 1)[0];
                                     aiDrop.push(discarded);
-                                    
+
                                     // Move old VG to soul
                                     aiSoul.push(currentVG);
                                     currentVG.remove();
-                                    
+
                                     // Place new VG
                                     const vc = document.querySelector('.opponent-side .circle.vc');
                                     const newNode = createOpponentCardElement(personaCard);
                                     vc.appendChild(newNode);
-                                    
+
                                     // Persona Ride bonus: front row +10000
                                     alert(`AI เพอร์โซน่าไรด์: ${personaCard.name}! แถวหน้าทั้งหมดพลัง +10000!`);
                                     document.querySelectorAll('.opponent-side .circle .card').forEach(u => {
@@ -5958,7 +6197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function aiEndTurn() {
         console.log("AI Ending Turn");
         await aiWait(1000);
-        
+
         // === AI RevolDress Revert ===
         const revolVG = document.querySelector('.opponent-side .circle.vc .card');
         if (revolVG && revolVG.dataset.isRevolDressRide === 'true') {
@@ -5972,7 +6211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiSoul.push(revolVG);
                 revolVG.dataset.isRevolDressRide = 'false';
                 revolVG.remove();
-                
+
                 const vc = document.querySelector('.opponent-side .circle.vc');
                 let skyfallNode;
                 if (skyfall.nodeType) {
@@ -5985,7 +6224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`AI RevolDress สิ้นสุด: กลับเป็น ${skyfallNode.dataset.name} ในสภาพ [Rest]`);
             }
         }
-        
+
         // === Reset all AI unit powers/criticals back to base ===
         document.querySelectorAll('.opponent-side .circle .card').forEach(c => {
             if (c.dataset.basePower) {
@@ -5994,13 +6233,13 @@ document.addEventListener('DOMContentLoaded', () => {
             c.dataset.critical = '1';
             c.dataset.turnEndBuffActive = 'false';
         });
-        
+
         // Reset opponent-side status flags
         isOpponentFinalRush = false;
         isOpponentFinalBurst = false;
-        
+
         syncAIStateToUI();
-        
+
         currentTurn++;
         currentPhaseIndex = 0;
         updatePhaseUI(false);
@@ -6035,7 +6274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         div.dataset.trigger = cardData.trigger || "";
         if (cardData.isPG) div.dataset.isPG = "true";
         if (cardData.persona) div.dataset.persona = "true";
-        
+
         const img = document.createElement('img');
         img.src = cardImages[cardData.name] || 'https://via.placeholder.com/150';
         div.appendChild(img);
@@ -6062,7 +6301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="card-shield">🛡️${cardData.shield || 0}</span>
             </div>
         `;
-        
+
         // Re-append image if needed (but innerHTML replaced it)
         // Wait, the original code used img.src. In createCardElement it uses background-image.
         // I'll stick to the createCardElement style for consistency.
@@ -6105,7 +6344,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             openSkillViewer(div);
         });
-        
+
         return div;
     }
 
@@ -6118,7 +6357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextCard = aiRideDeck.shift();
         const vc = document.querySelector('.opponent-side .circle.vc');
         const oldCard = vc.querySelector('.card');
-        
+
         // AI Discard for Ride
         // Heuristic: Discard a trigger or the highest grade card if multiple, or a duplicate
         aiHand.sort((a, b) => {
@@ -6131,7 +6370,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropZone = document.querySelector('.opponent-side .drop-zone');
         const discardedElem = createOpponentCardElement(discarded);
         dropZone.appendChild(discardedElem);
-        
+
         if (oldCard) {
             aiSoul.push(oldCard); // In a real implementation we'd store the actual data
             oldCard.remove();
@@ -6189,7 +6428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        
+
         // 3. Youthberk Ride Line
         if (aiDeckType === 'youthberk') {
             if (newName.includes('determined to break away')) {
@@ -6333,21 +6572,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 await aiWait(800);
             }
         }
-        
+
         syncAIStateToUI();
     }
 
     async function performAIMainPhase() {
         console.log("AI performing Main Phase - Strategic Placement...");
-        
+
         // --- 1. Ride (handled by separate logic usually, but ensure consistency) ---
-        
+
         // --- 2. Play Orders ---
         await handleAIOrderPhase();
 
         const vg = document.querySelector('.opponent-side .circle.vc .card');
         const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
-        
+
         // Column mapping: front -> back (opponent side is mirrored)
         const columnPairs = [
             { front: 'rc_front_left', back: 'rc_back_left' },
@@ -6355,7 +6594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         // VC column booster
         const vcBoosterZone = 'rc_back_center';
-        
+
         let calls = 0;
         const maxCalls = aiDifficulty === 'hard' ? 4 : 2;
 
@@ -6452,7 +6691,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function aiPlayOrder(cardData) {
         const skillLC = (cardData.skill || "").toLowerCase();
         const isSetOrder = skillLC.includes('set order');
-        
+
         let targetZone = '';
         if (isSetOrder) targetZone = '.opponent-side .order-zone';
         else targetZone = '.opponent-side .drop-zone';
@@ -6503,7 +6742,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Player goes first on turn 1, AI doesn't have a battle phase on turn 1
             return;
         }
-        
+
         const attackers = Array.from(document.querySelectorAll('.opponent-side .circle .card:not(.rest)'))
             .filter(c => {
                 const zone = c.parentElement.dataset.zone || "";
@@ -6540,17 +6779,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalPower = parseInt(attacker.dataset.power);
             let playerShield = 0;
             let isPG = false;
-            
+
             if (isAIMode && !isMyTurn) {
                 playerShield = window.playerGuardShield || 0;
                 isPG = window.playerGuardIsPG || false;
             } else {
                 playerShield = parseInt(document.getElementById('gc-shield-display').textContent.split(': ')[1] || "0");
             }
-            
+
             const playerPower = parseInt(target.dataset.power) + playerShield;
             const isVanguardTarget = targetId === 'vc';
-            
+
             let isHit = false;
             if (isPG) {
                 alert("ATTACK BLOCKED BY PERFECT GUARD!");
@@ -6559,7 +6798,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isHit = finalPower >= playerPower;
                 alert(`AI Attack Result: ${finalPower} vs ${playerPower}. Hit: ${isHit}`);
             }
-            
+
             if (isHit && isVanguardTarget) {
                 // Wait for damage to fully complete before continuing
                 await processPlayerDamageAndWait(crit);
@@ -6594,20 +6833,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function executeAIAttack(unit) {
         if (unit.classList.contains('rest')) return;
-        
+
         unit.classList.add('attacking-glow');
         // Show current critical on IA attack
         showPowerPopup(unit, unit.dataset.critical || "1", 'current-crit');
         let totalPower = parseInt(unit.dataset.power);
         let boosterCard = null;
-        
+
         // === Booster Logic ===
         const unitZone = unit.parentElement.dataset.zone;
         let backZoneName = null;
         if (unitZone === 'rc_front_left') backZoneName = 'rc_back_left';
         else if (unitZone === 'vc') backZoneName = 'rc_back_center';
         else if (unitZone === 'rc_front_right') backZoneName = 'rc_back_right';
-        
+
         if (backZoneName) {
             const backCircle = document.querySelector(`.opponent-side .circle[data-zone="${backZoneName}"]`);
             if (backCircle) {
@@ -6625,7 +6864,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        
+
         // === Target selection ===
         let target = "vc";
         if (aiDifficulty === 'hard') {
@@ -6637,18 +6876,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`AI โจมตี ${target === 'vc' ? 'แวนการ์ด' : 'เรียร์การ์ด'} ด้วย ${unit.dataset.name} (พลังรวม: ${totalPower})!`);
         await aiWait(1000);
-        
+
         window.aiCurrentAttackTarget = target;
-        
+
         // === Guard Phase - Wait for player to decide ===
         const isVanguardTarget = target === 'vc';
         window.playerGuardShield = 0;
         window.playerGuardIsPG = false;
         isWaitingForGuard = true;
         isGuarding = false;
-        
+
         await startPlayerGuardPhase(unit, totalPower, isVanguardTarget);
-        
+
         // Wait until player finishes guarding
         await new Promise(resolve => {
             const checkDone = setInterval(() => {
@@ -6658,7 +6897,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }, 300);
         });
-        
+
         // === Drive Check / Hit Check ===
         if (unit.parentElement && unit.parentElement.classList.contains('vc')) {
             const driveCount = unit.dataset.tripleDrive === "true" ? 3 : (parseInt(unit.dataset.grade || "0") >= 3 ? 2 : 1);
@@ -6669,16 +6908,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         unit.classList.remove('attacking-glow');
         unit.classList.add('rest');
-        
+
         // Reset AI unit power back to base after attack resolves
         unit.dataset.power = unit.dataset.basePower || unit.dataset.power;
         unit.dataset.critical = "1";
-        
+
         await aiWait(800);
     }
 
     async function startPlayerGuardPhase(attacker, totalPower, isVanguardTarget) {
-        const target = isVanguardTarget 
+        const target = isVanguardTarget
             ? document.querySelector('.my-side .circle.vc .card')
             : document.querySelector(`.my-side .circle[data-zone="${window.aiCurrentAttackTarget}"] .card`);
         const attackData = {
@@ -6690,7 +6929,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetName: target ? target.dataset.name : (isVanguardTarget ? "Vanguard" : "Rear-guard"),
             targetId: isVanguardTarget ? 'vc' : (window.aiCurrentAttackTarget || 'rc')
         };
-        
+
         showGuardDecision(attackData);
     }
 
@@ -6744,6 +6983,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bomberDustingNoBlitz = false;
         lastStrategyPutIntoSoulName = "";
         strategyPutToOrderZoneThisTurn = false;
+        window.activeGuardRestrictCount = 0;
+        window.bubetsuuUsedThisTurn = false;
 
         // Reset "Until end of turn" flags
         window.promptedEndTurn = false;
@@ -6905,6 +7146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (pDeckKey === 'majesty') currentDeck = majestyDeck;
         else if (pDeckKey === 'nirvana') currentDeck = nirvanaDeck;
         else if (pDeckKey === 'overlord') currentDeck = overlordDeck;
+        else if (pDeckKey === 'greedon') currentDeck = greedonDeck;
 
         // Initialize AI state
         let aiFullDeck;
@@ -6915,6 +7157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (aDeckKey === 'nirvana') aiFullDeck = nirvanaDeck;
         else if (aDeckKey === 'majesty') aiFullDeck = majestyDeck;
         else if (aDeckKey === 'overlord') aiFullDeck = overlordDeck;
+        else if (aDeckKey === 'greedon') aiFullDeck = greedonDeck;
 
         aiRideDeck = [...aiFullDeck.rideDeck];
         aiDeck = [...aiFullDeck.mainDeck].sort(() => 0.5 - Math.random());
@@ -6930,7 +7173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         gameContainer.classList.remove('hidden');
         networkInfo.textContent = `Solo vs AI (${diff.toUpperCase()})`;
-        
+
         initGame();
 
         // Place AI Starter
@@ -7009,13 +7252,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleAIMulligan() {
         alert("AI is performing Mulligan...");
         await aiWait(1500);
-        
+
         // Simple Heuristic: Keep one of each grade (1, 2, 3) if possible.
         // Return triggers (high shield) and duplicates.
         const kept = [];
         const returned = [];
         const seenGrades = new Set();
-        
+
         aiHand.forEach(card => {
             const g = parseInt(card.grade);
             if (card.trigger) {
@@ -7036,13 +7279,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Return to deck and shuffle
         returned.forEach(c => aiDeck.push(c));
         aiDeck.sort(() => 0.5 - Math.random());
-        
+
         // Draw back to 5
         const newHand = [...kept];
         while (newHand.length < 5 && aiDeck.length > 0) {
             newHand.push(aiDeck.shift());
         }
-        
+
         aiHand = newHand;
         oppConfirmedMulligan = true;
         alert("AI is ready!");
@@ -7056,18 +7299,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleAIGuardDecision(attackData) {
         // Store the full attackData from the player's declareAttack
         aiCurrentGuardAttackData = attackData;
-        
+
         const attackPower = parseInt(attackData.totalPower || attackData.power || "0");
         const attackCritical = parseInt(attackData.totalCritical || "1");
         console.log("AI Guarding against:", attackPower, "Critical:", attackCritical);
-        
+
         const vg = document.querySelector('.opponent-side .circle.vc .card');
         const vgPower = vg ? parseInt(vg.dataset.power) : 10000;
-        
+
         let totalShieldNeeded = attackPower - vgPower;
         if (totalShieldNeeded < 0) totalShieldNeeded = 0;
         totalShieldNeeded += 5000;
-        
+
         // === Decision Logic ===
         let shouldGuard = false;
         if (aiDamage.length >= 5) {
@@ -7081,7 +7324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             shouldGuard = Math.random() > 0.6;
         }
-        
+
         if (!shouldGuard) {
             alert("AI เลือก NO GUARD! (รับดาเมจ)");
             await aiWait(800);
@@ -7097,7 +7340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`AI ใช้ Perfect Guard: ${pg.name}!`);
                 await aiWait(800);
                 if (aiHand.length >= 1) {
-                    const discardIdx = aiHand.findIndex(c => !!c.trigger) !== -1 ? 
+                    const discardIdx = aiHand.findIndex(c => !!c.trigger) !== -1 ?
                         aiHand.findIndex(c => !!c.trigger) : aiHand.length - 1;
                     aiDrop.push(aiHand.splice(discardIdx, 1)[0]);
                 }
@@ -7105,11 +7348,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         }
-        
+
         // === Normal Guard ===
         const guards = [];
         let totalShieldFound = 0;
-        
+
         const shieldCards = aiHand.filter(c => parseInt(c.shield || "0") > 0 && !c.isPG);
         shieldCards.sort((a, b) => parseInt(a.shield || "0") - parseInt(b.shield || "0"));
 
@@ -7119,7 +7362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             totalShieldFound += shield;
             guards.push(card);
         }
-        
+
         guards.forEach(g => {
             const idx = aiHand.indexOf(g);
             if (idx !== -1) aiHand.splice(idx, 1);
@@ -7141,10 +7384,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Move guards to drop
         guards.forEach(g => aiDrop.push(g));
         const totalShield = guards.reduce((acc, g) => acc + parseInt(g.shield || "0"), 0);
-        
+
         // Use the stored attackData from handleAIGuardDecision
         const storedAttackData = aiCurrentGuardAttackData || {};
-        
+
         if (guards.length === 0 && !isPG) {
             // No guard
             handleGuardDecision({
@@ -7159,9 +7402,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 decision: 'guard',
                 attackData: storedAttackData
             });
-            
+
             setTimeout(() => {
-                handleFinishGuard({ 
+                handleFinishGuard({
                     type: 'finishGuard',
                     attackData: storedAttackData,
                     totalShield: totalShield,
@@ -7170,7 +7413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 syncAIStateToUI();
             }, 800);
         }
-        
+
         syncAIStateToUI();
     }
 
@@ -7197,7 +7440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Over': 'โอเวอร์'
         };
         const displayTrigger = cardData.trigger ? ` [${triggerName[cardData.trigger] || cardData.trigger} ทริกเกอร์!]` : '';
-        
+
         // === Visual Drive Check Display ===
         const checkCard = createOpponentCardElement(cardData);
         checkCard.style.position = 'fixed';
@@ -7210,20 +7453,20 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.style.boxShadow = cardData.trigger ? '0 0 40px 15px rgba(255,42,109,0.8)' : '0 0 20px 5px rgba(0,200,255,0.5)';
         if (cardData.trigger) checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
-        
+
         alert(`AI ไดรฟ์เช็ค: ${cardData.name}${displayTrigger}`);
-        
+
         if (cardData.trigger) {
             resolveAITrigger(cardData);
         }
-        
+
         aiHand.push(cardData);
         syncAIStateToUI();
-        
+
         // Remove visual after delay
         await aiWait(2000);
         if (checkCard.parentElement) checkCard.remove();
-        
+
         if (count > 1) {
             await aiDriveCheck(count - 1, crit);
         } else {
@@ -7250,7 +7493,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Over': 'โอเวอร์'
         };
         const displayTrigger = cardData.trigger ? ` [${triggerName[cardData.trigger] || cardData.trigger} ทริกเกอร์!]` : '';
-        
+
         // --- Visual Damage Check ---
         const damageZoneNode = document.querySelector('.opponent-side .damage-zone');
         const cardNode = createOpponentCardElement(cardData);
@@ -7265,16 +7508,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`AI ดาเมจเช็ค: ${cardData.name}${displayTrigger}`);
         await aiWait(1200);
-        
+
         if (cardData.trigger) {
             resolveAITrigger(cardData, true);
         }
-        
+
         // Move to Damage Zone visually
         if (damageZoneNode) {
             const rect = damageZoneNode.getBoundingClientRect();
-            cardNode.style.top = `${rect.top + rect.height/2}px`;
-            cardNode.style.left = `${rect.left + rect.width/2}px`;
+            cardNode.style.top = `${rect.top + rect.height / 2}px`;
+            cardNode.style.left = `${rect.left + rect.width / 2}px`;
             cardNode.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(90deg)';
             cardNode.style.opacity = '0.5';
             await aiWait(500);
@@ -7282,7 +7525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardNode.remove();
 
         aiDamage.push(cardData);
-        
+
         // Add card to AI damage zone DOM
         if (damageZoneNode) {
             const finalCard = createOpponentCardElement(cardData);
@@ -7291,9 +7534,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         syncAIStateToUI();
-        
-        if (aiDamage.length >= 6) {
-            alert("AI has 6 damage! YOU WIN!");
+
+        const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+        const oppVGName = oppVG ? oppVG.dataset.name : "";
+        const hasBaseGreedonInAISoul = aiSoul.some(c => c.name && c.name === 'Avaricious Demonic Dragon, Greedon');
+        const aiMaxDamage = (oppVGName.includes('Greedon Masques') || (oppVGName === 'Avaricious Demonic Dragon, Greedon' && hasBaseGreedonInAISoul)) ? 7 : 6;
+
+        if (aiDamage.length >= aiMaxDamage) {
+            alert(`AI has ${aiMaxDamage} damage! YOU WIN!`);
             showGameOver('Win');
             return;
         }
@@ -7307,7 +7555,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resolveAITrigger(cardData, isDamageCheck = false) {
         const type = cardData.trigger;
         alert(`AI ${type} Trigger Resolving...`);
-        
+
         // +10,000 to a unit (Prefer Vanguard if attacking, random otherwise)
         const units = Array.from(document.querySelectorAll('.opponent-side .circle .card'));
         if (units.length > 0) {
@@ -7341,7 +7589,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             alert("AI front row units get +10,000 Power!");
         }
-        
+
         syncAIStateToUI();
     }
 
@@ -7375,7 +7623,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("AI YOUTHBERK: REVOLDRESS!");
             // Discard 1
             aiDrop.push(aiHand.splice(aiHand.indexOf(aiHand.find(c => c !== revolForm)), 1)[0]);
-            
+
             // Ride RevolForm
             const vc = document.querySelector('.opponent-side .circle.vc');
             const skyfall = vc.querySelector('.card');
@@ -7387,7 +7635,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newNode.dataset.isRevolDressRide = "true";
             vc.appendChild(newNode);
             aiHand.splice(aiHand.indexOf(revolForm), 1);
-            
+
             syncAIStateToUI();
             await aiWait(1000);
             return true;
@@ -7933,7 +8181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name.includes('Ardor Hatchet Dragon')) {
             const oppVG = document.querySelector(`${oppSideClass} .circle.vc .card`);
             if (oppVG && parseInt(oppVG.dataset.grade || "0") >= 3) {
-                const dropG3Overlords = Array.from(document.querySelectorAll(`${sideClass} .drop-zone .card`)).filter(c => 
+                const dropG3Overlords = Array.from(document.querySelectorAll(`${sideClass} .drop-zone .card`)).filter(c =>
                     parseInt(c.dataset.grade) === 3 && c.dataset.name.includes('Overlord')
                 );
                 if (dropG3Overlords.length > 0) {
@@ -7942,7 +8190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dropZone.appendChild(card);
                         card.classList.remove('rest');
                         sendMoveData(card);
-                        
+
                         openViewer("เลือกการ์ด G3 'Overlord' เข้าโซล", dropG3Overlords.map(c => ({
                             name: c.dataset.name,
                             id: c.id,
@@ -8011,15 +8259,223 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     viewerGrid.addEventListener('click', sel);
 
-                    const closeH = () => {
+                    const closeHManual = () => {
                         deckPool.sort(() => 0.5 - Math.random());
                         updateDeckCounter();
-                        closeViewerBtn.removeEventListener('click', closeH);
+                        closeViewerBtn.removeEventListener('click', closeHManual);
+                        viewerGrid.removeEventListener('click', sel);
                     };
-                    closeViewerBtn.addEventListener('click', closeH);
+                    closeViewerBtn.addEventListener('click', closeHManual);
                     return true;
                 } else return false;
             } else return false;
+        }
+
+        // --- Avaricious Demonic Dragon King, Greedon Masques [ACT](VC) ---
+        if (name.includes('Greedon Masques')) {
+            if (await vgConfirm("Greedon Masques: [ACT] [นำ Greedon ชื่ออื่นออกจากเกม] ดู 7 ใบ เลือก Desire Devil 1 ใบขึ้นมือ?")) {
+                const greedonCandidates = [];
+                // Check Hand
+                Array.from(playerHand.querySelectorAll('.card')).forEach(c => {
+                    if (c.dataset.name.includes('Greedon') && !c.dataset.name.includes('Masques')) greedonCandidates.push({ node: c, zone: 'hand' });
+                });
+                // Check Soul
+                soulPool.forEach((c, idx) => {
+                    if (c.dataset.name.includes('Greedon') && !c.dataset.name.includes('Masques')) greedonCandidates.push({ node: c, zone: 'soul', index: idx });
+                });
+                // Check Drop
+                Array.from(document.querySelectorAll('.my-side .drop-zone .card')).forEach(c => {
+                    if (c.dataset.name.includes('Greedon') && !c.dataset.name.includes('Masques')) greedonCandidates.push({ node: c, zone: 'drop' });
+                });
+
+                if (greedonCandidates.length === 0) {
+                    alert("ไม่พบการ์ด 'Greedon' ชื่ออื่นในมือ, โซล หรือดรอปโซน เพื่อจ่ายคอสต์!");
+                    return false;
+                }
+
+                openViewer("เลือก Greedon 1 ใบเพื่อนำออกจากเกม", greedonCandidates.map(c => ({
+                    name: c.node.dataset.name, id: c.node.id, imageUrl: c.node.dataset.imageUrl, zone: c.zone
+                })));
+
+                await new Promise(resolveCost => {
+                    const costSel = (e) => {
+                        const tgt = e.target.closest('.card');
+                        if (tgt && tgt.parentElement === viewerGrid) {
+                            const ref = greedonCandidates.find(c => c.node.id === (tgt.dataset.originalId || tgt.id));
+                            if (ref) {
+                                viewerGrid.removeEventListener('click', costSel);
+                                zoneViewer.classList.add('hidden');
+
+                                // Remove the card
+                                if (ref.zone === 'soul') {
+                                    const actualIdx = soulPool.indexOf(ref.node);
+                                    if (actualIdx !== -1) soulPool.splice(actualIdx, 1);
+                                }
+                                ref.node.remove();
+                                updateSoulUI();
+                                updateDropCount();
+                                sendMoveData(ref.node, 'remove');
+
+                                // Effect: Top 7
+                                const top7 = deckPool.slice(0, 7);
+                                const targets = top7.filter(c => c.name.toLowerCase().includes('desire devil'));
+                                if (targets.length > 0) {
+                                    openViewer("Top 7: เลือก Desire Devil 1 ใบ", targets);
+                                    const targetSel = (ev) => {
+                                        const picked = ev.target.closest('.card');
+                                        if (picked && picked.parentElement === viewerGrid) {
+                                            const tIdx = deckPool.findIndex(c => c.id === picked.dataset.originalId);
+                                            if (tIdx !== -1) {
+                                                const cardData = deckPool.splice(tIdx, 1)[0];
+                                                const el = createCardElement(cardData);
+                                                playerHand.appendChild(el);
+                                                sendMoveData(el);
+                                                updateHandSpacing();
+                                                updateDeckCounter();
+                                                alert(`นำ ${cardData.name} ขึ้นมือแล้ว!`);
+                                            }
+                                            viewerGrid.removeEventListener('click', targetSel);
+                                            zoneViewer.classList.add('hidden');
+                                            deckPool.sort(() => 0.5 - Math.random());
+                                            updateDeckCounter();
+                                            resolveCost();
+                                        }
+                                    };
+                                    viewerGrid.addEventListener('click', targetSel);
+                                } else {
+                                    alert("ไม่พบ Desire Devil ใน 7 ใบแรก!");
+                                    deckPool.sort(() => 0.5 - Math.random());
+                                    updateDeckCounter();
+                                    resolveCost();
+                                }
+                            }
+                        }
+                    };
+                    viewerGrid.addEventListener('click', costSel);
+                    closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); viewerGrid.removeEventListener('click', costSel); resolveCost(); };
+                });
+                card.dataset.actUsed = "true";
+                return true;
+            }
+        }
+
+        // --- Masque of Hydragrum [Order ACT] ---
+        if (name.includes('Masque of Hydragrum')) {
+            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+            const inDrop = card.parentElement && card.parentElement.classList.contains('drop-zone');
+
+            if (inHand) {
+                if (await vgConfirm("Masque of Hydragrum: [ACT] ดู 5 ใบ เลือก Dragontree หรือ Masques 1 ใบขึ้นมือ?")) {
+                    const top5 = deckPool.slice(0, 5);
+                    const targets = top5.filter(c => c.name.includes('Dragontree') || c.name.includes('Masques'));
+                    if (targets.length > 0) {
+                        openViewer("Top 5: เลือก Dragontree/Masques 1 ใบ", targets);
+                        const selHydra = (e) => {
+                            const picked = e.target.closest('.card');
+                            if (picked && picked.parentElement === viewerGrid) {
+                                const idx = deckPool.findIndex(c => c.id === picked.dataset.originalId);
+                                if (idx !== -1) {
+                                    const data = deckPool.splice(idx, 1)[0];
+                                    const el = createCardElement(data);
+                                    playerHand.appendChild(el);
+                                    sendMoveData(el);
+                                    updateHandSpacing();
+                                    updateDeckCounter();
+                                    alert(`นำ ${data.name} ขึ้นมือแล้ว!`);
+                                }
+                                viewerGrid.removeEventListener('click', selHydra);
+                                zoneViewer.classList.add('hidden');
+                                deckPool.sort(() => 0.5 - Math.random());
+                                updateDeckCounter();
+
+                                // Move this Order to drop if successfully played
+                                const dropZone = document.querySelector('.my-side .drop-zone');
+                                dropZone.appendChild(card);
+                                sendMoveData(card);
+                                updateDropCount();
+                            }
+                        };
+                        viewerGrid.addEventListener('click', selHydra);
+                    } else {
+                        alert("ไม่พบ Dragontree หรือ Masques ใน 5 ใบแรก!");
+                        deckPool.sort(() => 0.5 - Math.random());
+                        updateDeckCounter();
+                    }
+                    return true;
+                }
+            } else if (inDrop) {
+                // [ACT]Drop: Masque Ride
+                const vg = document.querySelector('.my-side .circle.vc .card');
+                const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
+                const vgName = vg ? vg.dataset.name : "";
+
+                if (vgGrade === 3 && !vgName.includes('Masques')) {
+                    const handMasques = Array.from(playerHand.querySelectorAll('.card')).filter(c =>
+                        parseInt(c.dataset.grade) === 3 && c.dataset.name.includes('Masques')
+                    );
+                    if (handMasques.length > 0) {
+                        if (await vgConfirm("Masque of Hydragrum: [ACT](Drop) [Reveal G3 Masques from Hand] เพื่อ Ride และทำ Persona Ride?")) {
+                            openViewer("เลือกการ์ด Masques จากมือเพื่อ Ride", handMasques.map(c => ({
+                                name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl
+                            })));
+
+                            await new Promise(resolveRide => {
+                                const rideSel = (e) => {
+                                    const tgt = e.target.closest('.card');
+                                    if (tgt && tgt.parentElement === viewerGrid) {
+                                        const actual = handMasques.find(c => c.id === (tgt.dataset.originalId || tgt.id));
+                                        if (actual) {
+                                            viewerGrid.removeEventListener('click', rideSel);
+                                            zoneViewer.classList.add('hidden');
+
+                                            // Trigger Ride
+                                            const vc = document.querySelector('.my-side .circle.vc');
+                                            const oldVG = vc.querySelector('.card');
+                                            if (oldVG) {
+                                                soulPool.push(oldVG);
+                                                sendMoveData(oldVG, 'soul');
+                                            }
+                                            vc.innerHTML = '';
+                                            vc.appendChild(actual);
+                                            actual.classList.remove('rest');
+                                            actual.style.transform = 'none';
+                                            sendMoveData(actual);
+
+                                            // Order to Soul
+                                            soulPool.push(card);
+                                            card.remove();
+                                            sendMoveData(card, 'soul');
+                                            updateSoulUI();
+                                            updateDropCount();
+
+                                            // Persona Ride Check
+                                            const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+                                            const oppGrade = oppVG ? parseInt(oppVG.dataset.grade || "0") : 0;
+                                            if (oppGrade >= 3 && !hasRiddenThisTurn) {
+                                                triggerPersonaRide();
+                                            }
+
+                                            hasRiddenThisTurn = true;
+                                            handleRideAbilities(actual);
+                                            updatePhaseUI(true);
+                                            alert("Masque Ride สำเร็จ!");
+                                            resolveRide();
+                                        }
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', rideSel);
+                                closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); viewerGrid.removeEventListener('click', rideSel); resolveRide(); };
+                            });
+                            return true;
+                        }
+                    } else {
+                        alert("ไม่มีการ์ดเกรด 3 ที่ติดชื่อ 'Masques' ในมือ!");
+                    }
+                } else {
+                    alert("แวนการ์ดต้องเป็นเกรด 3 และไม่มีชื่อ 'Masques' เพื่อใช้งานสิ่งนี้จากดรอป!");
+                }
+                return false;
+            }
         }
 
 
@@ -8152,42 +8608,42 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if opponent has rear-guards to retire
                         const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card');
                         if (oppRGs.length > 0) {
-                        if (isAIMode && !isMyTurn) {
-                            // AI Auto-retire: Pick a front row RG if possible
-                            const frontRGs = Array.from(document.querySelectorAll(`${oppSideClass} .circle[data-zone^="rc_front"] .card`));
-                            const target = frontRGs[0] || oppRGs[0];
-                            if (target) {
-                                alert(`AI Killshroud retires: ${target.dataset.name}`);
-                                const dropZone = document.querySelector(`${oppSideClass} .drop-zone`);
-                                if (dropZone) dropZone.appendChild(target);
-                                const rawId = target.id.replace('opp-', '');
-                                if (isAIMode) {
-                                    // In AI mode, we don't necessarily need forceRetire if local
-                                } else {
-                                    sendData({ type: 'forceRetire', cardId: rawId });
-                                }
-                                sendMoveData(target);
-                            }
-                        } else {
-                            alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                            document.body.classList.add('targeting-mode');
-                            const retireHandler = (e) => {
-                                const target = e.target.closest(`${oppSideClass} .circle.rc .card`);
+                            if (isAIMode && !isMyTurn) {
+                                // AI Auto-retire: Pick a front row RG if possible
+                                const frontRGs = Array.from(document.querySelectorAll(`${oppSideClass} .circle[data-zone^="rc_front"] .card`));
+                                const target = frontRGs[0] || oppRGs[0];
                                 if (target) {
-                                    e.stopPropagation();
-                                    document.body.classList.remove('targeting-mode');
-                                    document.removeEventListener('click', retireHandler, true);
+                                    alert(`AI Killshroud retires: ${target.dataset.name}`);
                                     const dropZone = document.querySelector(`${oppSideClass} .drop-zone`);
-                                    dropZone.appendChild(target);
-                                    // Send forceRetire so opponent also sees the retirement
+                                    if (dropZone) dropZone.appendChild(target);
                                     const rawId = target.id.replace('opp-', '');
-                                    sendData({ type: 'forceRetire', cardId: rawId });
+                                    if (isAIMode) {
+                                        // In AI mode, we don't necessarily need forceRetire if local
+                                    } else {
+                                        sendData({ type: 'forceRetire', cardId: rawId });
+                                    }
                                     sendMoveData(target);
-                                    alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
                                 }
-                            };
-                            document.addEventListener('click', retireHandler, true);
-                        }
+                            } else {
+                                alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
+                                document.body.classList.add('targeting-mode');
+                                const retireHandler = (e) => {
+                                    const target = e.target.closest(`${oppSideClass} .circle.rc .card`);
+                                    if (target) {
+                                        e.stopPropagation();
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', retireHandler, true);
+                                        const dropZone = document.querySelector(`${oppSideClass} .drop-zone`);
+                                        dropZone.appendChild(target);
+                                        // Send forceRetire so opponent also sees the retirement
+                                        const rawId = target.id.replace('opp-', '');
+                                        sendData({ type: 'forceRetire', cardId: rawId });
+                                        sendMoveData(target);
+                                        alert("รีไทร์เรียร์การ์ดคู่แข่งสำเร็จ!");
+                                    }
+                                };
+                                document.addEventListener('click', retireHandler, true);
+                            }
                         } else {
                             alert("Killshroud: ไม่มีเรียร์การ์ดคู่แข่งให้รีไทร์! VG พลัง+5000 และ Guard Restrict สำเร็จ!");
                         }
@@ -8432,7 +8888,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const oppGrade = oppVgElem ? parseInt(oppVgElem.dataset.grade) : 0;
 
             if (vg && vg.dataset.name.includes('Magnolia') && oppGrade >= 3) {
-                if (await vgConfirm("Lattice: [ACT](RC) [CB1 & นำยูนิทนี้เข้าสู่โซล] เพื่อไรด์ Magnolia Elder เกรด 4 จากมือเป็น [Stand]?")) {
+                if (await vgConfirm("Lattice: [ACT](RC) [CB1 & นำยูนิทนี้เข้าสู่โซล] เพื่อไรด Magnolia Elder เกรด 4 จากมือเป็น [Stand]?")) {
                     const elderInHand = Array.from(playerHand.querySelectorAll('.card')).find(c => c.dataset.name.includes('Elder') && parseInt(c.dataset.grade) === 4);
 
                     if (elderInHand) {
@@ -8490,7 +8946,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (await paySoulBlast(1)) {
                     const topCards = deckPool.slice(0, 3);
                     if (topCards.length > 0) {
-                        openViewer("Choose a card to discard", topCards);
+                        openViewer("เลือกการ์ด 1 ใบเพื่อส่งลงดรอปโซน", topCards);
                         const discardSelector = async (e) => {
                             const clickedNode = e.target.closest('.card');
                             if (clickedNode && clickedNode.parentElement === viewerGrid) {
@@ -9026,7 +9482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleBrachioforceEffect(attacker, attackData) {
         if (!attacker) return;
-        
+
         const isPlayerSide = attacker.closest('.my-side') !== null;
         const sideClass = isPlayerSide ? '.my-side' : '.opponent-side';
         const oppSideClass = isPlayerSide ? '.opponent-side' : '.my-side';
@@ -9068,7 +9524,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (cardDataStr) {
                             try {
                                 aiDrop.push(JSON.parse(cardDataStr));
-                            } catch(e) {}
+                            } catch (e) { }
                         }
                         alert(`Brachioforce retires AI unit: ${target.dataset.name}`);
                     }
@@ -9223,6 +9679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const name = (attacker.dataset.name || "").toLowerCase();
         const isMyTurn = (attacker.dataset.side !== 'opponent');
+        const queue = [];
 
         // --- Youthberk RevolDress (End of Battle) ---
         if (attacker.parentElement.classList.contains('vc') && name.includes('skyfall arms')) {
@@ -9275,6 +9732,235 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Avaricious Demonic Dragon (Greedon & Greedon Masques) [AUTO](VC) ---
+        if (name.includes('greedon') && attacker.parentElement.classList.contains('vc')) {
+            const isMasques = name.includes('masques');
+            const standingRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.rest)'));
+            const reqRGs = isMasques ? 3 : 4;
+            const hasDesireDevilsInSoul = soulPool.filter(c => (c.dataset.name || "").toLowerCase().includes('desire devil')).length >= 3;
+
+            // Masques requires 3 Desire Devils in Soul
+            if (isMasques && !hasDesireDevilsInSoul) {
+                // Cannot stand
+            } else if (standingRGs.length >= reqRGs && !attacker.dataset.greedonStandUsedThisAttack) {
+                const skillLabel = isMasques ? "Greedon Masques" : "Greedon";
+                const costMsg = isMasques ? `[นำ Stand RGs ${reqRGs} ใบเข้าโซล] เพื่อ Stand แวนการ์ด?` : `[SB2 & นำ Stand RGs ${reqRGs} ใบเข้าโซล] เพื่อ Stand แวนการ์ด?`;
+
+                if (await vgConfirm(`${skillLabel}: ${costMsg}`)) {
+                    let costPaid = false;
+                    if (isMasques) costPaid = true;
+                    else costPaid = await paySoulBlast(2);
+
+                    if (costPaid) {
+                        let selectedCount = 0;
+                        alert(`เลือกเรียร์การ์ดที่สแตนด์อยู่ ${reqRGs} ใบเพื่อนำเข้าโซล`);
+                        document.body.classList.add('targeting-mode');
+
+                        await new Promise(resolveGreedonCost => {
+                            const rgListener = (e) => {
+                                const card = e.target.closest('.my-side .circle.rc .card:not(.rest)');
+                                if (card) {
+                                    soulPool.push(card);
+                                    card.remove();
+                                    sendMoveData(card, 'soul');
+                                    selectedCount++;
+
+                                    // Handle Desire Devil Soul-in Triggers
+                                    const cName = card.dataset.name.toLowerCase();
+                                    if (cName.includes('gouman')) {
+                                        const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+                                        if (oppVG && parseInt(oppVG.dataset.grade || "0") >= 3) {
+                                            queue.push({
+                                                name: 'Gouman Soul Skill',
+                                                description: "[CB1] Guard Restrict (2+ cards)",
+                                                resolve: async (done) => {
+                                                    if (await vgConfirm("Gouman: [CB1] เพื่อเปิดใช้งาน Guard Restrict (ต้องคอล 2 ใบขึ้นไป)?")) {
+                                                        if (payCounterBlast(1)) window.activeGuardRestrictCount = 2;
+                                                    }
+                                                    if (done) done();
+                                                }
+                                            });
+                                        }
+                                    }
+                                    if (cName.includes('boshokku')) {
+                                        queue.push({
+                                            name: 'Boshokku Soul Skill',
+                                            description: "จั่ว 1 ใบ",
+                                            resolve: async (done) => {
+                                                alert("Boshokku: จั่วการ์ด 1 ใบ จากการถูกนำเข้าโซลโดยแวนการ์ด Greedon!");
+                                                drawCard(1);
+                                                if (done) done();
+                                            }
+                                        });
+                                    }
+                                    if (cName.includes('xitto')) {
+                                        queue.push({
+                                            name: 'Xitto Soul-In Skill',
+                                            description: "นำการ์ดจากดรอปเข้าโซล",
+                                            resolve: async (done) => {
+                                                const myDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(node => node.dataset.name);
+                                                if (myDrop.length > 0) {
+                                                    if (await vgConfirm("Desire Devil, Xitto: [AUTO] เมื่อถูกนำเข้าโซลโดยแวนการ์ด เลือกการ์ด 1 ใบจากดรอปเพื่อนำเข้าโซล?")) {
+                                                        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
+                                                        const cardDataList = dropCards.map(c => ({ name: c.dataset.name, id: c.id }));
+
+                                                        alert("เลือกการ์ดจาก drop zone เพื่อนำเข้าโซล");
+                                                        openViewer("Choose a card to put into Soul", cardDataList);
+
+                                                        await new Promise(resolveXitto => {
+                                                            const selXitto = (ev) => {
+                                                                const clicked = ev.target.closest('.card');
+                                                                if (clicked && clicked.parentElement === viewerGrid) {
+                                                                    viewerGrid.removeEventListener('click', selXitto);
+                                                                    zoneViewer.classList.add('hidden');
+
+                                                                    const realCard = document.getElementById(clicked.id);
+                                                                    if (realCard) {
+                                                                        soulPool.push(realCard);
+                                                                        realCard.remove();
+                                                                        sendMoveData(realCard, 'soul');
+                                                                        updateSoulUI();
+                                                                        updateCountsUI();
+                                                                        alert(`นำ ${realCard.dataset.name} เข้าโซลแล้ว!`);
+                                                                    }
+                                                                    resolveXitto();
+                                                                }
+                                                            };
+                                                            viewerGrid.addEventListener('click', selXitto);
+                                                            closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); resolveXitto(); };
+                                                        });
+                                                    }
+                                                }
+                                                if (done) done();
+                                            }
+                                        });
+                                    }
+
+                                    if (cName.includes('fuujo')) {
+                                        queue.push({
+                                            name: 'Fuujo Soul-In Skill',
+                                            description: "เลือกยูนิทคู่แข่ง 1 ใบเพื่อรีไทร์",
+                                            resolve: async (done) => {
+                                                const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
+                                                const valid = oppRGs.filter(c => !isCardResistant(c));
+                                                if (valid.length > 0) {
+                                                    if (await vgConfirm("Fuujo: [AUTO] เมื่อถูกนำเข้าโซลโดยแวนการ์ด Greedon เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์?")) {
+                                                        alert("เลือกเรียร์การ์ดคู่แข่งเพื่อรีไทร์");
+                                                        document.body.classList.add('targeting-mode');
+                                                        await new Promise(res => {
+                                                            const h = (ev) => {
+                                                                const t = ev.target.closest('.opponent-side .circle.rc .card');
+                                                                if (t) {
+                                                                    if (isCardResistant(t)) {
+                                                                        alert("ยูนิทนี้มี Resist! เลือกไม่ได้");
+                                                                        return;
+                                                                    }
+                                                                    ev.stopPropagation();
+                                                                    const oppDrop = document.querySelector('.opponent-side .drop-zone');
+                                                                    oppDrop.appendChild(t);
+                                                                    sendMoveData(t);
+                                                                    alert("รีไทร์สำเร็จ!");
+                                                                    document.body.classList.remove('targeting-mode');
+                                                                    document.removeEventListener('click', h, true);
+                                                                    res();
+                                                                }
+                                                            };
+                                                            document.addEventListener('click', h, true);
+                                                        });
+                                                    }
+                                                }
+                                                if (done) done();
+                                            }
+                                        });
+                                    }
+
+                                    if (selectedCount >= reqRGs) {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rgListener);
+                                        updateSoulUI();
+
+                                        // --- Bubetsuu Skill (RC/Soul-in triggering) ---
+                                        const bubetsuuFound = standingRGs.some(c => c.dataset.name.includes('Bubetsuu')); // Check if any Bubetsuu was on RC or moved
+                                        if (bubetsuuFound && window.bubetsuuUsedThisTurn !== true) {
+                                            queue.push({
+                                                name: 'Bubetsuu Skill',
+                                                description: "[CB1] Call from hand & Draw",
+                                                resolve: async (done) => {
+                                                    if (window.bubetsuuUsedThisTurn === true) {
+                                                        if (done) done();
+                                                        return;
+                                                    }
+                                                    if (await vgConfirm("Desire Devil, Bubetsuu: [AUTO] เมื่อเรียร์การ์ดใบอื่นถูกนำเข้าโซลในเทิร์นคุณ [CB1] คอลการ์ดจากมือและจั่ว 1 ใบ (หากโซล 10+)?")) {
+                                                        if (payCounterBlast(1)) {
+                                                            window.bubetsuuUsedThisTurn = true;
+                                                            alert("เลือกการ์ดจากมือ 1 ใบเพื่อคอลลง RC ที่ว่าง");
+                                                            document.body.classList.add('targeting-mode');
+                                                            const handCards = document.querySelectorAll('#player-hand .card');
+
+                                                            await new Promise(resBub => {
+                                                                const handListener = (ev) => {
+                                                                    const hCard = ev.target.closest('#player-hand .card');
+                                                                    if (hCard) {
+                                                                        ev.stopPropagation();
+                                                                        document.removeEventListener('click', handListener, true);
+                                                                        alert("เลือกช่อง RC ที่ว่างอยู่");
+
+                                                                        const rcListener = (ev2) => {
+                                                                            const circle = ev2.target.closest('.my-side .circle.rc');
+                                                                            if (circle && !circle.querySelector('.card')) {
+                                                                                ev2.stopPropagation();
+                                                                                circle.appendChild(hCard);
+                                                                                sendMoveData(hCard);
+                                                                                updateHandCount();
+                                                                                updateHandSpacing();
+                                                                                document.body.classList.remove('targeting-mode');
+                                                                                document.removeEventListener('click', rcListener, true);
+
+                                                                                if (soulPool.length >= 10) {
+                                                                                    alert("โซลมี 10 ใบขึ้นไป! จั่วการ์ด 1 ใบ");
+                                                                                    drawCard(1);
+                                                                                }
+                                                                                resBub();
+                                                                            }
+                                                                        };
+                                                                        document.addEventListener('click', rcListener, true);
+                                                                    }
+                                                                };
+                                                                document.addEventListener('click', handListener, true);
+                                                            });
+                                                        }
+                                                    }
+                                                    if (done) done();
+                                                }
+                                            });
+                                        }
+
+                                        attacker.classList.remove('rest');
+                                        attacker.style.transform = 'none';
+
+                                        let pwr = isMasques ? 5000 : (soulPool.length >= 10 ? 15000 : 0);
+                                        if (pwr > 0) {
+                                            attacker.dataset.power = (parseInt(attacker.dataset.power) + pwr).toString();
+                                            attacker.dataset.turnEndBuffPower = (parseInt(attacker.dataset.turnEndBuffPower || "0") + pwr).toString();
+                                            attacker.dataset.turnEndBuffActive = "true";
+                                            syncPowerDisplay(attacker);
+                                            alert(`${skillLabel} Restand! พลัง +${pwr}`);
+                                        } else {
+                                            alert(`${skillLabel} Restand!`);
+                                        }
+                                        sendMoveData(attacker);
+                                        attacker.dataset.greedonStandUsedThisAttack = "true";
+                                        resolveGreedonCost();
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', rgListener);
+                        });
+                    }
+                }
+            }
+        }
+
         // --- Dragonic Overlord the End [AUTO](VC)[1/turn] ---
         if (name.includes('dragonic overlord the end') && attacker.parentElement.classList.contains('vc')) {
             if (attacker.dataset.doteStandUsed !== "true") {
@@ -9283,7 +9969,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         await payDiscard(2);
                         attacker.classList.remove('rest');
                         attacker.dataset.doteStandUsed = "true";
-                        
+
                         const hasDOBase = soulPool.some(c => c.dataset.name.includes('Dragonic Overlord') && !c.dataset.name.includes('the End'));
                         if (!hasDOBase) {
                             attacker.dataset.drive = Math.max(0, parseInt(attacker.dataset.drive || "2") - 1);
@@ -9291,7 +9977,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             alert("Dragonic Overlord the End Stand! (ไดร์ฟไม่ลดลงเพราะมี Dragonic Overlord ในโซล)");
                         }
-                        
+
                         applyStaticBonuses(attacker);
                         sendMoveData(attacker);
                     }
@@ -9310,7 +9996,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const canUseAvantRestand = (isHitVG || isPersona);
 
             // New approach: use resolveAbilityQueue
-            const queue = [];
 
             if (canUseAvantRestand) {
                 queue.push({
@@ -9350,14 +10035,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const idx = bindPool.indexOf(baseAvant);
                                 bindPool.splice(idx, 1);
                                 const vc = document.querySelector('.my-side .circle.vc');
-                                
+
                                 // Store attacker data before removal to know if it was Richter
                                 const oldAttacker = attacker;
-                                
+
                                 oldAttacker.remove();
                                 soulPool.push(oldAttacker);
                                 sendMoveData(oldAttacker, 'soul');
-                                
+
                                 vc.appendChild(baseAvant);
                                 baseAvant.classList.remove('rest');
                                 baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
@@ -9376,9 +10061,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            // Resolve Richter/Avantgarda skills
             if (queue.length > 0) {
+                // We resolve here to maintain context, but avoid early return if possible
+                // However, Richter usually ends the battle. Let's just let it resolve.
                 await resolveAbilityQueue(queue);
-                return;
             }
         }
 
@@ -9567,6 +10254,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
+        }
+
+        // Resolve any remaining abilities in queue
+        if (queue.length > 0) {
+            await resolveAbilityQueue(queue);
         }
 
         // --- Baur Vairina Reset ---
@@ -9873,6 +10565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (deckChoice === 'avantgarda') currentDeck = avantgardaDeck;
         else if (deckChoice === 'youthberk') currentDeck = youthberkDeck;
         else if (deckChoice === 'overlord') currentDeck = overlordDeck;
+        else if (deckChoice === 'greedon') currentDeck = greedonDeck;
 
         if (role === 'host') {
             initPeer(customId);
@@ -9880,38 +10573,38 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Searching Arena: ${friendId}...`;
             initPeer();
 
-        const checkReady = setInterval(() => {
-            if (peer && peer.id) {
-                clearInterval(checkReady);
-                if (gameStatusText) gameStatusText.textContent = 'Connecting to Host...';
+            const checkReady = setInterval(() => {
+                if (peer && peer.id) {
+                    clearInterval(checkReady);
+                    if (gameStatusText) gameStatusText.textContent = 'Connecting to Host...';
 
-                console.log("Guest connecting to:", friendId);
-                conn = peer.connect(friendId, { reliable: true });
-                isHost = false;
-                isFirstPlayer = false;
-                window.isFirstPlayer = false;
+                    console.log("Guest connecting to:", friendId);
+                    conn = peer.connect(friendId, { reliable: true });
+                    isHost = false;
+                    isFirstPlayer = false;
+                    window.isFirstPlayer = false;
 
-                conn.on('open', () => {
-                    console.log("Connected! Handshaking...");
-                    if (gameStatusText) gameStatusText.textContent = 'Handshaking...';
+                    conn.on('open', () => {
+                        console.log("Connected! Handshaking...");
+                        if (gameStatusText) gameStatusText.textContent = 'Handshaking...';
 
-                    const lobbyContent = document.querySelector('.lobby-content');
-                    if (lobbyContent) lobbyContent.classList.add('effect-match-found');
+                        const lobbyContent = document.querySelector('.lobby-content');
+                        if (lobbyContent) lobbyContent.classList.add('effect-match-found');
 
-                    // Small delay to ensure host is ready for data and play animation
-                    setTimeout(() => {
-                        sendData({ type: 'guestJoin' });
-                        setupConnection();
-                    }, 1000);
-                });
+                        // Small delay to ensure host is ready for data and play animation
+                        setTimeout(() => {
+                            sendData({ type: 'guestJoin' });
+                            setupConnection();
+                        }, 1000);
+                    });
 
-                conn.on('error', (err) => {
-                    console.error("Connection error:", err);
-                    if (gameStatusText) gameStatusText.textContent = "Connection Failed. Retrying...";
-                    setTimeout(() => window.location.reload(), 2000);
-                });
-            }
-        }, 800);
+                    conn.on('error', (err) => {
+                        console.error("Connection error:", err);
+                        if (gameStatusText) gameStatusText.textContent = "Connection Failed. Retrying...";
+                        setTimeout(() => window.location.reload(), 2000);
+                    });
+                }
+            }, 800);
         }
     }
 
@@ -10216,7 +10909,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
                     syncPowerDisplay(card);
                     alert("Youthberk \"RevolForm: Gust\": พลัง +10000!");
-                    
+
                     const oppVG = document.querySelector('.opponent-side .circle.vc .card');
                     if (oppVG && parseInt(oppVG.dataset.grade || "0") >= 3) {
                         if (await vgConfirm("Gust: แวนการ์ดคู่แข่งเกรด 3+ จ่าย [ทิ้งมือ 1 ใบ] เพื่อรับ Drive +1?")) {
@@ -10257,7 +10950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Dolbraig Skills
         const frontRowDolbraigs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
             .filter(d => d.dataset.name && d.dataset.name.includes('Dolbraig'));
-        
+
         frontRowDolbraigs.forEach(dolb => {
             const z = dolb.parentElement?.dataset.zone || "";
             if (z === 'rc_front_left' || z === 'rc_front_right') {
@@ -10334,19 +11027,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!element) return;
         const popup = document.createElement('div');
         const isCritical = (type === 'critical' || type === 'current-crit');
-        
+
         popup.className = 'power-popup' + (amount < 0 ? ' negative' : '') + (isCritical ? ' critical' : '');
-        
+
         let prefix = (amount > 0 ? '+' : '');
         if (type === 'current-crit') prefix = '';
         let label = isCritical ? ' CRIT' : '';
         popup.textContent = prefix + amount + label;
-        
+
         const rect = element.getBoundingClientRect();
         popup.style.left = (rect.left + rect.width / 2) + 'px';
         popup.style.top = (rect.top + rect.height / 2) + 'px';
         popup.style.transform = 'translate(-50%, -50%)';
-        
+
         document.body.appendChild(popup);
         setTimeout(() => popup.remove(), 4000);
     }
