@@ -1292,12 +1292,16 @@ body {
 }
 
 .viewer-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
   gap: 1.5rem;
-  overflow-y: auto;
-  padding: 1rem;
-  min-height: 200px;
+  padding: 1.5rem;
+  min-height: 250px;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .viewer-grid .card {
@@ -2435,26 +2439,32 @@ body.targeting-mode::after {
 
 /* Power-Up Visual Effects */
 @keyframes powerPop {
-  0% { transform: translateY(0) scale(0.5); opacity: 0; }
-  20% { opacity: 1; transform: translateY(-30px) scale(1.3); }
-  100% { transform: translateY(-70px) scale(1.1); opacity: 0; }
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  15% { opacity: 1; transform: translateY(-40px) scale(1.4); }
+  100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
 }
 
 .power-popup {
   position: fixed;
   color: var(--accent-cyan);
   font-family: var(--font-cyber);
-  font-weight: 800;
-  font-size: 1.8rem;
+  font-weight: 900;
+  font-size: 2.5rem;
   pointer-events: none;
   z-index: 20000;
-  text-shadow: 0 0 15px rgba(5, 217, 232, 0.9), 0 0 5px #000;
-  animation: powerPop 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(5, 217, 232, 1), 0 0 8px #000;
+  animation: powerPop 4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  letter-spacing: 3px;
 }
 
 .power-popup.negative {
   color: #ff2a6d;
-  text-shadow: 0 0 15px rgba(255, 42, 109, 0.9), 0 0 5px #000;
+  text-shadow: 0 0 20px rgba(255, 42, 109, 1), 0 0 8px #000;
+}
+
+.power-popup.critical {
+  color: #ffcc00;
+  text-shadow: 0 0 25px rgba(255, 204, 0, 1), 0 0 10px #000;
+  font-size: 3rem;
 }
 

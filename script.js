@@ -1776,6 +1776,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         attackingCard = card;
                         card.classList.add('attacking-glow');
+                        // Show current critical on attack
+                        showPowerPopup(card, card.dataset.critical || "1", 'current-crit');
                     }
                 } else {
                     if (card !== attackingCard) {
@@ -6594,6 +6596,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (unit.classList.contains('rest')) return;
         
         unit.classList.add('attacking-glow');
+        // Show current critical on IA attack
+        showPowerPopup(unit, unit.dataset.critical || "1", 'current-crit');
         let totalPower = parseInt(unit.dataset.power);
         let boosterCard = null;
         
@@ -10299,12 +10303,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function initPowerObserver() {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-power') {
-                    const newValue = parseInt(mutation.target.dataset.power || "0");
-                    const oldValue = parseInt(mutation.oldValue || "0");
-                    const diff = newValue - oldValue;
-                    if (diff !== 0 && mutation.target.offsetParent !== null) {
-                        showPowerPopup(mutation.target, diff);
+                if (mutation.type === 'attributes' && (mutation.attributeName === 'data-power' || mutation.attributeName === 'data-critical')) {
+                    if (mutation.attributeName === 'data-power') {
+                        const newValue = parseInt(mutation.target.dataset.power || "0");
+                        const oldValue = parseInt(mutation.oldValue || "0");
+                        const diff = newValue - oldValue;
+                        if (diff !== 0 && mutation.target.offsetParent !== null) {
+                            showPowerPopup(mutation.target, diff, 'power');
+                        }
+                    } else if (mutation.attributeName === 'data-critical') {
+                        const newValue = parseInt(mutation.target.dataset.critical || "1");
+                        const oldValue = parseInt(mutation.oldValue || "1");
+                        const diff = newValue - oldValue;
+                        if (diff !== 0 && mutation.target.offsetParent !== null) {
+                            showPowerPopup(mutation.target, diff, 'critical');
+                        }
                     }
                 }
             });
@@ -10317,11 +10330,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (oppSide) observer.observe(oppSide, config);
     }
 
-    function showPowerPopup(element, amount) {
+    function showPowerPopup(element, amount, type = 'power') {
         if (!element) return;
         const popup = document.createElement('div');
-        popup.className = 'power-popup' + (amount < 0 ? ' negative' : '');
-        popup.textContent = (amount > 0 ? '+' : '') + amount;
+        const isCritical = (type === 'critical' || type === 'current-crit');
+        
+        popup.className = 'power-popup' + (amount < 0 ? ' negative' : '') + (isCritical ? ' critical' : '');
+        
+        let prefix = (amount > 0 ? '+' : '');
+        if (type === 'current-crit') prefix = '';
+        let label = isCritical ? ' CRIT' : '';
+        popup.textContent = prefix + amount + label;
         
         const rect = element.getBoundingClientRect();
         popup.style.left = (rect.left + rect.width / 2) + 'px';
@@ -10329,7 +10348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         popup.style.transform = 'translate(-50%, -50%)';
         
         document.body.appendChild(popup);
-        setTimeout(() => popup.remove(), 1200);
+        setTimeout(() => popup.remove(), 4000);
     }
 });
 
