@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard overDress Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- LOBBY SCREEN -->
+        <!-- MATCHMAKING OVERLAY (Show until connected) -->
+        <div id="matchmaking-overlay" class="lobby-container">
+            <div class="lobby-content">
+                <h1 id="matchmaking-title" class="logo lobby-logo">Vanguard <span class="highlight">overDress</span>
+                </h1>
+                <p id="matchmaking-subtitle" class="lobby-subtitle">Initializing connection...</p>
+                <div id="lobby-actions" class="lobby-actions">
+                    <div id="id-display-box" class="id-display hidden">
+                        <span class="label">SHARE THIS ID WITH FRIEND:</span>
+                        <span id="game-peer-id" class="id-text">...</span>
+                        <button id="copy-game-id-btn" class="icon-btn">📋</button>
+                    </div>
+                </div>
+
+                <div class="mode-selection" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                    <div class="connection-status">
+                        <div class="status-info-row">
+                            <span class="status-dot"></span>
+                            <span id="game-status-text">Initializing...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="multiplayer-controls">
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Waiting for a friend to connect...</p>
+                    </div>
+
+                    <div class="divider-text">OR</div>
+
+                    <button id="start-ai-mode-btn" class="glass-btn highlight-btn" style="width: 100%;">🤖 PLAY SOLO VS AI</button>
+                </div>
+
+                <!-- Deck Selection (Show when starting AI mode) -->
+                <div id="ai-setup-overlay" class="setup-overlay hidden">
+                    <div class="setup-card">
+                        <h3>GAME SETUP</h3>
+                        <div class="setup-row">
+                            <label>YOUR DECK:</label>
+                            <select id="player-deck-select" class="glass-select">
+                                <option value="bruce">Diabolos, Bruce</option>
+                                <option value="magnolia">Sylvan Horned Beast, Magnolia</option>
+                                <option value="youthberk">Youthberk</option>
+                                <option value="avantgarda">Blue Deathster, Avantgarda</option>
+                                <option value="majesty">Majesty Lord Blaster</option>
+                                <option value="nirvana">Nirvana Jheva</option>
+                                <option value="overlord">Dragonic Overlord the End</option>
+                            </select>
+                        </div>
+                        <div class="setup-row">
+                            <label>AI DECK:</label>
+                            <select id="ai-deck-select" class="glass-select">
+                                <option value="bruce">Diabolos, Bruce (Aggro)</option>
+                                <option value="magnolia">Sylvan, Magnolia (6-Attack)</option>
+                                <option value="youthberk">Youthberk (Combo)</option>
+                                <option value="avantgarda">Avantgarda (Strategy)</option>
+                                <option value="overlord">Overlord the End</option>
+                            </select>
+                        </div>
+                        <div class="setup-row">
+                            <label>DIFFICULTY:</label>
+                            <select id="ai-difficulty" class="glass-select">
+                                <option value="hard">Hard (Heuristic AI)</option>
+                                <option value="easy">Easy (Random Moves)</option>
+                            </select>
+                        </div>
+                        <button id="confirm-ai-start-btn" class="glass-btn primary-btn" style="margin-top: 1rem;">START BATTLE</button>
+                    </div>
+                </div>
+
+                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem; opacity: 0.5;">Return
+                    to Lobby</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-container" class="game-container hidden">
+            <!-- Game Info / Settings -->
+            <header class="header">
+                <h1 class="logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
+
+                <div class="game-info" style="display: flex; align-items: center;">
+                    <div id="connection-badge" class="connection badge">
+                        <span class="dot online"></span>
+                        <span id="network-info">Online (Host)</span>
+                    </div>
+                    <div id="opp-bruce-status-badge" class="rush-status hidden" style="margin-left: 10px;">Final Rush
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Board Area -->
+            <main class="board-area">
+
+                <!-- Opponent Side -->
+                <div class="player-side opponent-side side-disabled">
+                    <div class="side-overlay">Waiting for rival...</div>
+
+                    <!-- Left Column Zones (Opponent) -->
+                    <div class="col-zones left-col">
+                        <div class="zone damage-zone" data-zone="damage">
+                            <span class="zone-label">Damage (<span id="opp-damage-count-num">0</span>)</span>
+                            <button id="opp-view-damage-btn" class="view-zone-btn">View</button>
+                        </div>
+                        <div class="zone order-zone" data-zone="order">
+                            <span class="zone-label">Order</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Column (Circles) (Opponent) -->
+                    <div class="col-circles">
+                        <!-- Back Row (Opponent's view top, our view furthest back) -->
+                        <div class="row back-row">
+                            <div class="circle rc" data-zone="rc_back_right">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_center">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_left">
+                                <div class="glow-ring"></div>
+                            </div>
+                        </div>
+                        <!-- Front Row (Opponent's view front, our view closer to divider) -->
+                        <div class="row front-row">
+                            <div class="circle rc" data-zone="rc_front_right">
+                                <div class="glow-ring"></div>
+                            </div>
+                            <div class="circle vc" data-zone="vc">
+                                <div class="glow-ring"></div>
+                                <div id="opp-soul-counter" class="soul-badge hidden">Soul: 0</div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_front_left">
+                                <div class="glow-ring"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Zones (Opponent) -->
+                    <div class="col-zones right-col">
+                        <div class="zone drop-zone" data-zone="drop">
+                            <span class="zone-label">Drop (<span id="opp-drop-count-num">0</span>)</span>
+                            <button id="opp-view-drop-btn" class="view-zone-btn">View</button>
+                        </div>
+                        <div class="zone deck-zone" data-zone="deck">
+                            <span class="zone-label">Deck (<span id="opp-deck-count-num">50</span>)</span>
+                        </div>
+                        <div class="zone ride-deck-zone" data-zone="ride">
+                            <span class="zone-label">Ride Deck</span>
+                        </div>
+                    </div>
+
+                    <!-- Opponent Hand Info Overlay -->
+                    <div class="opp-hand-info">
+                        Hand: <span id="opp-hand-count">0</span>
+                    </div>
+                </div>
+
+                <div class="divider">
+                    <div class="guardian-circle" data-zone="gc_player" id="shared-gc">
+                        <div class="clash-text">GUARDIAN CIRCLE</div>
+                        <div id="gc-shield-display" class="soul-badge"
+                            style="top: auto; bottom: -15px; right: 50%; transform: translateX(50%);">Shield: 0</div>
+                    </div>
+                </div>
+
+                <!-- Player Side -->
+                <div class="player-side my-side">
+                    <!-- Left Column Zones -->
+                    <div class="col-zones left-col">
+                        <div class="zone damage-zone" data-zone="damage">
+                            <span class="zone-label">Damage (<span id="damage-count-num">0</span>)</span>
+                            <button id="view-damage-btn" class="view-zone-btn">View</button>
+                        </div>
+                        <div class="zone order-zone" data-zone="order">
+                            <span class="zone-label">Order</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Column (Circles) -->
+                    <div class="col-circles">
+                        <!-- Front Row -->
+                        <div class="row front-row">
+                            <div class="circle rc" data-zone="rc_front_left">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle vc" data-zone="vc">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">V</span>
+                                <div id="soul-counter" class="soul-badge hidden">Soul: 0</div>
+                            </div>
+                            <div class="circle rc" data-zone="rc_front_right">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                        </div>
+                        <!-- Back Row -->
+                        <div class="row back-row">
+                            <div class="circle rc" data-zone="rc_back_left">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_center">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                            <div class="circle rc" data-zone="rc_back_right">
+                                <div class="glow-ring"></div>
+                                <span class="circle-label">R</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Zones -->
+                    <div class="col-zones right-col">
+                        <div class="zone drop-zone" data-zone="drop" id="drop-zone">
+                            <span class="zone-label">Drop (<span id="drop-count-num">0</span>)</span>
+                            <button id="view-drop-btn" class="view-zone-btn">View</button>
+                        </div>
+                        <div class="zone deck-zone" data-zone="deck" id="main-deck">
+                            <span class="zone-label">Deck (<span id="deck-count-num">46</span>)</span>
+                        </div>
+                        <div class="zone ride-deck-zone" data-zone="ride" id="ride-deck">
+                            <span class="zone-label">Ride Deck</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Player Hand -->
+            <div class="hand-area">
+                <div class="hand-controls">
+                    <div class="hand-count">Hand: <span id="hand-count-num">0</span></div>
+
+                    <!-- Phase Tracker (Moved from Header) -->
+                    <div class="phase-tracker">
+                        <div class="phase-step" data-phase="stand">Stand</div>
+                        <div class="phase-step" data-phase="draw">Draw</div>
+                        <div class="phase-step" data-phase="ride">Ride</div>
+                        <div class="phase-step" data-phase="main">Main</div>
+                        <div class="phase-step" data-phase="battle">Battle</div>
+                        <div class="phase-step" data-phase="end">End</div>
+                    </div>
+
+                    <!-- Turn Controls (Moved from Header) -->
+                    <div class="game-info" style="display: flex; align-items: center;">
+                        <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
+                        <div id="bruce-status-badge" class="rush-status hidden">Final Rush</div>
+                        <button id="next-phase-btn" class="glass-btn highlight-btn"
+                            style="margin-left: 1rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">Next Phase</button>
+                        <button id="next-turn-btn" class="glass-btn"
+                            style="margin-left: 0.5rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">End Turn</button>
+                    </div>
+                </div>
+                <div class="hand-cards" id="player-hand" data-zone="hand">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+
+            <div class="quick-access-panel">
+                <div class="quick-group">
+                    <span class="group-label">MY ZONES</span>
+                    <button onclick="document.getElementById('view-drop-btn').click()" class="quick-btn drop">Drop (<span id="quick-drop-num">0</span>)</button>
+                    <button onclick="document.getElementById('view-damage-btn').click()" class="quick-btn damage">Damage (<span id="quick-damage-num">0</span>)</button>
+                    <button onclick="viewOrderZone('my')" class="quick-btn order">Order (<span id="quick-order-num">0</span>)</button>
+                    <button class="quick-btn bind">Bound (<span id="quick-bind-num">0</span>)</button>
+                </div>
+                <div class="quick-group">
+                    <span class="group-label">OPP ZONES</span>
+                    <button onclick="document.getElementById('opp-view-drop-btn').click()" class="quick-btn drop">Drop (<span id="opp-quick-drop-num">0</span>)</button>
+                    <button onclick="document.getElementById('opp-view-damage-btn').click()" class="quick-btn damage">Damage (<span id="opp-quick-damage-num">0</span>)</button>
+                    <button onclick="viewOrderZone('opp')" class="quick-btn order">Order (<span id="opp-quick-order-num">0</span>)</button>
+                    <button class="quick-btn bind">Bound (<span id="opp-quick-bind-num">0</span>)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone Viewer Modal -->
+    <div id="zone-viewer" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="viewer-title">Zone Content</h2>
+                <button id="close-viewer-btn" class="close-btn">&times;</button>
+            </div>
+            <div id="viewer-grid" class="viewer-grid">
+                <!-- Cards will be cloned here for viewing -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Skill Modal -->
+    <div id="skill-viewer" class="modal-overlay hidden">
+        <div class="modal-content skill-modal">
+            <div class="modal-header">
+                <h2 id="skill-card-name">Card Name</h2>
+                <button id="close-skill-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="skill-body">
+                <div class="skill-info">
+                    <span id="skill-card-grade">Grade: 0</span> |
+                    <span id="skill-card-power">Power: 0</span> |
+                    <span id="skill-card-shield">Shield: 0</span>
+                </div>
+                <div id="skill-text" class="skill-description">
+                    Skill text goes here...
+                </div>
+                <div class="skill-actions"
+                    style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
+                    <button id="activate-skill-btn" class="glass-btn primary-btn hidden">Activate [ACT] Skill</button>
+                    <button id="play-order-btn" class="glass-btn highlight-btn hidden">Play Order Card</button>
+                    <button id="x-overdress-btn" class="glass-btn accent-btn hidden">Perform X-overDress</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rock Paper Scissors Overlay -->
+    <div id="rps-overlay" class="modal-overlay hidden">
+        <div class="modal-content rps-content">
+            <h2 class="rps-title">ROCK PAPER SCISSORS</h2>
+            <p id="rps-status">Waiting for Rival...</p>
+            <div id="rps-options" class="rps-options hidden">
+                <button class="rps-btn" data-choice="rock">✊ ROCK</button>
+                <button class="rps-btn" data-choice="paper">✋ PAPER</button>
+                <button class="rps-btn" data-choice="scissors">✌️ SCISSORS</button>
+            </div>
+            <div id="rps-result" class="rps-result hidden">
+                <div class="rps-compare">
+                    <div class="rps-pick" id="my-rps-pick">?</div>
+                    <div class="vs-text">VS</div>
+                    <div class="rps-pick" id="opp-rps-pick">?</div>
+                </div>
+                <p id="rps-result-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mulligan Overlay -->
+    <div id="mulligan-overlay" class="modal-overlay hidden">
+        <div class="modal-content mulligan-content">
+            <h2 class="mulligan-title">ช่วงเปลี่ยนมือ (MULLIGAN PHASE)</h2>
+            <p>เลือกการ์ดที่ต้องการคืนเข้ากอง จากนั้นจั่วการ์ดใหม่ทดแทน</p>
+            <div id="mulligan-grid" class="hand-cards mulligan-grid">
+                <!-- Cards to be selected -->
+            </div>
+            <div class="mulligan-actions">
+                <button id="confirm-mulligan-btn" class="glass-btn highlight-btn">ยืนยันการเปลี่ยนมือ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -9833,23 +9833,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- URL Parameters Orchestration ---
     const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
     const role = urlParams.get('role');
     const friendId = urlParams.get('friendId');
-    const deckChoice = urlParams.get('deck');
+    const deckChoice = urlParams.get('deck') || urlParams.get('playerDeck');
+    const aiDeckChoice = urlParams.get('aiDeck');
+    const difficultyChoice = urlParams.get('difficulty');
     const customId = urlParams.get('customId');
 
-    if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
-    else if (deckChoice === 'nirvana') currentDeck = nirvanaJhevaDeck;
-    else if (deckChoice === 'majesty') currentDeck = majestyDeck;
-    else if (deckChoice === 'avantgarda') currentDeck = avantgardaDeck;
-    else if (deckChoice === 'youthberk') currentDeck = youthberkDeck;
-    else if (deckChoice === 'overlord') currentDeck = overlordDeck;
+    if (mode === 'ai') {
+        startAIGame(deckChoice, aiDeckChoice, difficultyChoice || 'hard');
+    } else {
+        if (deckChoice === 'bruce') currentDeck = bruceDeck;
+        else if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
+        else if (deckChoice === 'nirvana') currentDeck = nirvanaJhevaDeck;
+        else if (deckChoice === 'majesty') currentDeck = majestyDeck;
+        else if (deckChoice === 'avantgarda') currentDeck = avantgardaDeck;
+        else if (deckChoice === 'youthberk') currentDeck = youthberkDeck;
+        else if (deckChoice === 'overlord') currentDeck = overlordDeck;
 
-    if (role === 'host') {
-        initPeer(customId);
-    } else if (role === 'guest' && friendId) {
-        if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Searching Arena: ${friendId}...`;
-        initPeer();
+        if (role === 'host') {
+            initPeer(customId);
+        } else if (role === 'guest' && friendId) {
+            if (matchmakingSubtitle) matchmakingSubtitle.textContent = `Searching Arena: ${friendId}...`;
+            initPeer();
 
         const checkReady = setInterval(() => {
             if (peer && peer.id) {
@@ -9883,6 +9890,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }, 800);
+        }
     }
 
     function openViewer(title, cards) {

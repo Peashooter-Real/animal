@@ -1,134 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vanguard overDress - Lobby</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="lobby_styles.css"> <!-- Additional lobby specific styles -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        body {
-            overflow-y: auto !important;
-            /* Force scrollable for lobby */
-            display: block !important;
-        }
-    </style>
 </head>
+<body class="lobby-bg">
+    <div class="lobby-page-container">
+        <header class="lobby-header">
+            <button onclick="window.location.href='index.html'" class="back-home-btn">← Main Menu</button>
+            <h1 class="logo small">Vanguard <span>overDress</span></h1>
+        </header>
 
-<body>
-    <div id="lobby-container" class="lobby-container">
-        <div class="lobby-content">
-            <h1 class="logo lobby-logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
-            <p class="lobby-subtitle">Select your deck and invite a friend!</p>
-
-            <div class="deck-selection" id="nation-selection-screen">
-                <h2>Choose Your Nation</h2>
-                <div class="deck-cards" style="flex-wrap: wrap;">
-                    <div class="deck-card nation-card active" data-nation="Dark States">
-                        <div class="deck-art bruce-art"></div>
+        <main class="lobby-main">
+            <!-- Nation Selection -->
+            <section id="nation-selection-screen" class="setup-section">
+                <div class="section-header">
+                    <h2>Choose Your Nation</h2>
+                    <p>Select a nation to see available decks</p>
+                </div>
+                <div class="nation-grid">
+                    <div class="deck-card nation-card active card-dark" data-nation="Dark States">
+                        <div class="nation-icon" style="background-image: url('nations/brandt_logo.png')"></div>
                         <h3 class="deck-title">Dark States</h3>
                     </div>
-                    <div class="deck-card nation-card" data-nation="Stoicheia">
-                        <div class="deck-art magnolia-art"></div>
+                    <div class="deck-card nation-card card-stoicheia" data-nation="Stoicheia">
+                        <div class="nation-icon" style="background-image: url('nations/stoicheia_logo.png')"></div>
                         <h3 class="deck-title">Stoicheia</h3>
                     </div>
-                    <div class="deck-card nation-card" data-nation="Dragon Empire">
-                        <div class="deck-art nirvana-art"></div>
+                    <div class="deck-card nation-card card-dragon" data-nation="Dragon Empire">
+                        <div class="nation-icon" style="background-image: url('nations/dragon_logo.png')"></div>
                         <h3 class="deck-title">Dragon Empire</h3>
                     </div>
-                    <div class="deck-card nation-card" data-nation="Keter Sanctuary">
-                        <div class="deck-art majesty-art" style="background-image: linear-gradient(135deg, #d4af37, #777777); border-radius: 10px; margin-bottom: 1rem; height: 120px;"></div>
+                    <div class="deck-card nation-card card-keter" data-nation="Keter Sanctuary">
+                        <div class="nation-icon" style="background-image: url('nations/keter_logo.png')"></div>
                         <h3 class="deck-title">Keter Sanctuary</h3>
                     </div>
-                    <div class="deck-card nation-card" data-nation="Brandt Gate">
-                        <div class="deck-art avant-art" style="background-image: linear-gradient(135deg, #4b6cb7, #182848); border-radius: 10px; margin-bottom: 1rem; height: 120px;"></div>
+                    <div class="deck-card nation-card card-brandt" data-nation="Brandt Gate">
+                        <div class="nation-icon" style="background-image: url('nations/overdress_logo.png')"></div>
                         <h3 class="deck-title">Brandt Gate</h3>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="deck-selection hidden" id="deck-selection-screen">
-                <h2 style="display: flex; justify-content: center; align-items: center; position: relative;">
-                    Choose Your Deck 
-                    <button id="back-to-nations" class="glass-btn highlight-btn" style="font-size: 0.8rem; padding: 0.3rem 0.8rem; position: absolute; right: 0;">Back</button>
-                </h2>
-                <div class="deck-cards" id="deck-cards-container" style="flex-wrap: wrap;">
+            <!-- Deck Selection -->
+            <section id="deck-selection-screen" class="setup-section hidden">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center; gap: 1rem; justify-content: center;">
+                        <button id="back-to-nations" class="back-small-btn">Back</button>
+                        <h2>Select Your Vanguard</h2>
+                    </div>
+                </div>
+                <div class="deck-grid" id="deck-cards-container">
+                    <!-- Deck cards will be filtered via JS -->
                     <div class="deck-card active" data-deck="bruce" data-nation="Dark States">
-                        <div class="deck-art bruce-art"></div>
-                        <h3 class="deck-title">Diabolos, "Violence" Bruce</h3>
-                        <p class="deck-nation">Dark States</p>
+                        <div class="deck-art" style="background-image: url('picture/grade3_bruce.jpg')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Violence Bruce</h3>
+                            <span class="nation-tag tag-dark">Dark States</span>
+                        </div>
                     </div>
                     <div class="deck-card" data-deck="magnolia" data-nation="Stoicheia">
-                        <div class="deck-art magnolia-art"></div>
-                        <h3 class="deck-title">Sylvan Horned Beast King, Magnolia</h3>
-                        <p class="deck-nation">Stoicheia</p>
+                        <div class="deck-art" style="background-image: url('picture/grade3_magnolia.jpg')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Magnolia Elder</h3>
+                            <span class="nation-tag tag-stoicheia">Stoicheia</span>
+                        </div>
                     </div>
                     <div class="deck-card" data-deck="nirvana" data-nation="Dragon Empire">
-                        <div class="deck-art nirvana-art"></div>
-                        <h3 class="deck-title">Chakrabarthi Pheonix Dragon, Nirvana Jheva</h3>
-                        <p class="deck-nation">Dragon Empire</p>
+                        <div class="deck-art" style="background-image: url('picnirvana/nirvana_jheva.png')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Nirvana Jheva</h3>
+                            <span class="nation-tag tag-dragon">Dragon Empire</span>
+                        </div>
                     </div>
                     <div class="deck-card" data-deck="majesty" data-nation="Keter Sanctuary">
-                        <div class="deck-art majesty-art"
-                            style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt05/d-bt05_004.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
+                        <div class="deck-art" style="background-image: url('majes/majesty_lord_blaster.png')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Majesty Lord Blaster</h3>
+                            <span class="nation-tag tag-keter">Keter Sanctuary</span>
                         </div>
-                        <h3 class="deck-title">Majesty Lord Blaster</h3>
-                        <p class="deck-nation">Keter Sanctuary</p>
                     </div>
                     <div class="deck-card" data-deck="avantgarda" data-nation="Brandt Gate">
-                        <div class="deck-art avant-art"
-                            style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_004.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
+                        <div class="deck-art" style="background-image: url('avantgarda/avant_original.png')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Blue Deathster</h3>
+                            <span class="nation-tag tag-brandt">Brandt Gate</span>
                         </div>
-                        <h3 class="deck-title">Blue Deathster, Avantgarda</h3>
-                        <p class="deck-nation">Brandt Gate</p>
                     </div>
                     <div class="deck-card" data-deck="youthberk" data-nation="Keter Sanctuary">
-                        <div class="deck-art youth-art"
-                            style="background-image: url('https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt06/d-bt06_005.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
+                        <div class="deck-art" style="background-image: url('youthberk/skyfall.png')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Skyfall Youthberk</h3>
+                            <span class="nation-tag tag-keter">Keter Sanctuary</span>
                         </div>
-                        <h3 class="deck-title">Youthberk "Skyfall Arms"</h3>
-                        <p class="deck-nation">Keter Sanctuary</p>
                     </div>
                     <div class="deck-card" data-deck="overlord" data-nation="Dragon Empire">
-                        <div class="deck-art overlord-art"
-                            style="background-image: url('images/overlord/dote.png'); background-size: cover; background-position: center; height: 120px; border-radius: 10px; margin-bottom: 1rem;">
+                        <div class="deck-art" style="background-image: url('overlord/dote.png')"></div>
+                        <div class="deck-info">
+                            <h3 class="deck-title">Dragonic Overlord</h3>
+                            <span class="nation-tag tag-dragon">Dragon Empire</span>
                         </div>
-                        <h3 class="deck-title">Dragonic Overlord the End</h3>
-                        <p class="deck-nation">Dragon Empire</p>
                     </div>
+                </div>
+            </section>
+
+            <!-- Matchmaking Actions -->
+            <div class="lobby-interaction-grid">
+                <div class="entry-card host-card">
+                    <div class="card-badges"><span class="badge blue">STEP 1</span></div>
+                    <h3>HOST ARENA</h3>
+                    <p>Create a private room and share your unique ID with a rival.</p>
+                    <button id="create-room-btn" class="action-btn host-btn">Generate Room ID</button>
+                    
+                    <div id="my-id-container" class="id-panel hidden">
+                        <div class="id-wrapper">
+                            <span id="my-peer-id" class="peer-id-text">...</span>
+                            <button id="copy-my-id-btn" class="copy-btn">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="entry-card join-card">
+                    <div class="card-badges"><span class="badge pink">STEP 2</span></div>
+                    <h3>JOIN RIVAL</h3>
+                    <p>Enter the ID provided by your friend to jump into the arena.</p>
+                    <div class="join-form">
+                        <input type="text" id="join-peer-id-input" placeholder="RIVAL ID">
+                        <button id="join-game-btn" class="action-btn join-btn">Enter Arena</button>
+                    </div>
+                    <div id="join-status" class="status-message"></div>
                 </div>
             </div>
-
-            <div class="lobby-actions">
-                <div id="host-section" class="lobby-box">
-                    <h3>1. Host a Match</h3>
-                    <p class="box-desc">Generate an ID to share with your friend.</p>
-                    <button id="create-room-btn" class="glass-btn primary-btn">Get My ID</button>
-                    <div id="my-id-container" class="id-display hidden">
-                        <span class="label">Your ID:</span>
-                        <span id="my-peer-id" class="id-text">...</span>
-                        <button id="copy-my-id-btn" class="icon-btn" title="Copy ID">📋</button>
-                    </div>
-                </div>
-
-                <div id="join-section" class="lobby-box">
-                    <h3>2. Join a Match</h3>
-                    <p class="box-desc">Enter your friend's ID to connect.</p>
-                    <div class="join-input-group">
-                        <input type="text" id="join-peer-id-input" placeholder="Enter Friend's ID">
-                        <button id="join-game-btn" class="glass-btn highlight-btn">Join Game</button>
-                    </div>
-                    <div id="join-status" class="join-status-msg"></div>
-                </div>
-
-                <!-- Sandbox Mode Removed -->
-            </div>
-
-        </div>
+        </main>
     </div>
+
     <script src="lobby.js"></script>
 </body>
-
 </html>

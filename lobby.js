@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
             createRoomBtn.classList.add('ready-btn');
         } else {
             // Redirect to game as host with the generated ID
-            window.location.href = `index.html?role=host&deck=${selectedDeck}&customId=${generatedId}`;
+            window.location.href = `game.html?role=host&deck=${selectedDeck}&customId=${generatedId}`;
         }
     });
 
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         joinStatus.className = "join-status-msg status-ready";
 
         setTimeout(() => {
-            window.location.href = `index.html?role=guest&friendId=${id}&deck=${selectedDeck}`;
+            window.location.href = `game.html?role=guest&friendId=${id}&deck=${selectedDeck}`;
         }, 500);
     }
 
