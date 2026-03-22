@@ -207,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let ordersPlayedCount = 0;
     let maxOrdersPerTurn = 1;
     let nextSetOrderFree = false;
+    window.regalisPieceUsed = false;
     let lastStrategyPutIntoSoulName = "";
     let strategyPutToOrderZoneThisTurn = false;
     let bomberDustingPowerBuff = false;
@@ -7299,7 +7300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const playOrderBtn = document.getElementById('play-order-btn');
         if (playOrderBtn) {
             const skillLC = (card.dataset.skill || "").toLowerCase();
-            const isOrder = skillLC.includes('[order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]');
+            const isOrder = skillLC.includes('order]');
             const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
 
             if (isOrder && inHand && isMyTurn) {
@@ -9599,6 +9600,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initGame() {
         deckPool = [...currentDeck.mainDeck];
+        window.regalisPieceUsed = false;
         updateDeckCounter();
         const rideDeckZone = document.getElementById('ride-deck');
         const vanguardCircle = document.querySelector('.my-side .circle.vc');
