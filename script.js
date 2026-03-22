@@ -6570,6 +6570,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset guard flags after each attack resolution
         window.playerGuardShield = 0;
         window.playerGuardIsPG = false;
+        isWaitingForGuard = false;
+        currentAttackResolving = false;
     }
 
     // Wrapper that awaits dealDamage completion
@@ -6712,8 +6714,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Allow end turn if in End phase even if flags are stuck, or if user forces it
         if ((isWaitingForGuard || currentAttackResolving)) {
-            alert("กรุณารอให้การต่อสู้จบก่อน!");
-            return;
+            // Safety: If in end phase, or if forced, allow clearing flags
+            if (phases[currentPhaseIndex] === 'end') {
+                isWaitingForGuard = false;
+                currentAttackResolving = false;
+                console.log("End turn safety: Forced reset of battle flags.");
+            } else {
+                alert("กรุณารอให้การต่อสู้จบก่อน!");
+                return;
+            }
         }
         currentTurn++;
         currentPhaseIndex = 0;
@@ -6970,11 +6979,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             const dropZone = document.querySelector('.opponent-side .drop-zone');
                             if (dropZone) dropZone.appendChild(targetNode);
                             targetNode.classList.remove('rest', 'attacking-glow');
-                            // AI state sync (optional but good for consistency)
                             updateDropCount();
                         }
                     }
                 }
+                isWaitingForGuard = false;
+                currentAttackResolving = false;
                 break;
             case 'revealDrive':
                 // Show player's drive check card visually (already handled by player's own driveCheck)
@@ -9195,6 +9205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 setTimeout(() => {
                     isWaitingForGuard = false;
+                    currentAttackResolving = false;
                     checkAllAttackersRested();
                 }, 500);
             }
