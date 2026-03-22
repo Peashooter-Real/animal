@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.vgConfirm = function (msg) {
+        if (isAIMode && !isMyTurn) return Promise.resolve(true);
         return new Promise(resolve => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
@@ -2016,8 +2017,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // AI Mode: If player hits AI Vanguard
+            // Note: aiDamageCheck is now handled in handleAILocalData via resolveAttack sync
             if (isAIMode && isHit && currentAttackData.isTargetVanguard) {
-                aiDamageCheck(finalCritical);
+                // aiDamageCheck(finalCritical); // REMOVED to fix double damage bug
             }
         }
 
@@ -4503,6 +4505,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function payCounterBlast(cost) {
+        if (isAIMode && !isMyTurn) {
+            const openCards = Array.from(document.querySelectorAll('.opponent-side .damage-zone .card:not(.face-down)'));
+            if (openCards.length < cost) return false;
+            for (let i = 0; i < cost; i++) {
+                openCards[i].classList.add('face-down');
+                sendMoveData(openCards[i]);
+            }
+            return true;
+        }
+
         const openCards = Array.from(document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)'));
         if (openCards.length < cost) {
             alert(`CB${cost} 失敗！ดาเมจโซนที่เปิดอยู่ไม่พอ (มี ${openCards.length} ใบ ต้องการ ${cost} ใบ)`);
@@ -4593,6 +4605,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function paySoulBlast(cost) {
+        if (isAIMode && !isMyTurn) {
+            if (aiSoul.length < cost) {
+                console.log("AI Insufficient Soul for SB!");
+                return false;
+            }
+            for (let i = 0; i < cost; i++) {
+                const blasted = aiSoul.pop();
+                aiDrop.push(blasted);
+                // Move to AI drop zone DOM
+                const oppDropZone = document.querySelector('.opponent-side .drop-zone');
+                if (oppDropZone) {
+                    const node = createOpponentCardElement(blasted);
+                    oppDropZone.appendChild(node);
+                    sendMoveData(node);
+                }
+            }
+            syncAIStateToUI();
+            updateDropCount(); // Re-use general updater
+            return true;
+        }
+
         if (soulPool.length < cost) {
             alert("Insufficient Soul for SB!");
             return false;
@@ -6314,6 +6347,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function performAIMainPhase() {
         console.log("AI performing Main Phase - Strategic Placement...");
         
+        // --- 1. Ride (handled by separate logic usually, but ensure consistency) ---
+        
+        // --- 2. Play Orders ---
+        await handleAIOrderPhase();
+
         const vg = document.querySelector('.opponent-side .circle.vc .card');
         const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
         
@@ -6394,6 +6432,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (calls >= maxCalls) break;
                 const circle = emptyFront.shift() || emptyBack.shift();
                 if (circle) await callUnit(card, circle);
+            }
+        }
+
+        // --- 4. Activate [ACT] Skills ---
+        await handleAIActPhase();
+    }
+
+    async function handleAIOrderPhase() {
+        if (orderPlayedThisTurn || ordersPlayedCount >= maxOrdersPerTurn) return;
+
+        const vg = document.querySelector('.opponent-side .circle.vc .card');
+        const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
+
+        const playableOrders = aiHand.filter(c => {
+            const skillLC = (c.skill || "").toLowerCase();
+            return skillLC.includes('order]') && parseInt(c.grade) <= vgGrade;
+        });
+
+        if (playableOrders.length > 0) {
+            const orderData = playableOrders[0];
+            await aiPlayOrder(orderData);
+        }
+    }
+
+    async function aiPlayOrder(cardData) {
+        const skillLC = (cardData.skill || "").toLowerCase();
+        const isSetOrder = skillLC.includes('set order');
+        
+        let targetZone = '';
+        if (isSetOrder) targetZone = '.opponent-side .order-zone';
+        else targetZone = '.opponent-side .drop-zone';
+
+        const zoneNode = document.querySelector(targetZone);
+        if (zoneNode) {
+            const cardNode = createOpponentCardElement(cardData);
+            zoneNode.appendChild(cardNode);
+            aiHand.splice(aiHand.indexOf(cardData), 1);
+            orderPlayedThisTurn = true;
+            ordersPlayedCount++;
+            syncAIStateToUI();
+            updateDropCount();
+            alert(`AI plays Order: ${cardData.name}`);
+            await activateCardSkill(cardNode);
+            await aiWait(800);
+        }
+    }
+
+    async function handleAIActPhase() {
+        const aiUnits = Array.from(document.querySelectorAll('.opponent-side .circle .card'));
+        for (const unit of aiUnits) {
+            const skill = (unit.dataset.skill || "").toLowerCase();
+            if (skill.includes('[act]') && unit.dataset.actUsed !== "true") {
+                // Heuristic for common AI actions
+                const name = unit.dataset.name;
+                if (name.includes("Avantgarda") || name.includes("Strategy") || name.includes("Richter") || name.includes("Overlord")) {
+                    alert(`AI activates skill of ${name}`);
+                    await activateCardSkill(unit);
+                    unit.dataset.actUsed = "true";
+                    await aiWait(800);
+                }
             }
         }
     }
@@ -7141,13 +7239,46 @@ document.addEventListener('DOMContentLoaded', () => {
             'Over': 'โอเวอร์'
         };
         const displayTrigger = cardData.trigger ? ` [${triggerName[cardData.trigger] || cardData.trigger} ทริกเกอร์!]` : '';
+        
+        // --- Visual Damage Check ---
+        const damageZoneNode = document.querySelector('.opponent-side .damage-zone');
+        const cardNode = createOpponentCardElement(cardData);
+        cardNode.style.position = 'fixed';
+        cardNode.style.top = '40%';
+        cardNode.style.left = '50%';
+        cardNode.style.transform = 'translate(-50%, -50%) scale(1.4)';
+        cardNode.style.zIndex = '1000000';
+        cardNode.style.boxShadow = '0 0 40px rgba(255, 42, 109, 0.8)';
+        cardNode.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        document.body.appendChild(cardNode);
+
         alert(`AI ดาเมจเช็ค: ${cardData.name}${displayTrigger}`);
+        await aiWait(1200);
         
         if (cardData.trigger) {
             resolveAITrigger(cardData, true);
         }
         
+        // Move to Damage Zone visually
+        if (damageZoneNode) {
+            const rect = damageZoneNode.getBoundingClientRect();
+            cardNode.style.top = `${rect.top + rect.height/2}px`;
+            cardNode.style.left = `${rect.left + rect.width/2}px`;
+            cardNode.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(90deg)';
+            cardNode.style.opacity = '0.5';
+            await aiWait(500);
+        }
+        cardNode.remove();
+
         aiDamage.push(cardData);
+        
+        // Add card to AI damage zone DOM
+        if (damageZoneNode) {
+            const finalCard = createOpponentCardElement(cardData);
+            finalCard.classList.add('rest'); // Damage is face-up but rested/sideways usually
+            damageZoneNode.appendChild(finalCard);
+        }
+
         syncAIStateToUI();
         
         if (aiDamage.length >= 6) {
@@ -7156,7 +7287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        await aiWait(1000);
+        await aiWait(800);
         if (count > 1) {
             await aiDamageCheck(count - 1);
         }
@@ -7726,14 +7857,18 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("ความสามารถ [ACT] นี้ถูกใช้งานไปแล้วในเทิร์นนี้! (1/Turn)");
             return;
         }
+
+        const sideClass = card.closest('.player-side')?.classList.contains('my-side') ? '.my-side' : '.opponent-side';
+        const isMySide = sideClass === '.my-side';
+
         const name = card.dataset.name;
         const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
 
         // --- Gratias Gradale (Regalis Piece) ---
         if (name.includes('Gratias Gradale')) {
-            const vgCard = document.querySelector('.my-side .circle.vc .card');
+            const vgCard = document.querySelector(`${sideClass} .circle.vc .card`);
             if (vgCard && parseInt(vgCard.dataset.grade || "0") === 3 && vgCard.dataset.persona === "true") {
-                if (hasRiddenThisTurn) {
+                if (isMySide && hasRiddenThisTurn) {
                     alert("ไม่สามารถใช้งานได้ เพราะคุณทำการไรด์ไปแล้วในเทิร์นนี้!");
                     return false;
                 }
@@ -7756,7 +7891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Dragon Knight, Nehalem (Overlord) [ACT](RC) ---
         if (name.toLowerCase().includes('nehalem')) {
-            const vgCard = document.querySelector('.my-side .circle.vc .card');
+            const vgCard = document.querySelector(`${sideClass} .circle.vc .card`);
             if (vgCard && vgCard.dataset.name.includes('Overlord')) {
                 if (await vgConfirm("Nehalem: [ACT](RC) [SB1] แวนการ์ดและยูนิตนี้ พลัง +5000 จนจบเทิร์น?")) {
                     if (await paySoulBlast(1)) {
@@ -7785,14 +7920,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Ardor Hatchet Dragon [ACT](RC) ---
         if (name.includes('Ardor Hatchet Dragon')) {
-            const oppVG = document.querySelector('.opponent-side .circle.vc .card');
+            const oppVG = document.querySelector(`${oppSideClass} .circle.vc .card`);
             if (oppVG && parseInt(oppVG.dataset.grade || "0") >= 3) {
-                const dropG3Overlords = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => 
+                const dropG3Overlords = Array.from(document.querySelectorAll(`${sideClass} .drop-zone .card`)).filter(c => 
                     parseInt(c.dataset.grade) === 3 && c.dataset.name.includes('Overlord')
                 );
                 if (dropG3Overlords.length > 0) {
                     if (await vgConfirm("Ardor Hatchet: [ACT](RC) [Retire ยูนิตนี้] เลือกการ์ดเกรด 3 ที่ติดชื่อ 'Overlord' จากดรอป 1 ใบเข้าโซล?")) {
-                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        const dropZone = document.querySelector(`${sideClass} .drop-zone`);
                         dropZone.appendChild(card);
                         card.classList.remove('rest');
                         sendMoveData(card);
@@ -7935,22 +8070,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: c.name, id: c.id, grade: c.dom.dataset.grade, power: c.dom.dataset.power, shield: c.dom.dataset.shield, skill: c.dom.dataset.skill, imageUrl: c.dom.dataset.imageUrl
                 }));
 
-                openViewer("เลือก Strategy 1 ใบเข้าโซล", viewerData);
-                const strat = await new Promise(resolve => {
-                    const sel = (e) => {
-                        const tgt = e.target.closest('.card');
-                        if (tgt && tgt.parentElement === viewerGrid) {
-                            const cname = tgt.dataset.name;
-                            const refCard = strats.find(c => c.name === cname);
-                            if (refCard) {
-                                viewerGrid.removeEventListener('click', sel);
-                                zoneViewer.classList.add('hidden');
-                                resolve(refCard.dom);
+                let strat;
+                if (isAIMode && !isMyTurn) {
+                    strat = strats[0].dom;
+                    console.log("AI Auto-picking Strategy:", strat.dataset.name);
+                } else {
+                    openViewer("เลือก Strategy 1 ใบเข้าโซล", viewerData);
+                    strat = await new Promise(resolve => {
+                        const sel = (e) => {
+                            const tgt = e.target.closest('.card');
+                            if (tgt && tgt.parentElement === viewerGrid) {
+                                const cname = tgt.dataset.name;
+                                const refCard = strats.find(c => c.name === cname);
+                                if (refCard) {
+                                    viewerGrid.removeEventListener('click', sel);
+                                    zoneViewer.classList.add('hidden');
+                                    resolve(refCard.dom);
+                                }
                             }
-                        }
-                    };
-                    viewerGrid.addEventListener('click', sel);
-                });
+                        };
+                        viewerGrid.addEventListener('click', sel);
+                    });
+                }
 
                 if (strat) {
                     const stratName = strat.dataset.name;
@@ -8000,15 +8141,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if opponent has rear-guards to retire
                         const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card');
                         if (oppRGs.length > 0) {
+                        if (isAIMode && !isMyTurn) {
+                            // AI Auto-retire: Pick a front row RG if possible
+                            const frontRGs = Array.from(document.querySelectorAll(`${oppSideClass} .circle[data-zone^="rc_front"] .card`));
+                            const target = frontRGs[0] || oppRGs[0];
+                            if (target) {
+                                alert(`AI Killshroud retires: ${target.dataset.name}`);
+                                const dropZone = document.querySelector(`${oppSideClass} .drop-zone`);
+                                if (dropZone) dropZone.appendChild(target);
+                                const rawId = target.id.replace('opp-', '');
+                                if (isAIMode) {
+                                    // In AI mode, we don't necessarily need forceRetire if local
+                                } else {
+                                    sendData({ type: 'forceRetire', cardId: rawId });
+                                }
+                                sendMoveData(target);
+                            }
+                        } else {
                             alert("Killshroud: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
                             document.body.classList.add('targeting-mode');
                             const retireHandler = (e) => {
-                                const target = e.target.closest('.opponent-side .circle.rc .card');
+                                const target = e.target.closest(`${oppSideClass} .circle.rc .card`);
                                 if (target) {
                                     e.stopPropagation();
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', retireHandler, true);
-                                    const dropZone = document.querySelector('.opponent-side .drop-zone');
+                                    const dropZone = document.querySelector(`${oppSideClass} .drop-zone`);
                                     dropZone.appendChild(target);
                                     // Send forceRetire so opponent also sees the retirement
                                     const rawId = target.id.replace('opp-', '');
@@ -8018,6 +8176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                             };
                             document.addEventListener('click', retireHandler, true);
+                        }
                         } else {
                             alert("Killshroud: ไม่มีเรียร์การ์ดคู่แข่งให้รีไทร์! VG พลัง+5000 และ Guard Restrict สำเร็จ!");
                         }
