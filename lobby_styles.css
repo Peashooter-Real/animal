@@ -303,3 +303,36 @@ body {
 }
 
 .hidden { display: none !important; }
+
+/* Responsive Media Queries */
+@media screen and (max-width: 1024px) {
+    .lobby-page-container { padding: 1.5rem; }
+    .nation-card { width: 160px; padding: 1rem; }
+    .nation-icon { width: 90px; height: 90px; }
+}
+
+@media screen and (max-width: 768px) {
+    .lobby-header { 
+        flex-direction: column; 
+        gap: 1rem; 
+        text-align: center; 
+        margin-bottom: 2rem;
+    }
+    
+    .section-header h2 { font-size: 1.5rem; }
+    
+    .nation-grid { gap: 1rem; }
+    .nation-card { width: calc(50% - 0.5rem); min-width: 140px; }
+    
+    .lobby-interaction-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .back-small-btn { padding: 0.6rem 1rem; font-size: 0.9rem; margin-bottom: 1rem; width: 100%; }
+}
+
+@media screen and (max-width: 480px) {
+    .nation-card { width: 100%; }
+    .peer-id-text { font-size: 1rem; }
+}
