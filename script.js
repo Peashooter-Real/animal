@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    initPowerObserver();
 
 
 
@@ -10293,6 +10294,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 selected.classList.remove('selected-for-ride');
             }
         });
+    }
+
+    function initPowerObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-power') {
+                    const newValue = parseInt(mutation.target.dataset.power || "0");
+                    const oldValue = parseInt(mutation.oldValue || "0");
+                    const diff = newValue - oldValue;
+                    if (diff !== 0 && mutation.target.offsetParent !== null) {
+                        showPowerPopup(mutation.target, diff);
+                    }
+                }
+            });
+        });
+
+        const config = { attributes: true, attributeOldValue: true, subtree: true };
+        const mySide = document.querySelector('.my-side');
+        const oppSide = document.querySelector('.opponent-side');
+        if (mySide) observer.observe(mySide, config);
+        if (oppSide) observer.observe(oppSide, config);
+    }
+
+    function showPowerPopup(element, amount) {
+        if (!element) return;
+        const popup = document.createElement('div');
+        popup.className = 'power-popup' + (amount < 0 ? ' negative' : '');
+        popup.textContent = (amount > 0 ? '+' : '') + amount;
+        
+        const rect = element.getBoundingClientRect();
+        popup.style.left = (rect.left + rect.width / 2) + 'px';
+        popup.style.top = (rect.top + rect.height / 2) + 'px';
+        popup.style.transform = 'translate(-50%, -50%)';
+        
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1200);
     }
 });
 
