@@ -19,21 +19,7 @@
   --font-cyber: 'Orbitron', sans-serif;
 }
 
-@media screen and (max-width: 1024px) {
-  :root {
-    --card-width: 75px;
-    --card-height: 108px;
-    --circle-size: 90px;
-  }
-}
 
-@media screen and (max-width: 768px) {
-  :root {
-    --card-width: 60px;
-    --card-height: 86px;
-    --circle-size: 70px;
-  }
-}
 
 * {
   box-sizing: border-box;
@@ -2430,44 +2416,20 @@ body.targeting-mode::after {
 }
 
 /* Responsive Media Queries for Game Board */
-@media screen and (max-width: 1024px) {
-  .player-side { gap: 1rem; }
-  .row { gap: 1rem; }
-  .guardian-circle { height: 100px; }
-}
-
 @media screen and (max-width: 768px) {
-  .board-area { padding: 0.5rem; overflow-x: auto; }
-  .player-side { 
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-content: center;
-  }
-  .col-zones { 
-    flex-direction: row; 
-    width: 100%; 
-    justify-content: center; 
-    gap: 0.5rem;
-  }
-  .zone { transform: scale(0.9); }
-  .col-circles { transform: scale(0.85); transform-origin: center; }
-  .row { gap: 0.5rem; }
-  .guardian-circle { height: 90px; }
-  
-  .hand-area { height: 180px; padding: 0.5rem; }
-  .hand-controls { flex-direction: column; gap: 0.5rem; padding-bottom: 0.5rem; }
+  .board-area { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   
   .lobby-content { padding: 2rem; }
   .lobby-logo { font-size: 2.2rem; letter-spacing: 2px; }
   .id-text { font-size: 1.5rem; letter-spacing: 4px; }
   .id-display-card { padding: 1rem; }
+  
+  /* Hand Area keeps its scrollability but we don't force a layout change on the board itself */
+  .hand-area { height: 180px; padding: 0.5rem; }
 }
 
 @media screen and (max-width: 480px) {
-  .col-circles { transform: scale(0.7); }
-  .zone { transform: scale(0.7); }
   .hand-area { height: 150px; }
-  .phase-tracker { transform: scale(0.8); }
-  .game-info { flex-direction: column; align-items: center; gap: 5px; }
+  .lobby-logo { font-size: 1.8rem; }
 }
 
