@@ -2046,16 +2046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- Blast Artillery Dragon, Brachioforce [AUTO](RC) ---
             if (attackerName.includes('Brachioforce') && !isVG) {
-                if (await vgConfirm("Brachioforce: [AUTO](RC) เมื่อโจมตีฮิต [Retire ยูนิตนี้] จั่ว 1 ใบ และเลือกไทร์ RG คู่แข่ง 1 ใบ?")) {
-                    const dropZone = document.querySelector('.my-side .drop-zone');
-                    dropZone.appendChild(attacker);
-                    attacker.classList.remove('rest', 'attacking-glow');
-                    sendMoveData(attacker);
-                    updateDropCount();
-
-                    drawCard(1);
-                    alert("ทำลาย Brachioforce และจั่วการ์ด 1 ใบเรียบร้อย! โปรดแจ้งให้คู่แข่งไทร์ RG 1 ใบ");
-                }
+                await handleBrachioforceEffect(attacker, currentAttackData);
             }
 
             // --- VG hit triggers (Bahr, Gojo) ---
@@ -4813,7 +4804,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (discardInc > 1 || (target.dataset.name && target.dataset.name.includes('Dragritter, Halbe') && isMyTurn)) {
                         if (await vgConfirm("Halbe: [AUTO] เมื่อถูกทิ้งเป็นคอสต์ คอลลงช่องแถวหลัง (RC) และรับพลัง +5000 จนจบเทิร์น?")) {
-                            target.dataset.power = (parseInt(target.dataset.power) + 5000).toString();
                             target.dataset.turnEndBuffPower = (parseInt(target.dataset.turnEndBuffPower || "0") + 5000).toString();
                             target.dataset.turnEndBuffActive = "true";
                             syncPowerDisplay(target);
@@ -9013,6 +9003,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function handleBrachioforceEffect(attacker, attackData) {
+        if (!attacker) return;
+        
+        const isPlayerSide = attacker.closest('.my-side') !== null;
+        const sideClass = isPlayerSide ? '.my-side' : '.opponent-side';
+        const oppSideClass = isPlayerSide ? '.opponent-side' : '.my-side';
+
+        if (await vgConfirm("Brachioforce: [AUTO](RC) เมื่อโจมตีฮิต [Retire ยูนิตนี้] จั่ว 1 ใบ และเลือกไทร์ RG คู่แข่ง 1 ใบ?")) {
+            const dropZone = document.querySelector(`${sideClass} .drop-zone`);
+            if (dropZone) {
+                dropZone.appendChild(attacker);
+            }
+            attacker.classList.remove('rest', 'attacking-glow');
+            sendMoveData(attacker);
+            updateDropCount();
+
+            // Draw for the side that used the skill
+            if (isPlayerSide) {
+                drawCard(1);
+            } else if (isAIMode) {
+                if (aiDeck.length > 0) {
+                    aiHand.push(aiDeck.pop());
+                }
+                syncAIStateToUI();
+                updateDeckCounter();
+            }
+
+            // Retire opponent RG
+            if (isAIMode) {
+                const oppRGs = Array.from(document.querySelectorAll(`${oppSideClass} .circle.rc .card`));
+                if (oppRGs.length > 0) {
+                    // Simple AI: Retire first found RG
+                    const target = oppRGs[0];
+                    const oppDrop = document.querySelector(`${oppSideClass} .drop-zone`);
+                    if (oppDrop) oppDrop.appendChild(target);
+                    if (!isPlayerSide) {
+                        // AI used skill, retired player RG
+                        alert(`AI Brachioforce retires: ${target.dataset.name}`);
+                    } else {
+                        // Player used skill, retired AI RG
+                        const cardDataStr = target.dataset.cardData;
+                        if (cardDataStr) {
+                            try {
+                                aiDrop.push(JSON.parse(cardDataStr));
+                            } catch(e) {}
+                        }
+                        alert(`Brachioforce retires AI unit: ${target.dataset.name}`);
+                    }
+                    target.classList.remove('rest');
+                    sendMoveData(target);
+                    updateDropCount();
+                }
+            } else {
+                alert("Brachioforce: จั่วการ์ด 1 ใบเรียบร้อย! โปรดแจ้งให้คู่แข่งรีไทร์เรียร์การ์ด 1 ใบ");
+            }
+        }
+    }
+
     async function handleGuardDecision(data) {
         if (currentAttackResolving) return;
 
@@ -9131,6 +9179,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         }, 500);
                     }
                     triggerIvankaOnHitRC(attackData);
+                    if (attackData.attackerName && attackData.attackerName.includes('Brachioforce')) {
+                        await handleBrachioforceEffect(attacker, attackData);
+                    }
                 }
 
                 await handleEndOfBattle(attacker, attackData);
