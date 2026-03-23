@@ -1615,18 +1615,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Youthberk G0 Ride Skill
-        if (oldName.includes('following in footsteps') && !isFirstPlayer) {
-            queue.push({
-                name: 'Youth Following in Footsteps (G0)',
-                description: 'เริ่มหลัง จั่วการ์ด 1 ใบ',
-                resolve: async (done) => {
-                    alert("Skill Grade 0: เริ่มหลัง จั่วการ์ด 1 ใบ");
-                    drawCard(1);
-                    if (done) done();
-                }
-            });
-        }
 
         // 4. Majesty Lord Blaster Ride Line
         // Maron (G1) override by Blaster G2
@@ -6136,22 +6124,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateHandSpacing();
             updatePhaseUI(false);
             syncCounts(); // Ensure initial counts are synced to opponent
-
-            // Starter skill check if second player
-            if (!isFirstPlayer) {
-                const starter = document.querySelector('.my-side .circle.vc .card');
-                if (starter && starter.dataset.grade == "0") {
-                    alert("You go second! Draw 1 card via starter ability.");
-                    drawCard();
-                }
-            } else {
-                // If AI goes second
-                if (isAIMode) {
-                    alert("AI goes second! AI draws 1 card via starter ability.");
-                    if (aiDeck.length > 0) aiHand.push(aiDeck.shift());
-                    syncAIStateToUI();
-                }
-            }
         } else {
             if (!isAIMode) alert("Waiting for Rival to finish Mulligan...");
         }
