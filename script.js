@@ -9508,11 +9508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'announce':
                 alert(data.msg);
                 break;
-            case 'announce':
-                alert(data.msg);
-                break;
             case 'emptyHack':
-                break;
                 break;
         }
     }
