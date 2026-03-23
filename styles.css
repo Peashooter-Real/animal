@@ -2472,3 +2472,146 @@ body.targeting-mode::after {
   font-size: 3rem;
 }
 
+
+/* Battle Hub (Cool Guarding UI) */
+.battle-hub {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  width: 95%;
+  max-width: 500px;
+  background: rgba(8, 8, 20, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 20px;
+  padding: 1.2rem;
+  z-index: 6000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  border-bottom: 4px solid var(--accent-vanguard);
+}
+
+.battle-hub.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.battle-hub.guarded {
+  border-bottom-color: #00ffcc;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.3);
+}
+
+.battle-hub-header {
+  font-family: var(--font-cyber);
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  position: relative;
+}
+
+.battle-hub-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-unit-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hub-unit-name {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  margin-bottom: 4px;
+}
+
+.hub-power-container {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hub-power-val {
+  font-family: var(--font-cyber);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.hub-vs {
+  font-family: var(--font-cyber);
+  font-weight: 900;
+  color: var(--accent-vanguard);
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.hub-plus {
+  font-size: 1.2rem;
+  color: #00ffcc;
+  font-weight: 900;
+}
+
+.hub-status-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hub-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff2a6d, #ff0055);
+  transition: width 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+.battle-hub.guarded .hub-progress {
+  background: linear-gradient(90deg, #00ffcc, #00e5ff);
+}
+
+.hub-result-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-cyber);
+}
+
+.hub-result-label {
+  font-size: 0.7rem;
+  color: #666;
+  letter-spacing: 1px;
+}
+
+.hub-result-text {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ff2a6d;
+}
+
+.battle-hub.guarded .hub-result-text {
+  color: #00ffcc;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}

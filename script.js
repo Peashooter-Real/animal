@@ -195,7 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let targetingType = null; // 'power' or 'critical' or 'both'
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
-    let currentAttackResolving = false; // Missing declaration fix
+    let currentAttackResolving = false;
+    let isProcessingDamage = false; // New flag to wait for damage checks to complete
     let selectedCard = null; // Track selected card for tap-to-move
     let personaRideActive = false;
     let isOpponentPersonaRide = false;
@@ -622,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(2).fill({ name: 'Clean-sweep Dragon', grade: 2, power: 10000, shield: 5000, skill: '[ACT](RC)[1/turn]: หากคุณ Persona Ride ในเทิร์นนี้ [CB1] เลือก Rear-guard ตัวเองหรือคู่แข่งไม่เกิน 3 ใบ นำเข้าโซลผู้เล่นนั้น ยูนิทนี้ได้รับ [Power] +5000 ต่อ 1 ใบ จนจบเทิร์น' }),
             ...Array(3).fill({ name: 'Dragontree Wretch, Skull Chemdah', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [CB1 & SB1] เลือก (RC) ของคุณที่ไม่มี Dragontree marker วาง Dragontree marker บนช่องนั้น ค้นหา Masque of Hydragrum จากกอง 1 ใบนำขึ้นมือ สับกอง' }),
             ...Array(3).fill({ name: 'Desire Devil, Saasyou', grade: 2, power: 10000, shield: 5000, skill: '[CONT](Deck): หากแวนการ์ดคือ "Greedon" การ์ดใบนี้มีชื่อร่วมกันกับการ์ดทั้งหมดที่มี "Desire Devil" ในโซลของคุณ\n[CONT](RC)/(GC): หากโซลมี "Desire Devil" 3 ใบขึ้นไป ยูนิทนี้ได้รับ [Power] +5000/[Shield] +5000' }),
-            ...Array(3).fill({ name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้ถูกนำเข้าสู่โซลโดยความสามารถแวนการ์ด "Greedon" จั่วการ์ด 1 ใบ\n[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' }),
+            ...Array(3).fill({ name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' }),
             ...Array(4).fill({ name: 'Desire Devil, Fuujo', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดที่มี "Greedon" ในชื่อการ์ด เลือกเรียร์การ์ดของคู่แข่ง 1 ใบ และคุณสามารถรีไทร์มันได้\n[AUTO](โซล): เมื่อแวนการ์ดที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์การ์ดนี้] และจนจบการต่อสู้นั้น เมื่อคู่แข่งจะคอลการ์ดจากบนมือลง (GC) พวกเขาต้องคอล 2 ใบขึ้นไปพร้อมกัน' }),
             ...Array(2).fill({ name: 'Desire Devil, Xitto', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดของคุณ เลือกการ์ด 1 ใบจากดรอปของคุณ และนำเข้าสู่โซล' }),
             ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
@@ -715,7 +716,89 @@ document.addEventListener('DOMContentLoaded', () => {
         gc.querySelectorAll('.card').forEach(c => {
             total += parseInt(c.dataset.shield || "0");
         });
-        display.textContent = `Shield: ${total}`;
+
+        if (window.currentIncomingAttack && isGuarding) {
+            const attPower = window.currentIncomingAttack.totalPower;
+            const targetId = window.currentIncomingAttack.targetId;
+            const targetCard = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
+            const targetPower = targetCard ? parseInt(targetCard.dataset.power || "0") : 0;
+            const needed = (attPower - targetPower) + 5000;
+
+            if (total >= needed) {
+                display.style.color = "#00ffcc";
+                display.style.textShadow = "0 0 10px #00ffcc";
+                display.innerHTML = `🛡️ SHIELD: ${total} <span style="font-size: 0.8rem; opacity: 0.8;">(CLEAR!)</span>`;
+            } else {
+                display.style.color = "#ff2a6d";
+                display.style.textShadow = "0 0 10px #ff2a6d";
+                display.innerHTML = `🛡️ SHIELD: ${total} <span style="font-size: 0.8rem; opacity: 0.8;">(Need: ${Math.max(0, needed - total)} more)</span>`;
+            }
+        } else {
+            display.style.color = "var(--accent-vanguard)";
+            display.style.textShadow = "none";
+            display.textContent = `Shield: ${total}`;
+        }
+        
+        updateBattleHubUI();
+    }
+
+    function updateBattleHubUI() {
+        const hub = document.getElementById('battle-hub');
+        if (!hub) return;
+
+        if (window.currentIncomingAttack && isGuarding) {
+            const attackData = window.currentIncomingAttack;
+            const attackerPower = attackData.totalPower;
+            const targetId = attackData.targetId;
+            const targetCard = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
+            const targetPower = targetCard ? parseInt(targetCard.dataset.power || "0") : 0;
+            
+            // Current GC shield
+            const gc = document.querySelector('.guardian-circle');
+            let totalShield = 0;
+            if (gc) {
+                gc.querySelectorAll('.card').forEach(c => {
+                    totalShield += parseInt(c.dataset.shield || "0");
+                });
+            }
+
+            const defenderTotal = targetPower + totalShield;
+            const isGuarded = defenderTotal > attackerPower;
+
+            // Update UI elements
+            document.getElementById('hub-attacker-name').textContent = attackData.attackerName;
+            document.getElementById('hub-attacker-power').textContent = attackerPower.toLocaleString();
+            document.getElementById('hub-defender-name').textContent = attackData.targetName;
+            document.getElementById('hub-defender-power').textContent = targetPower.toLocaleString();
+            
+            const shieldBonus = document.getElementById('hub-shield-bonus');
+            if (totalShield > 0) {
+                shieldBonus.textContent = `+${totalShield.toLocaleString()}`;
+                shieldBonus.classList.remove('hidden');
+            } else {
+                shieldBonus.classList.add('hidden');
+            }
+
+            // Progress bar logic
+            const statusText = document.getElementById('hub-status-text');
+            const progress = document.getElementById('hub-progress');
+            
+            // Ratio relative to attacker power. 100% means tie (still hitting).
+            const ratio = Math.min(100, (defenderTotal / (attackerPower + 5000)) * 100);
+            progress.style.width = `${ratio}%`;
+
+            if (isGuarded) {
+                hub.classList.add('guarded');
+                statusText.textContent = "GUARDED";
+            } else {
+                hub.classList.remove('guarded');
+                statusText.textContent = "HITTING";
+            }
+
+            hub.classList.add('active');
+        } else {
+            hub.classList.remove('active');
+        }
     }
 
     function updateDeckCounter() {
@@ -3348,6 +3431,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMoveData(card);
             updateHandCount();
             updateDropCount();
+            updateGCShield();
             return true;
         }
 
@@ -4120,7 +4204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAllAttackersRested() {
         if (!isMyTurn || phases[currentPhaseIndex] !== 'battle') return;
-        if (isWaitingForGuard || currentAttackResolving) return;
+        if (isWaitingForGuard || currentAttackResolving || isProcessingDamage) return;
         if (document.body.classList.contains('targeting-mode')) return;
 
         // Check front-row RC units and Vanguard
@@ -4139,7 +4223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(async () => {
                 // Double-check state hasn't changed
                 if (!isMyTurn || phases[currentPhaseIndex] !== 'battle') { window.promptedEndTurn = false; return; }
-                if (isWaitingForGuard || currentAttackResolving || document.body.classList.contains('targeting-mode')) { window.promptedEndTurn = false; return; }
+                if (isWaitingForGuard || currentAttackResolving || isProcessingDamage || document.body.classList.contains('targeting-mode')) { window.promptedEndTurn = false; return; }
 
                 const recheck = Array.from(document.querySelectorAll('.my-side .circle .card:not(.opponent-card)'))
                     .filter(u => {
@@ -7325,7 +7409,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.attackData && data.attackData.isHit) {
                     if (data.attackData.isTargetVanguard) {
                         const crit = parseInt(data.attackData.totalCritical || "1");
+                        isProcessingDamage = true;
                         await aiDamageCheck(crit);
+                        isProcessingDamage = false;
                     } else {
                         // AI Rearguard hit -> Retire
                         const targetId = data.attackData.targetId;
@@ -7341,6 +7427,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 isWaitingForGuard = false;
                 currentAttackResolving = false;
+                checkAllAttackersRested();
                 break;
             case 'revealDrive':
                 // Show player's drive check card visually (already handled by player's own driveCheck)
@@ -9542,25 +9629,26 @@ document.addEventListener('DOMContentLoaded', () => {
             isGuarding = true;
             document.querySelectorAll('.guardian-circle').forEach(gc => gc.classList.add('zone-highlight'));
             sendData({ type: 'guardDecision', decision: 'guard', attackData: attackData });
+            updateGCShield();
             showEndGuardButton(attackData);
         });
 
         document.getElementById('btn-no-guard').addEventListener('click', () => {
             overlay.style.display = 'none';
             window.currentIncomingAttack = null;
+            isGuarding = false;
+            
             if (isAIMode && !isMyTurn) {
                 // AI is attacking, player chose NO GUARD
                 window.playerGuardShield = 0;
                 window.playerGuardIsPG = false;
                 isWaitingForGuard = false;
-                isGuarding = false;
             } else if (isAIMode && isMyTurn) {
-                // Player is attacking, this shouldn't happen through here
-                // but just in case, treat as no guard from AI
                 sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
             } else {
                 sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
             }
+            updateBattleHubUI();
         });
 
         overlay.style.display = 'flex';
@@ -9625,6 +9713,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateDropCount();
             updateGCShield();
+            updateBattleHubUI();
 
             btn.remove();
             if (isAIMode && !isMyTurn) {
@@ -9872,6 +9961,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 await handleEndOfBattle(attacker, attackData);
                 sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
 
+                isGuarding = false;
+                updateBattleHubUI();
+
                 setTimeout(() => {
                     isWaitingForGuard = false;
                     currentAttackResolving = false;
@@ -9994,17 +10086,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             });
                                         }
                                     }
-                                    if (cName.includes('boshokku')) {
-                                        queue.push({
-                                            name: 'Boshokku Soul Skill',
-                                            description: "จั่ว 1 ใบ",
-                                            resolve: async (done) => {
-                                                alert("Boshokku: จั่วการ์ด 1 ใบ จากการถูกนำเข้าโซลโดยแวนการ์ด Greedon!");
-                                                drawCard(1);
-                                                if (done) done();
-                                            }
-                                        });
-                                    }
+
                                     if (cName.includes('xitto')) {
                                         queue.push({
                                             name: 'Xitto Soul-In Skill',
