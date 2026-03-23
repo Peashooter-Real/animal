@@ -389,11 +389,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'Desire Devil, Heekou': 'greedon/heekou.png',
         'Desire Devil, Xitto': 'greedon/xitto.png',
 
-        'Critical Trigger (Dark States)': 'picture/bruce/crit.png',
-        'Draw Trigger (Dark States)': 'picture/bruce/draw.png',
-        'Front Trigger (Dark States)': 'picture/bruce/front.png',
-        'Heal Trigger (Dark States)': 'picture/bruce/heal.png',
-        'Hades Dragon Deity, Gallmageveld': 'picture/bruce/over.png'
+        'Critical Trigger (Dark States)': 'picture/bruce_crit.png',
+        'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
+        'Front Trigger (Dark States)': 'picture/bruce_front.png',
+        'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
+        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png'
     };
 
     // --- Deck Definitions ---
@@ -614,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         mainDeck: [
             ...Array(4).fill({ name: 'Avaricious Demonic Dragon King, Greedon Masques', grade: 3, power: 13000, persona: true, skill: '[CONT]: ยูนิทนี้จะไรด์ได้เฉพาะจากเกรด 3 ที่มี Greedon ในชื่อ\n[CONT](VC): Damage Limit ของคุณจะเป็น 7\n[ACT](VC)[1/Turn]: [COST][นำการ์ดที่มี Greedon ในชื่อที่ต่างจากยูนิทนี้จากมือ/โซล/ดรอป ออกนอกเกม] ดู 7 ใบ เลือก Desire Devil 1 ใบขึ้นมือ\n[AUTO](VC)[1/Turn]: เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี หากในโซลมี Desire Devil 3 ใบขึ้นไป [COST][นำเรียร์การ์ด 3 ใบที่สแตนด์อยู่เข้าโซล] Stand ยูนิทนี้ พลัง +5000' }),
-            ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, type: 'Normal Order', skill: '[ACT]: ดู 5 ใบ เลือกยูนิทที่มี Dragontree หรือ Masques ในชื่อ 1 ใบขึ้นมือ\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
+            ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, type: 'Normal Order', skill: '[Normal Order]\n[ACT]: ดู 5 ใบ เลือกการ์ดที่มี Dragontree หรือ Masques 1 ใบขึ้นมือ จากนั้นสับกอง\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
             ...Array(3).fill({ name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้ถูกนำเข้าสู่โซลโดยความสามารถแวนการ์ด "Greedon" จั่วการ์ด 1 ใบ\n[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' }),
             ...Array(4).fill({ name: 'Desire Devil, Fuujo', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดที่มี "Greedon" ในชื่อการ์ด เลือกเรียร์การ์ดของคู่แข่ง 1 ใบ และคุณสามารถรีไทร์มันได้\n[AUTO](โซล): เมื่อแวนการ์ดที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์การ์ดนี้] และจนจบการต่อสู้นั้น เมื่อคู่แข่งจะคอลการ์ดจากบนมือลง (GC) พวกเขาต้องคอล 2 ใบขึ้นไปพร้อมกัน' }),
             ...Array(4).fill({ name: 'Desire Devil, Mucca', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้วางลงบน (RC) จากบนมือ หากแวนการ์ดของคุณเป็น "Avaricious Demonic Dragon, Greedon" [จ่ายคอส][Counter-Blast 1 & Soul-Blast 2] เลือกการ์ด 1 ใบจากโซลของคุณ และคอลลงบน (RC)\n[AUTO](RC): เมื่อแวนการ์ดของคุณโจมตี หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกแวนการ์ด 1 ใบ และมันจะได้รับ [Power] +5000 จนจบเทิร์น' }),
@@ -7650,16 +7650,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function openSkillViewer(card) {
         if (!skillViewer) return;
 
-        skillCardName.textContent = card.dataset.name;
-        skillCardGrade.textContent = `Grade: ${card.dataset.grade}`;
-        skillCardPower.textContent = `Power: ${card.dataset.power}`;
-        skillCardShield.textContent = `Shield: ${card.dataset.shield}`;
-        skillText.textContent = card.dataset.skill;
+        const originalId = card.dataset.originalId;
+        const effectiveCard = originalId ? document.getElementById(originalId) : card;
+
+        skillCardName.textContent = effectiveCard.dataset.name;
+        skillCardGrade.textContent = `Grade: ${effectiveCard.dataset.grade}`;
+        skillCardPower.textContent = `Power: ${effectiveCard.dataset.power}`;
+        skillCardShield.textContent = `Shield: ${effectiveCard.dataset.shield}`;
+        skillText.textContent = effectiveCard.dataset.skill;
 
         // Apply background image to modal
         const modal = skillViewer.querySelector('.skill-modal');
         if (modal) {
-            const url = card.dataset.imageUrl;
+            const url = effectiveCard.dataset.imageUrl;
             if (url) modal.style.setProperty('--card-art-url', `url('${url}')`);
             else modal.style.removeProperty('--card-art-url');
         }
@@ -7667,19 +7670,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show Activate button if it's an [ACT] skill on my field
         const activateBtn = document.getElementById('activate-skill-btn');
         if (activateBtn) {
-            const isMyCard = !card.classList.contains('opponent-card');
-            const isOnField = card.parentElement && card.parentElement.classList.contains('circle');
-            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
-            const inDrop = card.parentElement && card.parentElement.classList.contains('drop-zone');
-            const hasAct = card.dataset.skill && card.dataset.skill.includes('[ACT]');
-            const hasHandAct = card.dataset.skill && card.dataset.skill.includes('[ACT](Hand)');
-            const hasDropAct = card.dataset.skill && card.dataset.skill.includes('[ACT](Drop)');
+            const isMyCard = !effectiveCard.classList.contains('opponent-card');
+            const isOnField = effectiveCard.parentElement && effectiveCard.parentElement.classList.contains('circle');
+            const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
+            const inDrop = effectiveCard.parentElement && effectiveCard.parentElement.classList.contains('drop-zone');
+            const hasAct = effectiveCard.dataset.skill && effectiveCard.dataset.skill.includes('[ACT]');
+            const hasHandAct = effectiveCard.dataset.skill && effectiveCard.dataset.skill.includes('[ACT](Hand)');
+            const hasDropAct = effectiveCard.dataset.skill && effectiveCard.dataset.skill.includes('[ACT](Drop)');
             const isMainPhase = phases[currentPhaseIndex] === 'main';
 
             if (isMyCard && (isOnField || (inHand && hasHandAct) || (inDrop && hasDropAct)) && hasAct && isMyTurn && isMainPhase) {
                 activateBtn.classList.remove('hidden');
                 activateBtn.onclick = async () => {
-                    await activateCardSkill(card);
+                    await activateCardSkill(effectiveCard);
                     skillViewer.classList.add('hidden');
                 };
             } else {
@@ -7689,20 +7692,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const playOrderBtn = document.getElementById('play-order-btn');
         if (playOrderBtn) {
-            const skillLC = (card.dataset.skill || "").toLowerCase();
+            const skillLC = (effectiveCard.dataset.skill || "").toLowerCase();
             const isOrder = skillLC.includes('order]');
-            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
+            const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
 
             if (isOrder && inHand && isMyTurn) {
                 playOrderBtn.classList.remove('hidden');
                 playOrderBtn.onclick = async () => {
-                    await playOrder(card);
+                    await playOrder(effectiveCard);
                     skillViewer.classList.add('hidden');
                 };
             } else {
                 playOrderBtn.classList.add('hidden');
             }
         }
+
 
         const xoverBtn = document.getElementById('x-overdress-btn');
         if (xoverBtn) {
@@ -8024,11 +8028,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function playOrder(card) {
-        const skillText = (card.dataset.skill || "").toLowerCase();
+        const originalId = card.dataset.originalId;
+        const effectiveCard = originalId ? document.getElementById(originalId) : card;
+
+        const skillText = (effectiveCard.dataset.skill || "").toLowerCase();
         const isSetOrder = skillText.includes('set order');
         const isBlitzOrder = skillText.includes('blitz order');
 
-        const orderGrade = parseInt(card.dataset.grade || 0);
+        const orderGrade = parseInt(effectiveCard.dataset.grade || 0);
         const vgCard = document.querySelector('.my-side .circle.vc .card');
         const vgGrade = vgCard ? parseInt(vgCard.dataset.grade || 0) : 0;
 
@@ -8061,17 +8068,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const confirmPlay = await vgConfirm(`Play Order: ${card.dataset.name}?`);
+        const confirmPlay = await vgConfirm(`Play Order: ${effectiveCard.dataset.name}?`);
         if (!confirmPlay) return;
 
         // Note: For now activateCardSkill triggers costs. If isFree, we should ideally bypass CB/SB.
         // For simplicity with Habitable Zone, we'll assume the prompt says "without paying its cost".
         // In full implementation, activateCardSkill needs to take an 'isFree' parameter.
-        if (isFree) card.dataset.playOrderFree = "true";
+        if (isFree) effectiveCard.dataset.playOrderFree = "true";
 
-        const skillResult = await activateCardSkill(card);
+        const skillResult = await activateCardSkill(effectiveCard);
 
-        if (isFree) card.dataset.playOrderFree = "false";
+        if (isFree) effectiveCard.dataset.playOrderFree = "false";
 
         if (skillResult === false) return;
 
@@ -8081,17 +8088,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Remove existing strategy if you want only one set order active?
                 // In Vanguard, you can have multiple. But often for strategies you might swap.
                 // Re-playing same strategy replaces? Let's keep multiple for now as per rules.
-                orderZone.appendChild(card);
-                sendMoveData(card);
+                orderZone.appendChild(effectiveCard);
+                sendMoveData(effectiveCard);
                 updateHandCount();
                 orderPlayedThisTurn = true;
                 strategyActivatedThisTurn = true;
-                if (card.dataset.name.includes("Strategy")) {
+                if (effectiveCard.dataset.name.includes("Strategy")) {
                     strategyPutToOrderZoneThisTurn = true;
                 }
                 ordersPlayedCount++;
                 sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
-                alert(`Played Set Order: ${card.dataset.name}`);
+                alert(`Played Set Order: ${effectiveCard.dataset.name}`);
                 return;
             }
         }
@@ -8099,28 +8106,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Move to drop zone
         const dropZone = document.querySelector('.my-side .drop-zone');
         if (dropZone) {
-            dropZone.appendChild(card);
-            sendMoveData(card);
+            dropZone.appendChild(effectiveCard);
+            sendMoveData(effectiveCard);
             updateHandCount();
             updateDropCount();
             orderPlayedThisTurn = true;
             strategyActivatedThisTurn = true;
             ordersPlayedCount++;
             sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
-            alert(`Played Order: ${card.dataset.name}`);
+            alert(`Played Order: ${effectiveCard.dataset.name}`);
         }
     }
 
+
     async function activateCardSkill(card) {
-        if (card.dataset.actUsed === "true") {
+        const originalId = card.dataset.originalId;
+        const effectiveCard = originalId ? document.getElementById(originalId) : card;
+
+        if (effectiveCard.dataset.actUsed === "true") {
             alert("ความสามารถ [ACT] นี้ถูกใช้งานไปแล้วในเทิร์นนี้! (1/Turn)");
             return;
         }
 
-        const sideClass = card.closest('.player-side')?.classList.contains('my-side') ? '.my-side' : '.opponent-side';
+        const sideClass = effectiveCard.closest('.player-side')?.classList.contains('my-side') ? '.my-side' : '.opponent-side';
         const isMySide = sideClass === '.my-side';
 
-        const name = card.dataset.name;
+        const name = effectiveCard.dataset.name;
+
         const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
 
         // --- Gratias Gradale (Regalis Piece) ---
@@ -8361,8 +8373,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Masque of Hydragrum [Order ACT] ---
         if (name.includes('Masque of Hydragrum')) {
-            const inHand = card.parentElement && card.parentElement.dataset.zone === 'hand';
-            const inDrop = card.parentElement && card.parentElement.classList.contains('drop-zone');
+            const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
+            const inDrop = effectiveCard.parentElement && effectiveCard.parentElement.classList.contains('drop-zone');
 
             if (inHand) {
                 if (await vgConfirm("Masque of Hydragrum: [ACT] ดู 5 ใบ เลือก Dragontree หรือ Masques 1 ใบขึ้นมือ?")) {
@@ -8370,7 +8382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targets = top5.filter(c => c.name.includes('Dragontree') || c.name.includes('Masques'));
                     if (targets.length > 0) {
                         openViewer("Top 5: เลือก Dragontree/Masques 1 ใบ", targets);
-                        const selHydra = (e) => {
+                        const selHydra = async (e) => {
                             const picked = e.target.closest('.card');
                             if (picked && picked.parentElement === viewerGrid) {
                                 const idx = deckPool.findIndex(c => c.id === picked.dataset.originalId);
@@ -8381,29 +8393,37 @@ document.addEventListener('DOMContentLoaded', () => {
                                     sendMoveData(el);
                                     updateHandSpacing();
                                     updateDeckCounter();
-                                    alert(`นำ ${data.name} ขึ้นมือแล้ว!`);
-                                }
-                                viewerGrid.removeEventListener('click', selHydra);
-                                zoneViewer.classList.add('hidden');
-                                deckPool.sort(() => 0.5 - Math.random());
-                                updateDeckCounter();
+                                    alert(`นำ ${data.name} ขึ้นมือแล้ว! (สับกองแล้ว)`);
+                                    
+                                    viewerGrid.removeEventListener('click', selHydra);
+                                    zoneViewer.classList.add('hidden');
+                                    deckPool.sort(() => 0.5 - Math.random());
+                                    updateDeckCounter();
 
-                                // Move this Order to drop if successfully played
-                                const dropZone = document.querySelector('.my-side .drop-zone');
-                                dropZone.appendChild(card);
-                                sendMoveData(card);
-                                updateDropCount();
+                                    // Move this Order to drop if successfully played
+                                    const dropZone = document.querySelector('.my-side .drop-zone');
+                                    dropZone.appendChild(effectiveCard);
+                                    sendMoveData(effectiveCard);
+                                    updateDropCount();
+                                }
                             }
                         };
                         viewerGrid.addEventListener('click', selHydra);
                     } else {
-                        alert("ไม่พบ Dragontree หรือ Masques ใน 5 ใบแรก!");
+                        alert("ไม่พบ Dragontree หรือ Masques ใน 5 ใบแรก! (สับกองแล้ว)");
                         deckPool.sort(() => 0.5 - Math.random());
                         updateDeckCounter();
+
+                        // Still move the order to drop as it was played
+                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        dropZone.appendChild(effectiveCard);
+                        sendMoveData(effectiveCard);
+                        updateDropCount();
                     }
                     return true;
                 }
             } else if (inDrop) {
+
                 // [ACT]Drop: Masque Ride
                 const vg = document.querySelector('.my-side .circle.vc .card');
                 const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
@@ -8414,7 +8434,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         parseInt(c.dataset.grade) === 3 && c.dataset.name.includes('Masques')
                     );
                     if (handMasques.length > 0) {
-                        if (await vgConfirm("Masque of Hydragrum: [ACT](Drop) [Reveal G3 Masques from Hand] เพื่อ Ride และทำ Persona Ride?")) {
+                        if (await vgConfirm("Masque of Hydragrum: [ACT](Drop) [Reveal G3 Masques from Hand] เพื่อ Ride และทำ Persona Ride? (การ์ดนี้จะถูกนำออกจากเกม)")) {
                             openViewer("เลือกการ์ด Masques จากมือเพื่อ Ride", handMasques.map(c => ({
                                 name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl
                             })));
@@ -8441,11 +8461,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             actual.style.transform = 'none';
                                             sendMoveData(actual);
 
-                                            // Order to Soul
-                                            soulPool.push(card);
-                                            card.remove();
-                                            sendMoveData(card, 'soul');
-                                            updateSoulUI();
+                                            // Order Removed from Game (Exclude)
+                                            effectiveCard.remove();
+                                            sendMoveData(effectiveCard, 'remove');
                                             updateDropCount();
 
                                             // Persona Ride Check
@@ -8477,6 +8495,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return false;
             }
         }
+
 
 
         // --- Avantgarda Richter (Hand ACT) ---
@@ -10632,7 +10651,17 @@ document.addEventListener('DOMContentLoaded', () => {
             node.style.top = 'auto';
             node.style.left = 'auto';
             node.style.margin = '0';
+
+            // Allow viewing skill from viewer
+            node.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const original = document.getElementById(node.dataset.originalId);
+                if (original) openSkillViewer(original);
+                else openSkillViewer(node);
+            });
+
             viewerGrid.appendChild(node);
+
         });
 
         zoneViewer.classList.remove('hidden');
