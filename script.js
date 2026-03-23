@@ -2220,10 +2220,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentAttackData) return;
 
         const attacker = document.getElementById(currentAttackData.attackerId);
-        const target = document.getElementById('opp-' + currentAttackData.targetId);
+        let target = null;
+        if (isAIMode) {
+            target = document.querySelector(`.opponent-side .circle[data-zone="${currentAttackData.targetId}"] .card`);
+        } else {
+            target = document.getElementById(currentAttackData.targetId) || document.querySelector(`.circle[data-zone="${currentAttackData.targetId}"] .card`);
+        }
 
         if (!attacker || !target) {
+            console.error("Battle resolution failed: Attacker or Target not found.", { attackerId: currentAttackData.attackerId, targetId: currentAttackData.targetId });
             currentAttackData = null;
+            isWaitingForGuard = false;
+            currentAttackResolving = false;
             return;
         }
 
@@ -2249,7 +2257,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hasPG || isOpponentPG) {
             alert("Perfect Guard activated! Attack is nullified.");
-            sendData({
+            await sendData({
                 type: 'resolveAttack',
                 attackData: {
                     ...currentAttackData,
@@ -2266,7 +2274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
             }
 
-            sendData({
+            await sendData({
                 type: 'resolveAttack',
                 attackData: {
                     ...currentAttackData,
@@ -2275,12 +2283,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     isHit: isHit
                 }
             });
-
-            // AI Mode: If player hits AI Vanguard
-            // Note: aiDamageCheck is now handled in handleAILocalData via resolveAttack sync
-            if (isAIMode && isHit && currentAttackData.isTargetVanguard) {
-                // aiDamageCheck(finalCritical); // REMOVED to fix double damage bug
-            }
         }
 
         currentAttackData.isHit = (hasPG || isOpponentPG) ? false : isHit;
@@ -7028,7 +7030,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function evaluateAIHitResult(attacker, targetId, crit) {
-        const target = document.querySelector(`.my-side .circle.${targetId} .card`);
+        const target = document.querySelector(`.my-side .circle[data-zone="${targetId}"] .card`);
         if (attacker && target) {
             const finalPower = parseInt(attacker.dataset.power);
             let playerShield = 0;
@@ -7442,9 +7444,9 @@ document.addEventListener('DOMContentLoaded', () => {
         syncAIStateToUI();
     }
 
-    function sendData(data) {
+    async function sendData(data) {
         if (isAIMode) {
-            handleAILocalData(data);
+            await handleAILocalData(data);
             return;
         }
         if (conn && conn.open) conn.send(data);
@@ -7476,12 +7478,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         // AI Rearguard hit -> Retire
                         const targetId = data.attackData.targetId;
-                        const targetNode = document.getElementById('opp-' + targetId) || document.getElementById(targetId);
+                        const targetNode = document.querySelector(`.opponent-side .circle[data-zone="${targetId}"] .card`) || document.getElementById('opp-' + targetId) || document.getElementById(targetId);
                         if (targetNode) {
                             alert(`AI เรียร์การ์ดถูกรีไทร์: ${targetNode.dataset.name}`);
                             const dropZone = document.querySelector('.opponent-side .drop-zone');
-                            if (dropZone) dropZone.appendChild(targetNode);
-                            targetNode.classList.remove('rest', 'attacking-glow');
+                            if (dropZone) {
+                                dropZone.appendChild(targetNode);
+                                targetNode.classList.remove('rest', 'attacking-glow');
+                                targetNode.style.position = ""; // Reset any positioning
+                                targetNode.style.top = "";
+                                targetNode.style.left = "";
+                                targetNode.style.transform = "";
+                            }
                             updateDropCount();
                         }
                     }
@@ -9928,14 +9936,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 driveCheck(checks, attackData.totalCritical);
             } else {
                 // Rearguard attack check vs base target power
-                const target = document.getElementById('opp-' + attackData.targetId);
+                const attacker = document.getElementById(attackData.attackerId);
+                const target = isAIMode ? 
+                    document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`) :
+                    (document.getElementById('opp-' + attackData.targetId) || document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
+                
                 let isHit = false;
                 const attackerPower = parseInt(attackData.totalPower || "0");
                 if (target) {
                     const targetPower = parseInt(target.dataset.power || "0");
                     isHit = attackerPower >= targetPower;
                 } else {
-                    isHit = true; // Fallback
+                    isHit = true; // Fallback if rearguard target not found
                 }
 
                 if (isHit) {
@@ -9958,7 +9970,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Rearguard attack missed.");
                 }
 
-                sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
+                await sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
                 await handleEndOfBattle(attacker, attackData);
             }
             currentAttackResolving = false;
@@ -9997,7 +10009,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 driveCheck(rcChecks, attackData.totalCritical, data.isPG);
             } else {
                 // Recalculate Rearguard attack hit immediately
-                const target = document.getElementById('opp-' + attackData.targetId);
+                const target = isAIMode ? 
+                    document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`) :
+                    (document.getElementById('opp-' + attackData.targetId) || document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
+                
                 let finalPower = attacker ? parseInt(attacker.dataset.power) + (attackData.boostPower || 0) : parseInt(attackData.totalPower || "0");
                 let isHit = false;
 
@@ -10005,7 +10020,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let targetDefPower = parseInt(target.dataset.power) + (data.totalShield || 0);
                     isHit = finalPower >= targetDefPower;
                 } else {
-                    isHit = true;
+                    isHit = true; 
                 }
 
                 if (data.isPG) {
@@ -10032,7 +10047,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 await handleEndOfBattle(attacker, attackData);
-                sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
+                await sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
 
                 isGuarding = false;
                 updateBattleHubUI();
