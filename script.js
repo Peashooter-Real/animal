@@ -750,8 +750,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const attackData = window.currentIncomingAttack;
             const attackerPower = attackData.totalPower;
             const targetId = attackData.targetId;
-            const targetCard = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
-            const targetPower = targetCard ? parseInt(targetCard.dataset.power || "0") : 0;
+            const targetCircle = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
+            const defenderCard = targetCircle ? targetCircle.querySelector('.card') : null;
+            const targetPower = defenderCard ? parseInt(defenderCard.dataset.power || "0") : 0;
             
             // Current GC shield
             const gc = document.querySelector('.guardian-circle');
@@ -769,11 +770,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('hub-attacker-name').textContent = attackData.attackerName;
             document.getElementById('hub-attacker-power').textContent = attackerPower.toLocaleString();
             document.getElementById('hub-defender-name').textContent = attackData.targetName;
-            document.getElementById('hub-defender-power').textContent = targetPower.toLocaleString();
+            
+            const defenderBaseDisp = document.getElementById('hub-defender-power');
+            defenderBaseDisp.innerHTML = `${targetPower.toLocaleString()}<span style="font-size: 0.6rem; opacity: 0.5; display: block; font-family: Outfit;">(BASE)</span>`;
             
             const shieldBonus = document.getElementById('hub-shield-bonus');
             if (totalShield > 0) {
-                shieldBonus.textContent = `+${totalShield.toLocaleString()}`;
+                shieldBonus.innerHTML = `+${totalShield.toLocaleString()}<span style="font-size: 0.6rem; opacity: 0.5; display: block; font-family: Outfit;">(SHIELD)</span>`;
                 shieldBonus.classList.remove('hidden');
             } else {
                 shieldBonus.classList.add('hidden');
@@ -789,10 +792,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isGuarded) {
                 hub.classList.add('guarded');
-                statusText.textContent = "GUARDED";
+                statusText.textContent = `GUARDED (SUM: ${defenderTotal.toLocaleString()})`;
             } else {
                 hub.classList.remove('guarded');
-                statusText.textContent = "HITTING";
+                statusText.textContent = `HITTING (SUM: ${defenderTotal.toLocaleString()})`;
             }
 
             hub.classList.add('active');
