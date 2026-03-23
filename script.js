@@ -30,20 +30,38 @@ document.addEventListener('DOMContentLoaded', () => {
         box.style.position = 'static';
         box.style.transform = 'none';
         box.style.width = 'fit-content';
+        box.style.minWidth = '280px';
         box.style.maxWidth = '90vw';
-        box.style.padding = '8px 15px';
-        box.style.boxShadow = '0 0 15px rgba(255, 42, 109, 0.4)';
+        box.style.padding = '12px 20px';
+        box.style.margin = '5px 0';
+        box.style.background = 'rgba(10, 10, 20, 0.95)';
+        box.style.border = '1px solid var(--accent-vanguard)';
+        box.style.borderRadius = '15px';
+        box.style.backdropFilter = 'blur(12px)';
+        box.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 42, 109, 0.2)';
+        box.style.zIndex = '1000000';
+        
+        // Highlight Power / Trigger events in Cyan
+        const isPower = msg.includes('+') || msg.toLowerCase().includes('power') || msg.toLowerCase().includes('trigger');
+        if (isPower) {
+            box.style.borderColor = "#05d9e8";
+            box.style.boxShadow = '0 0 25px rgba(5, 217, 232, 0.4)';
+        }
+
         box.innerHTML = `
-        <div class="vanguard-alert-content" style="text-align: center;">
-            <p style="color: white; font-size: 0.95rem; margin: 0; text-shadow: 0 0 3px black;">${msg}</p>
+        <div class="vanguard-alert-content" style="text-align: center; display: flex; align-items: center; gap: 10px; justify-content: center;">
+            <span style="font-size: 1.2rem;">${isPower ? '⚡' : '🔔'}</span>
+            <p style="color: white; font-size: 1rem; margin: 0; font-family: 'Outfit', sans-serif; font-weight: 600; text-shadow: 0 0 5px rgba(0,0,0,0.8); letter-spacing: 0.5px;">${msg}</p>
         </div>
     `;
         alertContainer.appendChild(box);
+        
+        // Auto-remove after longer duration (5s) to ensure readability during combo
         setTimeout(() => {
             box.classList.remove('fade-in');
             box.classList.add('fade-out');
             setTimeout(() => box.remove(), 500);
-        }, 2000); // Shorter duration
+        }, 5000); 
     };
 
     window.vgConfirm = function (msg) {
@@ -837,6 +855,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updateSoulUI();
         updateDeckCounter();
+        const msg = `ทำการ Soul Charge ${count} ใบ!`;
+        alert(msg);
+        sendData({ type: 'announce', msg: `คู่แข่ง: ${msg}` });
     }
 
     function promptSoulCall(targetZoneName, onComplete, isOptional = true) {
@@ -4947,6 +4968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 openCards[i].classList.add('face-down');
                 sendMoveData(openCards[i]);
             }
+            alert(`AI จ่าย Counter Blast ${cost} ใบ`);
             return true;
         }
 
@@ -4959,7 +4981,9 @@ document.addEventListener('DOMContentLoaded', () => {
             openCards[i].classList.add('face-down');
             sendMoveData(openCards[i]);
         }
-        alert(`Counter Blast ${cost} จ่ายสำเร็จ!`);
+        const msg = `จ่าย Counter Blast ${cost} ใบ`;
+        alert(msg);
+        sendData({ type: 'announce', msg: `คู่แข่ง: ${msg}` });
         return true;
     }
 
@@ -5056,6 +5080,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendMoveData(node);
                 }
             }
+            alert(`AI จ่าย Soul Blast ${cost} ใบ`);
             syncAIStateToUI();
             updateDropCount(); // Re-use general updater
             return true;
@@ -5093,6 +5118,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             updateSoulUI();
                             updateDropCount();
+                            
+                            const msg = `จ่าย Soul Blast ${cost} ใบ`;
+                            alert(msg);
+                            sendData({ type: 'announce', msg: `คู่แข่ง: ${msg}` });
                             resolve(true);
                         }
                     }
@@ -5144,6 +5173,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function payDiscard(count = 1) {
+        if (isAIMode && !isMyTurn) {
+            if (aiHand.length < count) return false;
+            // AI Discards triggers first or high grade
+            for (let i = 0; i < count; i++) {
+                const discarded = aiHand.shift();
+                aiDrop.push(discarded);
+                const dropZone = document.querySelector('.opponent-side .drop-zone');
+                if (dropZone) {
+                    const node = createOpponentCardElement(discarded);
+                    dropZone.appendChild(node);
+                    sendMoveData(node);
+                }
+            }
+            alert(`AI จ่ายคอสต์ด้วยการทิ้งการ์ดมือ ${count} ใบ`);
+            syncAIStateToUI();
+            updateDropCount();
+            return true;
+        }
+
         if (playerHand.querySelectorAll('.card').length < count) {
             alert("การ์ดบนมือไม่เพียงพอ!");
             return false;
@@ -5245,6 +5293,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     selectedCount += discardInc;
+                    const discardMsg = `ทิ้งการ์ด (Discard) ${discardInc} ใบ`;
+                    alert(discardMsg);
+                    sendData({ type: 'announce', msg: `คู่แข่ง: ${discardMsg}` });
 
                     if (discardInc > 1 || (target.dataset.name && target.dataset.name.includes('Dragritter, Halbe') && isMyTurn)) {
                         if (await vgConfirm("Halbe: [AUTO] เมื่อถูกทิ้งเป็นคอสต์ คอลลงช่องแถวหลัง (RC) และรับพลัง +5000 จนจบเทิร์น?")) {
@@ -8345,6 +8396,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
 
+        // Broadcast skill activation to opponent
+        const skillText = effectiveCard.dataset.skill || "";
+        if (!skillText.toLowerCase().includes('order]')) {
+             sendData({ type: 'announce', msg: `คู่แข่งใช้งานความสามารถของ: ${name}` });
+        }
+
         // --- Gratias Gradale (Regalis Piece) ---
         if (name.includes('Gratias Gradale')) {
             const vgCard = document.querySelector(`${sideClass} .circle.vc .card`);
@@ -9363,16 +9420,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'strategyActivated':
                 strategyActivatedThisTurn = data.active;
+                alert("คู่แข่งใช้งานความสามารถ Strategy / Skill!");
                 updateAllStaticBonuses();
                 break;
             case 'bruceStatus':
                 isOpponentFinalRush = data.isFinalRush;
                 isOpponentFinalBurst = data.isFinalBurst;
                 isOpponentPersonaRide = data.isPersona || false;
+                if (data.isFinalRush) alert("RIVAL ACTIVE: FINAL RUSH! 🏈🔥");
+                if (data.isFinalBurst) alert("RIVAL ACTIVE: FINAL BURST! 🌋💥");
                 updateStatusUI();
                 break;
             case 'killshroudDebuff':
                 window.killshroudDebuffActive = true;
+                alert("คู่แข่งใช้งาน Killshroud: แวนการ์ดของคุณถูกลดพลัง! 💀📉");
                 updateAllStaticBonuses();
                 break;
             case 'hostAck': // Guest receives deck info from host
@@ -9443,6 +9504,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 500);
                     alert(`ยูนิทฝั่งคุณถูกนำกลับเข้าใต้กอง!`);
                 }
+                break;
+            case 'announce':
+                alert(data.msg);
+                break;
+            case 'announce':
+                alert(data.msg);
                 break;
             case 'emptyHack':
                 break;
@@ -10728,6 +10795,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (targetZone.classList.contains('circle') && (data.isOD || data.isXOD)) {
                 // OverDress replacement
                 targetZone.querySelectorAll('.card').forEach(c => c.remove());
+            }
+
+            // Announcement of opponent actions
+            if (mappedZone === 'vc') {
+                alert(`คู่แข่งทำการ ไรด์ (Ride): ${data.cardName}!`);
+            } else if (mappedZone.startsWith('rc')) {
+                alert(`คู่แข่งทำการ คอล (Call): ${data.cardName}!`);
+            } else if (mappedZone === 'order-zone') {
+                alert(`คู่แข่งทำการ เล่นออเดอร์ (Play Order): ${data.cardName}!`);
             }
 
             if (card.parentElement !== targetZone) {
