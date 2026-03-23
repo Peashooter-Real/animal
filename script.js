@@ -1034,7 +1034,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Gouman Ride Skill',
                 description: "เมื่อ Boshokku ไรด์ทับ Reveal 'Avaricious Demonic Dragon, Greedon' จาก Ride Deck เพื่อจั่วการ์ด 1 ใบ",
                 resolve: async (done) => {
-                    const greedonInRideDeck = rides.some(c => c.name.includes('Greedon'));
+                    const rideDeckCards = Array.from(document.querySelectorAll('#ride-deck .card'));
+                    const greedonInRideDeck = rideDeckCards.some(c => (c.dataset.name || "").includes('Greedon'));
+                    
                     if (greedonInRideDeck) {
                         if (await vgConfirm("Gouman: Reveal 'Greedon' จาก Ride Deck และจั่วการ์ด 1 ใบ?")) {
                             drawCard(true);
@@ -8130,7 +8132,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sideClass = effectiveCard.closest('.player-side')?.classList.contains('my-side') ? '.my-side' : '.opponent-side';
         const isMySide = sideClass === '.my-side';
-
+        const oppSideClass = isMySide ? '.opponent-side' : '.my-side';
+        
         const name = effectiveCard.dataset.name;
 
         const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
@@ -8199,9 +8202,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dropG3Overlords.length > 0) {
                     if (await vgConfirm("Ardor Hatchet: [ACT](RC) [Retire ยูนิตนี้] เลือกการ์ดเกรด 3 ที่ติดชื่อ 'Overlord' จากดรอป 1 ใบเข้าโซล?")) {
                         const dropZone = document.querySelector(`${sideClass} .drop-zone`);
-                        dropZone.appendChild(card);
-                        card.classList.remove('rest');
-                        sendMoveData(card);
+                        dropZone.appendChild(effectiveCard);
+                        effectiveCard.classList.remove('rest');
+                        sendMoveData(effectiveCard);
+                        effectiveCard.dataset.actUsed = "true";
 
                         openViewer("เลือกการ์ด G3 'Overlord' เข้าโซล", dropG3Overlords.map(c => ({
                             name: c.dataset.name,
@@ -10658,6 +10662,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const original = document.getElementById(node.dataset.originalId);
                 if (original) openSkillViewer(original);
                 else openSkillViewer(node);
+            });
+
+            // Make it easier: Left-click opens skill viewer if NOT in a selection mode
+            node.addEventListener('click', (e) => {
+                const title = (viewerTitle.textContent || "").toLowerCase();
+                // If title contains "select", "choose", "choice", "เลือก", "ค้นหา" then it's a selection mode
+                const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา"];
+                const isSelection = selectionKeywords.some(k => title.includes(k));
+                
+                if (!isSelection && !document.body.classList.contains('targeting-mode')) {
+                    e.stopPropagation();
+                    const original = document.getElementById(node.dataset.originalId);
+                    if (original) openSkillViewer(original);
+                    else openSkillViewer(node);
+                }
             });
 
             viewerGrid.appendChild(node);
