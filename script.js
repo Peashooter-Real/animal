@@ -2633,13 +2633,25 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 callCard.classList.remove('rest');
                                 callCard.dataset.mousheenImmune = "true";
-                                callCard.dataset.power = (parseInt(callCard.dataset.power || "0") + 5000).toString();
-                                callCard.dataset.turnEndBuffPower = (parseInt(callCard.dataset.turnEndBuffPower || "0") + 5000).toString();
+                                // Ensure buff is applied relative to base power
+                                const baseP = parseInt(callCard.dataset.basePower || "13000");
+                                const pwr = baseP + 5000;
+                                callCard.dataset.power = pwr.toString();
+                                callCard.dataset.turnEndBuffPower = "5000";
                                 callCard.dataset.turnEndBuffActive = "true";
                                 syncPowerDisplay(callCard);
                                 alert("คอล Mousheen สำเร็จ! ได้รับพลัง +5000 และเป็นอมตะ (Mousheen Immune) จากสกิลแวนตลอดเทิร์น");
+                                applyStaticBonuses(callCard);
                             } else if (circle) {
                                 alert("ต้องเลือกช่อง (RC) ที่ว่างเท่านั้น!!");
+                            } else {
+                                // Prevent stuck in targeting mode if clicking something else
+                                if (confirm("คุณต้องการยกเลิกการคอล Mousheen หรือไม่?")) {
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', callListener, true);
+                                    soulPool.push(callCard); // return to soul
+                                    updateSoulUI();
+                                }
                             }
                         };
                         document.addEventListener('click', callListener, true);
@@ -3639,19 +3651,24 @@ document.addEventListener('DOMContentLoaded', () => {
             syncPowerDisplay(card);
         }
 
-        // --- Greedon (Boshokku Soul Bonus) (+5000) ---
+        // --- Greedon (Boshokku Soul Bonus) (+5000 for EACH copy in soul) ---
         if (card.dataset.name && card.dataset.name.includes('Greedon') && isMyTurn && zone === 'vc') {
-            const hasBoshokkuInSoul = soulPool.some(c => c.dataset.name && c.dataset.name.includes('Boshokku'));
+            const boshokkuInSoul = soulPool.filter(c => c.dataset.name && c.dataset.name.includes('Boshokku'));
+            const count = boshokkuInSoul.length;
             const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
-            if (hasBoshokkuInSoul && damageCount >= 4) {
-                if (card.dataset.greedonSoulBonusApplied !== "true") {
-                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
-                    card.dataset.greedonSoulBonusApplied = "true";
+            
+            if (count > 0 && damageCount >= 4) {
+                const totalBuff = count * 5000;
+                if (parseInt(card.dataset.greedonSoulBonusApplied || "0") !== totalBuff) {
+                    // Reset previous if changed (not ideal for performance but correct)
+                    card.dataset.power = (parseInt(card.dataset.power) - parseInt(card.dataset.greedonSoulBonusApplied || "0")).toString();
+                    card.dataset.power = (parseInt(card.dataset.power) + totalBuff).toString();
+                    card.dataset.greedonSoulBonusApplied = totalBuff.toString();
                     syncPowerDisplay(card);
                 }
-            } else if (card.dataset.greedonSoulBonusApplied === "true") {
-                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
-                card.dataset.greedonSoulBonusApplied = "false";
+            } else if (parseInt(card.dataset.greedonSoulBonusApplied || "0") > 0) {
+                card.dataset.power = (parseInt(card.dataset.power) - parseInt(card.dataset.greedonSoulBonusApplied || "0")).toString();
+                card.dataset.greedonSoulBonusApplied = "0";
                 syncPowerDisplay(card);
             }
         }
@@ -4435,7 +4452,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const clicked = e.target.closest('.card');
                                 if (clicked && clicked.parentElement === viewerGrid) {
                                     const cName = clicked.dataset.name;
-                                    const idx = deckPool.findIndex(c => c.name === cName);
+                                    const selectedId = clicked.dataset.originalId;
+                                    const idx = deckPool.findIndex(c => c.id === selectedId);
                                     if (idx !== -1) {
                                         const pickedData = deckPool.splice(idx, 1)[0];
                                         const newlyAdded = createCardElement(pickedData);
@@ -8223,6 +8241,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSideClass = isMySide ? '.opponent-side' : '.my-side';
         
         const name = effectiveCard.dataset.name;
+        const parent = effectiveCard.parentElement;
+        const zone = parent ? (parent.dataset.zone || "") : "";
+        const isRC = zone.startsWith('rc');
+        const isVC = zone === 'vc';
 
         const isJhevaOrGrail = name.includes('Nirvana Jheva'); // Removed Graillumirror duplicate
 
@@ -8428,7 +8450,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const targetSel = (ev) => {
                                         const picked = ev.target.closest('.card');
                                         if (picked && picked.parentElement === viewerGrid) {
-                                            const tIdx = deckPool.findIndex(c => c.id === picked.dataset.originalId);
+                                            const selectedId = picked.dataset.originalId;
+                                            const tIdx = deckPool.findIndex(c => c.id === selectedId);
                                             if (tIdx !== -1) {
                                                 const cardData = deckPool.splice(tIdx, 1)[0];
                                                 const el = createCardElement(cardData);
@@ -10657,7 +10680,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initGame() {
-        deckPool = [...currentDeck.mainDeck];
+        // Assign unique IDs to every card in the deck to prevent search bugs
+        deckPool = currentDeck.mainDeck.map((c, i) => ({ 
+            ...c, 
+            id: `p-main-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}` 
+        }));
         window.regalisPieceUsed = false;
         updateDeckCounter();
         const rideDeckZone = document.getElementById('ride-deck');
