@@ -720,7 +720,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.currentIncomingAttack && isGuarding) {
             const attPower = window.currentIncomingAttack.totalPower;
             const targetId = window.currentIncomingAttack.targetId;
-            const targetCard = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
+            const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetId}"]`);
+            const targetCard = targetCircle ? targetCircle.querySelector('.card:not(.dragging)') : null;
             const targetPower = targetCard ? parseInt(targetCard.dataset.power || "0") : 0;
             const needed = (attPower - targetPower) + 5000;
 
@@ -750,9 +751,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const attackData = window.currentIncomingAttack;
             const attackerPower = attackData.totalPower;
             const targetId = attackData.targetId;
-            const targetCircle = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
-            const defenderCard = targetCircle ? targetCircle.querySelector('.card') : null;
+            const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetId}"]`);
+            const defenderCard = targetCircle ? targetCircle.querySelector('.card:not(.dragging)') : null;
             const targetPower = defenderCard ? parseInt(defenderCard.dataset.power || "0") : 0;
+            
+            // Attacker box should be Cyan, Defender box Magenta
+            document.querySelectorAll('.hub-unit-box')[0].style.borderColor = "var(--accent-cyan)";
+            document.querySelectorAll('.hub-unit-box')[0].style.boxShadow = "0 0 15px rgba(5, 217, 232, 0.2)";
+            document.querySelectorAll('.hub-unit-box')[1].style.borderColor = "var(--accent-vanguard)";
+            document.querySelectorAll('.hub-unit-box')[1].style.boxShadow = "0 0 15px rgba(255, 42, 109, 0.2)";
             
             // Current GC shield
             const gc = document.querySelector('.guardian-circle');
@@ -2666,8 +2673,8 @@ document.addEventListener('DOMContentLoaded', () => {
             attacker.dataset.tripleDrive = "true";
         }
 
-        let targetId = target.id;
-        if (targetId.startsWith('opp-')) targetId = targetId.substring(4);
+        // Use zone name as targetId for better sync in multiplayer/AI
+        const targetId = targetParent.dataset.zone;
 
         if (!await vgConfirm(`Attack ${target.dataset.name} with ${attacker.dataset.name}?`)) {
             attacker.classList.remove('attacking-glow');
