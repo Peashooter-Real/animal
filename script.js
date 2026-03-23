@@ -384,9 +384,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'Avaricious Demonic Dragon King, Greedon Masques': 'greedon/greedon_masques.png',
         'Masque of Hydragrum': 'greedon/masque_hydragrum.png',
         'Desire Devil, Fuujo': 'greedon/fuujo.png',
-        'Desire Devil, Mucca': 'greedon/mucca.png',
-        'Desire Devil, Bubetsuu': 'greedon/bubetsuu.png',
-        'Desire Devil, Heekou': 'greedon/heekou.png',
+        'Clean-sweep Dragon': 'greedon/clean_sweep.png',
+        'Dragontree Wretch, Skull Chemdah': 'greedon/chemdah.png',
+        'Desire Devil, Saasyou': 'greedon/saasyou.png',
+        'Desire Devil, Mousheen': 'greedon/mousheen.png',
         'Desire Devil, Xitto': 'greedon/xitto.png',
 
         'Critical Trigger (Dark States)': 'picture/bruce_crit.png',
@@ -615,11 +616,12 @@ document.addEventListener('DOMContentLoaded', () => {
         mainDeck: [
             ...Array(4).fill({ name: 'Avaricious Demonic Dragon King, Greedon Masques', grade: 3, power: 13000, persona: true, skill: '[CONT]: ยูนิทนี้จะไรด์ได้เฉพาะจากเกรด 3 ที่มี Greedon ในชื่อ\n[CONT](VC): Damage Limit ของคุณจะเป็น 7\n[ACT](VC)[1/Turn]: [COST][นำการ์ดที่มี Greedon ในชื่อที่ต่างจากยูนิทนี้จากมือ/โซล/ดรอป ออกนอกเกม] ดู 7 ใบ เลือก Desire Devil 1 ใบขึ้นมือ\n[AUTO](VC)[1/Turn]: เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี หากในโซลมี Desire Devil 3 ใบขึ้นไป [COST][นำเรียร์การ์ด 3 ใบที่สแตนด์อยู่เข้าโซล] Stand ยูนิทนี้ พลัง +5000' }),
             ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, type: 'Normal Order', skill: '[Normal Order]\n[ACT]: ดู 5 ใบ เลือกการ์ดที่มี Dragontree หรือ Masques 1 ใบขึ้นมือ จากนั้นสับกอง\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
+            ...Array(3).fill({ name: 'Desire Devil, Mousheen', grade: 3, power: 13000, persona: true, skill: '[AUTO](Soul): เมื่อแวนการ์ด "Greedon" ของคุณโจมตี หากเป็นการโจมตีครั้งที่ 2 ของเทิร์นนี้ และคุณไม่มีเรียร์การ์ดชื่อเดียวกับการ์ดใบนี้ คุณสามารถคอลการ์ดนี้ลง (RC) หากคอล จนจบเทิร์น ยูนิทนี้ไม่สามารถถูกนำเข้าโซลโดยความสามารถแวนการ์ด และได้รับพลัง +5000.' }),
+            ...Array(2).fill({ name: 'Clean-sweep Dragon', grade: 2, power: 10000, shield: 5000, skill: '[ACT](RC)[1/turn]: หากคุณ Persona Ride ในเทิร์นนี้ [CB1] เลือก Rear-guard ตัวเองหรือคู่แข่งไม่เกิน 3 ใบ นำเข้าโซลผู้เล่นนั้น ยูนิทนี้ได้รับ [Power] +5000 ต่อ 1 ใบ จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Dragontree Wretch, Skull Chemdah', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [CB1 & SB1] เลือก (RC) ของคุณที่ไม่มี Dragontree marker วาง Dragontree marker บนช่องนั้น ค้นหา Masque of Hydragrum จากกอง 1 ใบนำขึ้นมือ สับกอง' }),
+            ...Array(3).fill({ name: 'Desire Devil, Saasyou', grade: 2, power: 10000, shield: 5000, skill: '[CONT](Deck): หากแวนการ์ดคือ "Greedon" การ์ดใบนี้มีชื่อร่วมกันกับการ์ดทั้งหมดที่มี "Desire Devil" ในโซลของคุณ\n[CONT](RC)/(GC): หากโซลมี "Desire Devil" 3 ใบขึ้นไป ยูนิทนี้ได้รับ [Power] +5000/[Shield] +5000' }),
             ...Array(3).fill({ name: 'Desire Devil, Boshokku', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](RC): เมื่อยูนิทนี้ถูกนำเข้าสู่โซลโดยความสามารถแวนการ์ด "Greedon" จั่วการ์ด 1 ใบ\n[CONT](Soul): ในเทิร์นของคุณ หากคุณมีดาเมจ 4 ใบขึ้นไป "Avaricious Demonic Dragon, Greedon" บน (VC) พลัง +5000' }),
             ...Array(4).fill({ name: 'Desire Devil, Fuujo', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดที่มี "Greedon" ในชื่อการ์ด เลือกเรียร์การ์ดของคู่แข่ง 1 ใบ และคุณสามารถรีไทร์มันได้\n[AUTO](โซล): เมื่อแวนการ์ดที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์การ์ดนี้] และจนจบการต่อสู้นั้น เมื่อคู่แข่งจะคอลการ์ดจากบนมือลง (GC) พวกเขาต้องคอล 2 ใบขึ้นไปพร้อมกัน' }),
-            ...Array(4).fill({ name: 'Desire Devil, Mucca', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้วางลงบน (RC) จากบนมือ หากแวนการ์ดของคุณเป็น "Avaricious Demonic Dragon, Greedon" [จ่ายคอส][Counter-Blast 1 & Soul-Blast 2] เลือกการ์ด 1 ใบจากโซลของคุณ และคอลลงบน (RC)\n[AUTO](RC): เมื่อแวนการ์ดของคุณโจมตี หากคุณทำเพอร์โซน่าไรด์ในเทิร์นนี้ เลือกแวนการ์ด 1 ใบ และมันจะได้รับ [Power] +5000 จนจบเทิร์น' }),
-            ...Array(3).fill({ name: 'Desire Devil, Bubetsuu', grade: 1, power: 8000, shield: 5000, skill: '[AUTO](RC)[1/turn]: เมื่อเรียร์การ์ดใบอื่นของคุณถูกนำเข้าสู่โซลโดยความสามารถของแวนการ์ดในระหว่างเทิร์นของคุณ [จ่ายคอส][Counter-Blast 1] เลือกการ์ด 1 ใบจากบนมือ คอลลงบน (RC) ที่ว่างอยู่ และหากในโซลของคุณมีการ์ด 10 ใบขึ้นไป จั่วการ์ด 1 ใบ (สามารถใช้ได้แม้ว่ายูนิทนี้จะถูกนำเข้าสู่โซลพร้อมกับยูนิทอื่น)' }),
-            ...Array(4).fill({ name: 'Desire Devil, Heekou', grade: 1, power: 8000, shield: 5000, skill: '[AUTO][โซล]: เมื่อแวนการ์ดเกรด 3 ขึ้นไปที่มี "Greedon" ในชื่อการ์ดของคุณโจมตี [จ่ายคอส][ไบนด์ "Desire Devil, Heekou" ใบอื่น 1 ใบจากโซลของคุณในสภาพหงายหน้า] และคอลการ์ดนี้ลงบน (RC) แถวหลัง' }),
             ...Array(2).fill({ name: 'Desire Devil, Xitto', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อยูนิทนี้ถูกนำจาก (RC) เข้าสู่โซลโดยความสามารถของแวนการ์ดของคุณ เลือกการ์ด 1 ใบจากดรอปของคุณ และนำเข้าสู่โซล' }),
             ...Array(4).fill({ name: 'Recusal Hate Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
 
@@ -2607,50 +2609,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Mucca (RC)
-            if (personaRideActive) {
-                const muccaRCs = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c => c.dataset.name.includes('Mucca'));
-                for (const mucca of muccaRCs) {
-                    if (await vgConfirm("Desire Devil, Mucca: [AUTO](RC) แวนการ์ดโจมตี (เทิร์น Persona Ride) เลือกแวนการ์ดของคุณ 1 ใบ พลัง +5000?")) {
-                        attacker.dataset.power = (parseInt(attacker.dataset.power) + 5000).toString();
-                        attacker.dataset.turnEndBuffPower = (parseInt(attacker.dataset.turnEndBuffPower || "0") + 5000).toString();
-                        attacker.dataset.turnEndBuffActive = "true";
-                        syncPowerDisplay(attacker);
-                        alert("Mucca: แวนการ์ด พลัง +5000!");
+            // Mousheen (Soul)
+            const mousheensInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Mousheen'));
+            if (mousheensInSoul.length > 0 && attacker.dataset.name.includes('Greedon') && turnAttackCount === 1) {
+                const hasMousheenOnRC = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)')).some(c => c.dataset.name.includes('Mousheen'));
+                if (!hasMousheenOnRC) {
+                    if (await vgConfirm("Desire Devil, Mousheen: [AUTO](Soul) แวนการ์ด Greedon โจมตีครั้งที่ 2 ของเทิร์น และไม่มี Mousheen บนสนาม ต้องการคอลใบนี้ลง (RC) หรือไม่?")) {
+                        const callCard = soulPool.splice(soulPool.indexOf(mousheensInSoul[0]), 1)[0];
+                        alert("คลิกเลือกช่อง (RC) ที่ว่างอยู่เพื่อคอล Mousheen");
+                        document.body.classList.add('targeting-mode');
+                        const callListener = (e) => {
+                            const circle = e.target.closest('.my-side .circle.rc');
+                            if (circle && !circle.querySelector('.card')) {
+                                e.stopPropagation();
+                                circle.appendChild(callCard);
+                                sendMoveData(callCard);
+                                updateSoulUI();
+                                updateCountsUI();
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', callListener, true);
+                                
+                                callCard.classList.remove('rest');
+                                callCard.dataset.mousheenImmune = "true";
+                                callCard.dataset.power = (parseInt(callCard.dataset.power || "0") + 5000).toString();
+                                callCard.dataset.turnEndBuffPower = (parseInt(callCard.dataset.turnEndBuffPower || "0") + 5000).toString();
+                                callCard.dataset.turnEndBuffActive = "true";
+                                syncPowerDisplay(callCard);
+                                alert("คอล Mousheen สำเร็จ! ได้รับพลัง +5000 และเป็นอมตะ (Mousheen Immune) จากสกิลแวนตลอดเทิร์น");
+                            } else if (circle) {
+                                alert("ต้องเลือกช่อง (RC) ที่ว่างเท่านั้น!!");
+                            }
+                        };
+                        document.addEventListener('click', callListener, true);
                     }
-                }
-            }
-
-            // Heekou (Soul)
-            const heekousInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Heekou'));
-            if (heekousInSoul.length >= 2 && attacker.dataset.name.includes('Greedon') && parseInt(attacker.dataset.grade) >= 3) {
-                if (await vgConfirm("Desire Devil, Heekou: [AUTO][Soul] แวนการ์ด Greedon โจมตี [Bind Heekou ใบอื่น 1 ใบจากโซล] เพื่อคอลการ์ดนี้ลงช่อง Back Row (RC)?")) {
-                    const idx1 = soulPool.indexOf(heekousInSoul[0]);
-                    const bindCard = soulPool.splice(idx1, 1)[0];
-                    bindPool.push(bindCard);
-                    sendData({ type: 'moveCard', cardId: bindCard.id, zone: 'bind' });
-
-                    const idx2 = soulPool.indexOf(heekousInSoul[1]);
-                    const callCard = soulPool.splice(idx2, 1)[0];
-
-                    alert("เลือกช่อง Back Row (RC) ที่ว่างอยู่เพื่อคอล Heekou");
-                    document.body.classList.add('targeting-mode');
-                    const callListener = (e) => {
-                        const circle = e.target.closest('.my-side .circle.rc');
-                        if (circle && circle.dataset.zone.includes('back') && !circle.querySelector('.card')) {
-                            e.stopPropagation();
-                            circle.appendChild(callCard);
-                            sendMoveData(callCard);
-                            updateSoulUI();
-                            updateCountsUI();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', callListener, true);
-                            alert("คอล Heekou สำเร็จ!");
-                        } else if (circle) {
-                            alert("ช่องนี้ไม่ใช่ Back Row (RC) หรือมีใบอื่นวางอยู่!");
-                        }
-                    };
-                    document.addEventListener('click', callListener, true);
                 }
             }
         }
@@ -3691,6 +3682,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Dragontree Marker Buff (+5000) ---
+        if (zone.startsWith('rc') && parent.dataset.dragontreeMarker === "true" && isMyTurn) {
+            if (card.dataset.dragontreeBuffApplied !== "true") {
+                card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                card.dataset.dragontreeBuffApplied = "true";
+                syncPowerDisplay(card);
+            }
+        } else if (card.dataset.dragontreeBuffApplied === "true") {
+            card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+            card.dataset.dragontreeBuffApplied = "false";
+            syncPowerDisplay(card);
+        }
+
+        // --- Desire Devil, Saasyou [CONT](RC)/(GC) ---
+        if (name.includes('Saasyou') && (zone.startsWith('rc') || zone === 'gc')) {
+            const desireDevils = soulPool.filter(c => (c.dataset.name || "").includes('Desire Devil')).length;
+            if (desireDevils >= 3) {
+                if (card.dataset.saasyouBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power || "0") + 5000).toString();
+                    card.dataset.shield = (parseInt(card.dataset.shield || "0") + 5000).toString();
+                    card.dataset.saasyouBuffApplied = "true";
+                    syncPowerDisplay(card);
+                    if(zone === 'gc') updateGCShield();
+                }
+            } else if (card.dataset.saasyouBuffApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power || "0") - 5000).toString();
+                card.dataset.shield = (parseInt(card.dataset.shield || "0") - 5000).toString();
+                card.dataset.saasyouBuffApplied = "false";
+                syncPowerDisplay(card);
+                if(zone === 'gc') updateGCShield();
+            }
+        }
+
         // Bomber Strategy Dusting (+10000 Vanguard) - REMOVED DUPLICATE
 
         // --- Blaster Dark [CONT] (+5000 if RG retired) ---
@@ -4366,18 +4390,80 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Desire Devil, Mucca [AUTO]: เมื่อวางบน RC จากมือ ถ้าแวนการ์ดคือ Greedon [CB1 & SB2] คอล 1 ใบจากโซล ---
-        if (name.includes('Mucca') && isRC && isFromHand) {
-            if (vgName === 'Avaricious Demonic Dragon, Greedon') {
-                if (await vgConfirm("Desire Devil, Mucca: [AUTO] เมื่อลง RC จากมือ จ่าย [CB1 & SB2] เพื่อคอลการ์ด 1 ใบจากโซล?")) {
-                    if (payCounterBlast(1)) {
-                        if (await paySoulBlast(2)) {
-                            promptSoulCall(true, null); // isSelective=true
-                        }
+        // --- Dragontree Wretch, Skull Chemdah [AUTO]: Placed on RC ---
+        if (name.includes('Skull Chemdah') && isRC) {
+            if (await vgConfirm("Skull Chemdah: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum จากกอง 1 ใบนำขึ้นมือ?")) {
+                let costPaid = false;
+                if (payCounterBlast(1)) {
+                    if (await paySoulBlast(1)) {
+                        costPaid = true;
+                    } else {
+                        counterCharge(1); // refund
+                        alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
                     }
+                }
+                if (costPaid) {
+                    alert("คลิกทำ Dragontree Marker! เลือกช่อง (RC) ที่ว่างเปล่าหรือช่อง (RC) ของคุณที่ยังไม่มี Dragontree marker");
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resolveChem => {
+                        const rcListener = (ev) => {
+                            const circle = ev.target.closest('.my-side .circle.rc');
+                            if (circle) {
+                                ev.stopPropagation();
+                                if (circle.dataset.dragontreeMarker === "true") {
+                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                    return;
+                                }
+                                circle.dataset.dragontreeMarker = "true";
+                                circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', rcListener, true);
+                                alert("วาง Dragontree Marker สำเร็จ!");
+                                resolveChem();
+                            }
+                        };
+                        document.addEventListener('click', rcListener, true);
+                    });
+
+                    const masquesOrder = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
+                    if (masquesOrder.length > 0) {
+                        openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masquesOrder);
+                        await new Promise(resSearch => {
+                            const addHydra = (e) => {
+                                const clicked = e.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    const cName = clicked.dataset.name;
+                                    const idx = deckPool.findIndex(c => c.name === cName);
+                                    if (idx !== -1) {
+                                        const pickedData = deckPool.splice(idx, 1)[0];
+                                        const newlyAdded = createCardElement(pickedData);
+                                        playerHand.appendChild(newlyAdded);
+                                        sendMoveData(newlyAdded);
+                                        updateHandSpacing();
+                                        alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                    }
+                                    viewerGrid.removeEventListener('click', addHydra);
+                                    zoneViewer.classList.add('hidden');
+                                    resSearch();
+                                }
+                            };
+                            viewerGrid.addEventListener('click', addHydra);
+                            closeViewerBtn.onclick = () => {
+                                viewerGrid.removeEventListener('click', addHydra);
+                                zoneViewer.classList.add('hidden');
+                                resSearch();
+                            };
+                        });
+                    } else {
+                        alert("ไม่พบ Masque of Hydragrum ในกอง");
+                    }
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                    updateAllStaticBonuses();
                 }
             }
         }
+        // --- Desire Devil, Mucca [AUTO]: Removed ---
         if (name.includes('Jamil') && isRC) {
             const currentVG = document.querySelector('.my-side .circle.vc .card');
             const currentVGName = currentVG ? currentVG.dataset.name : "";
@@ -5431,7 +5517,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'darkBonusApplied', 'majestyBonusApplied', 'maronBonusApplied', 'ordealBonusApplied',
                 'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
                 'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied',
-                'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied'
+                'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
+                'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -6986,7 +7073,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lastStrategyPutIntoSoulName = "";
         strategyPutToOrderZoneThisTurn = false;
         window.activeGuardRestrictCount = 0;
-        window.bubetsuuUsedThisTurn = false;
 
         // Reset "Until end of turn" flags
         window.promptedEndTurn = false;
@@ -8539,6 +8625,80 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Clean-sweep Dragon [ACT](RC) ---
+        if (name.includes('Clean-sweep Dragon') && isRC) {
+            if (!card.dataset.cleanSweepUsedThisTurn) {
+                if (personaRideActive) {
+                    if (await vgConfirm("Clean-sweep Dragon: [ACT][1/Turn] [CB1] เลือก RGs ตัวเองหรือคู่แข่งไม่เกิน 3 ใบ นำเข้าโซลเจ้าของ ยูนิทนี้ได้รับ พลัง+5000 ต่อ 1 ใบ?")) {
+                        if (payCounterBlast(1)) {
+                            card.dataset.cleanSweepUsedThisTurn = "true";
+                            alert("คลิกที่ RGs บนสนาม (ตัวเองหรือคู่แข่ง) 1-3 ใบ จากนั้นคลิกที่พื้นที่ว่างเพื่อยืนยัน");
+                            let chosenCards = [];
+                            document.body.classList.add('targeting-mode');
+                            
+                            await new Promise(resSweep => {
+                                const sweepListener = (e) => {
+                                    const tgtCard = e.target.closest('.circle.rc .card');
+                                    if (tgtCard) {
+                                        e.stopPropagation();
+                                        if (chosenCards.includes(tgtCard)) {
+                                            chosenCards = chosenCards.filter(c => c !== tgtCard);
+                                            tgtCard.style.boxShadow = "none";
+                                        } else {
+                                            if (chosenCards.length >= 3) {
+                                                alert("เลือกได้สูงสุด 3 ใบเท่านั้น!");
+                                                return;
+                                            }
+                                            chosenCards.push(tgtCard);
+                                            tgtCard.style.boxShadow = "0 0 15px #f00";
+                                        }
+                                    } else {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', sweepListener, true);
+                                        if (chosenCards.length > 0) {
+                                            const confirmSweep = confirm(`ยืนยันการเลือก ${chosenCards.length} ใบเข้าสู่โซลของผู้เล่นนั้น?`);
+                                            if (confirmSweep) {
+                                                chosenCards.forEach(c => {
+                                                    const oppSide = c.closest('.opponent-side');
+                                                    if (oppSide) {
+                                                        const p = c.parentElement;
+                                                        const pCircleId = p ? p.id : '';
+                                                        let actualCircleId = pCircleId.startsWith('opp-') ? pCircleId.substring(4) : pCircleId;
+                                                        sendData({ type: 'retireOpponentRG', attackerName: "Clean-sweep Dragon", targetId: actualCircleId });
+                                                        c.remove();
+                                                    } else {
+                                                        soulPool.push(c);
+                                                        c.remove();
+                                                        sendMoveData(c, 'soul');
+                                                    }
+                                                });
+                                                updateSoulUI();
+                                                const pwr = 5000 * chosenCards.length;
+                                                card.dataset.power = (parseInt(card.dataset.power) + pwr).toString();
+                                                card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + pwr).toString();
+                                                card.dataset.turnEndBuffActive = "true";
+                                                syncPowerDisplay(card);
+                                                alert(`Clean-sweep Dragon ได้รับพลัง +${pwr} จนจบเทิร์น!`);
+                                            } else {
+                                                chosenCards.forEach(c => c.style.boxShadow = "none");
+                                                alert("ยกเลิกการเลือก");
+                                            }
+                                        }
+                                        resSweep();
+                                    }
+                                };
+                                document.addEventListener('click', sweepListener, true);
+                            });
+                        }
+                    }
+                } else {
+                    alert("Clean-sweep Dragon: ต้องทำ Persona Ride ในเทิร์นนี้ก่อนจึงจะใช้ [ACT] ได้!");
+                }
+            } else {
+                alert("ใช้ Clean-sweep Dragon ความสามารถในเทิร์นนี้ไปแล้ว!");
+            }
+        }
+
         // --- Avantgarda (ACT) ---
         const lowerName = name.toLowerCase();
         if (lowerName.includes('avantgarda') || (lowerName.includes('richter') && card.dataset.inheritedAvantAct === "true")) {
@@ -9783,6 +9943,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             const rgListener = (e) => {
                                 const card = e.target.closest('.my-side .circle.rc .card:not(.rest)');
                                 if (card) {
+                                    if (card.dataset.mousheenImmune === "true") {
+                                        alert("Desire Devil, Mousheen ใบนี้ติดสถานะ Immune อยู่ จึงถูกนำเข้าโซลโดยสกิลแวนการ์ดไม่ได้!");
+                                        return;
+                                    }
                                     soulPool.push(card);
                                     card.remove();
                                     sendMoveData(card, 'soul');
@@ -9902,61 +10066,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                         document.removeEventListener('click', rgListener);
                                         updateSoulUI();
 
-                                        // --- Bubetsuu Skill (RC/Soul-in triggering) ---
-                                        const bubetsuuFound = standingRGs.some(c => c.dataset.name.includes('Bubetsuu')); // Check if any Bubetsuu was on RC or moved
-                                        if (bubetsuuFound && window.bubetsuuUsedThisTurn !== true) {
-                                            queue.push({
-                                                name: 'Bubetsuu Skill',
-                                                description: "[CB1] Call from hand & Draw",
-                                                resolve: async (done) => {
-                                                    if (window.bubetsuuUsedThisTurn === true) {
-                                                        if (done) done();
-                                                        return;
-                                                    }
-                                                    if (await vgConfirm("Desire Devil, Bubetsuu: [AUTO] เมื่อเรียร์การ์ดใบอื่นถูกนำเข้าโซลในเทิร์นคุณ [CB1] คอลการ์ดจากมือและจั่ว 1 ใบ (หากโซล 10+)?")) {
-                                                        if (payCounterBlast(1)) {
-                                                            window.bubetsuuUsedThisTurn = true;
-                                                            alert("เลือกการ์ดจากมือ 1 ใบเพื่อคอลลง RC ที่ว่าง");
-                                                            document.body.classList.add('targeting-mode');
-                                                            const handCards = document.querySelectorAll('#player-hand .card');
-
-                                                            await new Promise(resBub => {
-                                                                const handListener = (ev) => {
-                                                                    const hCard = ev.target.closest('#player-hand .card');
-                                                                    if (hCard) {
-                                                                        ev.stopPropagation();
-                                                                        document.removeEventListener('click', handListener, true);
-                                                                        alert("เลือกช่อง RC ที่ว่างอยู่");
-
-                                                                        const rcListener = (ev2) => {
-                                                                            const circle = ev2.target.closest('.my-side .circle.rc');
-                                                                            if (circle && !circle.querySelector('.card')) {
-                                                                                ev2.stopPropagation();
-                                                                                circle.appendChild(hCard);
-                                                                                sendMoveData(hCard);
-                                                                                updateHandCount();
-                                                                                updateHandSpacing();
-                                                                                document.body.classList.remove('targeting-mode');
-                                                                                document.removeEventListener('click', rcListener, true);
-
-                                                                                if (soulPool.length >= 10) {
-                                                                                    alert("โซลมี 10 ใบขึ้นไป! จั่วการ์ด 1 ใบ");
-                                                                                    drawCard(1);
-                                                                                }
-                                                                                resBub();
-                                                                            }
-                                                                        };
-                                                                        document.addEventListener('click', rcListener, true);
-                                                                    }
-                                                                };
-                                                                document.addEventListener('click', handListener, true);
-                                                            });
-                                                        }
-                                                    }
-                                                    if (done) done();
-                                                }
-                                            });
-                                        }
 
                                         attacker.classList.remove('rest');
                                         attacker.style.transform = 'none';
