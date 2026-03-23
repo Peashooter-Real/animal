@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
         'Front Trigger (Dark States)': 'picture/bruce_front.png',
         'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
-        'Hades Dragon Deity, Gallmageveld': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_005.png',
+        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png',
 
         // Magnolia Deck
         'Sylvan Horned Beast, Lotte': 'picture/grade0_magnolia.jpg',
@@ -280,10 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Triggers - Stoicheia (Magnolia)
         'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
-        'Draw Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_012.png',
-        'Front Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_014.png',
-        'Heal Trigger (Stoicheia)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd04/d-sd04_013.png',
-        'Source Dragon Deity, Blessfavor': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-bt01/d-bt01_006.png',
+        'Draw Trigger (Stoicheia)': 'picture/stoicheia_draw.png',
+        'Front Trigger (Stoicheia)': 'picture/stoicheia_front.png',
+        'Heal Trigger (Stoicheia)': 'picture/stoicheia_heal.png',
+        'Source Dragon Deity, Blessfavor': 'greedon/mucca.png', // Placeholder จากรูปเก่า
+        'Custodial Dragon (Perfect Guard)': 'picture/custodial_dragon.png',
 
         // Nirvana Jheva Deck
         'Sunrise Egg': 'picnirvana/0nir.jpg',
@@ -301,11 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'Brilliant Equip, Bram Vairina': 'picnirvana/bram.png',
         'Flaring Cannon Equip, Baur Vairina': 'picnirvana/baur.png',
         'Vairina Arcs': 'picnirvana/arcs.png',
+        'Dragontree Deity of Resurgence, Dragveda': 'picnirvana/dragveda_resurgence.png',
 
         // Triggers - Dragon Empire
-        'Critical Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_011.png',
-        'Draw Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_012.png',
-        'Heal Trigger (Dragon Empire)': 'https://cf-vanguard.com/wordpress/wp-content/images/cardlist/d-sd01/d-sd01_013.png',
+        'Critical Trigger (Dragon Empire)': 'overlord/crit.png',
+        'Draw Trigger (Dragon Empire)': 'overlord/draw.png',
+        'Heal Trigger (Dragon Empire)': 'overlord/heal.png',
 
         // Keter Sanctuary Deck
         'Wingul Brave': 'majes/wingul_brave.png',
