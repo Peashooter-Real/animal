@@ -67,9 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let generatedId = null;
 
-    // Helper: Generate random ID
+    // Helper: Generate random numeric ID (6 digits)
     function generateUUID() {
-        return Math.random().toString(36).substring(2, 8).toUpperCase();
+        return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
     // Host Action
