@@ -6512,8 +6512,9 @@ document.addEventListener('DOMContentLoaded', () => {
         div.dataset.skill = cardData.skill || "";
         div.dataset.critical = cardData.critical || "1";
         div.dataset.trigger = cardData.trigger || "";
-        if (cardData.isPG) div.dataset.isPG = "true";
-        if (cardData.persona) div.dataset.persona = "true";
+        div.dataset.isPG = cardData.isPG ? "true" : "false";
+        div.dataset.persona = cardData.persona ? "true" : "false";
+        div.dataset.cardData = JSON.stringify(cardData); // Crucial for skills to work
 
         const img = document.createElement('img');
         img.src = cardImages[cardData.name] || 'https://via.placeholder.com/150';
@@ -6850,9 +6851,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         };
 
-        // Separate callables by role
+        // Step 1: Strategic Call Decision
         const attackers = aiHand.filter(c => {
             const g = parseInt(c.grade);
+            const isG3 = g === 3;
+            // Strategic Reserve: G3s are kept for next turn's Ride unless we are already G3
+            if (isG3 && vgGrade < 3) return false;
             return g >= 2 && g <= vgGrade && !c.trigger && !(c.isPG || (c.skill && c.skill.includes('Perfect Guard')));
         }).sort((a, b) => parseInt(b.power || 0) - parseInt(a.power || 0));
 
@@ -6861,38 +6865,49 @@ document.addEventListener('DOMContentLoaded', () => {
             return g <= 1 && g <= vgGrade && !c.trigger && !(c.isPG || (c.skill && c.skill.includes('Perfect Guard')));
         }).sort((a, b) => parseInt(b.power || 0) - parseInt(a.power || 0));
 
-        // Step 1: Place attackers in front row columns
-        for (const col of columnPairs) {
-            if (calls >= maxCalls || attackers.length === 0) break;
-            const frontCircle = document.querySelector(`.opponent-side .circle[data-zone="${col.front}"]`);
-            if (frontCircle && !frontCircle.querySelector('.card')) {
-                const attacker = attackers.shift();
-                if (attacker) await callUnit(attacker, frontCircle);
-            }
-        }
+        // Column Logic: Only call if it creates a strong column (> Player VG Power)
+        const playerVG = document.querySelector('.my-side .circle.vc .card');
+        const pVGPower = playerVG ? parseInt(playerVG.dataset.power) : 10000;
 
-        // Step 2: Place boosters in back row MATCHING the column of front-row attackers
         for (const col of columnPairs) {
-            if (calls >= maxCalls || boosters.length === 0) break;
+            if (calls >= maxCalls) break;
             const frontCircle = document.querySelector(`.opponent-side .circle[data-zone="${col.front}"]`);
             const backCircle = document.querySelector(`.opponent-side .circle[data-zone="${col.back}"]`);
-            // Only place booster if there's an attacker in front and back is empty
-            if (frontCircle && frontCircle.querySelector('.card') && backCircle && !backCircle.querySelector('.card')) {
-                const booster = boosters.shift();
-                if (booster) await callUnit(booster, backCircle);
+            
+            if (!frontCircle.querySelector('.card') && attackers.length > 0) {
+                const attacker = attackers[0];
+                const booster = boosters.find(b => parseInt(b.power) + parseInt(attacker.power) >= pVGPower) || boosters[0];
+                
+                // If even with booster it's weak, and we have few cards, maybe don't call
+                if (parseInt(attacker.power) < pVGPower && !booster && attackers.length < 3) continue;
+
+                await callUnit(attackers.shift(), frontCircle);
+                if (booster && boosters.includes(booster)) {
+                    await callUnit(boosters.splice(boosters.indexOf(booster), 1)[0], backCircle);
+                }
             }
         }
 
-        // Step 3: Place VC booster (back center) if empty
-        if (calls < maxCalls && boosters.length > 0) {
-            const bcCircle = document.querySelector(`.opponent-side .circle[data-zone="${vcBoosterZone}"]`);
-            if (bcCircle && !bcCircle.querySelector('.card')) {
-                const booster = boosters.shift();
-                if (booster) await callUnit(booster, bcCircle);
+        // Step 3: VC booster is high priority if missing
+        const bcCircle = document.querySelector(`.opponent-side .circle[data-zone="${vcBoosterZone}"]`);
+        if (calls < maxCalls && boosters.length > 0 && bcCircle && !bcCircle.querySelector('.card')) {
+            await callUnit(boosters.shift(), bcCircle);
+        }
+
+        // Step 4: Strategic Shifting (Moving unit from back to front if front is empty)
+        for (const col of columnPairs) {
+            const frontCircle = document.querySelector(`.opponent-side .circle[data-zone="${col.front}"]`);
+            const backCircle = document.querySelector(`.opponent-side .circle[data-zone="${col.back}"]`);
+            const backUnit = backCircle.querySelector('.card');
+            
+            if (!frontCircle.querySelector('.card') && backUnit && parseInt(backUnit.dataset.grade) >= 2) {
+                alert(`AI Shifting: เลื่อน ${backUnit.dataset.name} ขึ้นแถวหน้า`);
+                frontCircle.appendChild(backUnit);
+                await aiWait(600);
             }
         }
 
-        // Step 4: Fill remaining spots if hard mode
+        // Step 5: Fill remaining spots if hard mode
         if (aiDifficulty === 'hard') {
             const remaining = aiHand.filter(c => {
                 const g = parseInt(c.grade);
@@ -7039,6 +7054,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`AI Attack Result: ${finalPower} vs ${playerPower}. Hit: ${isHit}`);
             }
 
+            // --- CRITICAL FIX: Update global/local attack data so skill triggers know it hit ---
+            if (currentAttackData) currentAttackData.isHit = isHit;
+            attacker.dataset.isHit = isHit ? "true" : "false";
+
             if (isHit && isVanguardTarget) {
                 // Wait for damage to fully complete before continuing
                 await processPlayerDamageAndWait(crit);
@@ -7106,10 +7125,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // === Target selection ===
+        const playerVG = document.querySelector('.my-side .circle.vc .card');
+        const pVGPower = playerVG ? parseInt(playerVG.dataset.power) : 10000;
+        
         let target = "vc";
-        if (aiDifficulty === 'hard') {
-            const playerRGs = Array.from(document.querySelectorAll('.my-side .front-row .circle.rc .card:not(.opponent-card)'));
-            if (playerRGs.length > 0 && !unit.parentElement.classList.contains('vc') && Math.random() > 0.6) {
+        // Defensive Logic: If we can't hit VG even with booster, try to snipe a Rear-guard
+        if (totalPower < pVGPower) {
+            const playerRGs = Array.from(document.querySelectorAll('.my-side .front-row .circle.rc .card:not(.opponent-card)'))
+                .filter(c => totalPower >= parseInt(c.dataset.power || "0"));
+            if (playerRGs.length > 0) {
+                // Pick highest grade/power RG as target
+                playerRGs.sort((a,b) => parseInt(b.dataset.grade) - parseInt(a.dataset.grade));
                 target = playerRGs[0].parentElement.dataset.zone;
             }
         }
@@ -7804,13 +7830,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const type = cardData.trigger;
         alert(`AI ${type} Trigger Resolving...`);
 
-        // +10,000 to a unit (Prefer Vanguard if attacking, random otherwise)
-        const units = Array.from(document.querySelectorAll('.opponent-side .circle .card'));
-        if (units.length > 0) {
-            const target = units.find(u => u.parentElement.classList.contains('vc')) || units[0];
+        // Smart Power Distribution
+        const units = Array.from(document.querySelectorAll('.opponent-side .circle .card:not(.rest)'));
+        const playerVG = document.querySelector('.my-side .circle.vc .card');
+        const pVGPower = playerVG ? parseInt(playerVG.dataset.power) : 10000;
+
+        let target = units.find(u => u.parentElement.classList.contains('vc')) || units[0];
+        
+        // Strategy: Give power to a STANDING unit that currently CANT hit the VG
+        const standingUnits = units.filter(u => !u.classList.contains('rest') && !u.parentElement.classList.contains('vc'));
+        const needingBuff = standingUnits.find(u => parseInt(u.dataset.power) < pVGPower);
+        
+        if (needingBuff) {
+            target = needingBuff;
+        } else if (standingUnits.length > 0) {
+            target = standingUnits[0]; // Give to next attacker
+        }
+
+        if (target) {
             target.dataset.power = (parseInt(target.dataset.power) + 10000).toString();
             syncPowerDisplay(target);
-            alert(`AI gives +10,000 to ${target.dataset.name}!`);
+            alert(`AI มอบพลัง +10,000 ให้ ${target.dataset.name}! (เพื่อปิดเกม)`);
         }
 
         if (type === 'Critical' && !isDamageCheck) {
