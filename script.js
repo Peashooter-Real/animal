@@ -8919,7 +8919,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lowerName = name.toLowerCase();
         if (lowerName.includes('avantgarda') || (lowerName.includes('richter') && card.dataset.inheritedAvantAct === "true")) {
             if (await vgConfirm(`${name}: [ACT] [ใส่ Strategy ใน Order Zone เข้าโซล] เพื่อจั่ว 1, พลัง +5000 และได้รับ Restand Skill?`)) {
-                const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
+                const hasSora = soulPool.some(c => (c.dataset.name || "").includes('Sora Period'));
                 if (!hasSora) {
                     alert("ต้องมี Blue Deathster, Sora Period ในโซลเพื่อใช้งานความสามารถนี้!");
                     return;
@@ -10343,7 +10343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Richter End of Battle: Order abilities ---
         if (name.includes('richter') && attacker.dataset.avantStandReady === "true") {
-            const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
+            const hasSora = soulPool.some(c => (c.dataset.name || "").includes('Sora Period'));
             const baseAvant = bindPool.find(c => c.dataset.name.includes('"Skyrender" Avantgarda'));
             const isHitVG = attackData.isHit && attackData.isTargetVanguard;
             const isPersona = personaRideActive;
@@ -10419,9 +10419,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Resolve Richter/Avantgarda skills
             if (queue.length > 0) {
-                // We resolve here to maintain context, but avoid early return if possible
-                // However, Richter usually ends the battle. Let's just let it resolve.
                 await resolveAbilityQueue(queue);
+                return; // Prevent falling through to other end-of-battle logic prematurely
             }
         }
 
