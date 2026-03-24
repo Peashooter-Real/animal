@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.alert = function (msg) {
+        // Anti-spam filter
+        const now = Date.now();
+        if (!window._alertHistory) window._alertHistory = {};
+        if (window._alertHistory[msg] && (now - window._alertHistory[msg] < 3000)) {
+            return; // Ignore identical message within 3 seconds
+        }
+        window._alertHistory[msg] = now;
+
         const box = document.createElement('div');
         box.className = 'vanguard-alert-box fade-in';
         box.style.position = 'static';
@@ -1066,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (payCounterBlast(1)) {
                             const g1Cards = deckPool.filter(c => parseInt(c.grade) === 1);
                             if (g1Cards.length > 0) {
-                                openViewer("หา G1 1 ใบขึ้นมือ", g1Cards);
+                                openViewer("ค้นหา G1 1 ใบขึ้นมือ", g1Cards);
                                 await new Promise(resolve => {
                                     const pickHandler = (e) => {
                                         const clicked = e.target.closest('.card');
@@ -3943,8 +3951,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Final Burst Action (Handled directly via Skills, not generic Front Buff anymore)
-        // Kept empty to maintain comment numbering and logic separation.
+        // 2. Final Burst Action (Removed +10000 generic buff per user request)
+        if (card.dataset.finalBurstPowerBuffed === "true") {
+            card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
+            card.dataset.finalBurstPowerBuffed = "false";
+            syncPowerDisplay(card);
+        }
 
         // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield) - Only for owner
         if (isFinalBurst && name.includes('Jamil')) {
@@ -10390,7 +10402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (await vgConfirm("Ordeal Dragon: [ทิ้ง 0 ใบ] ดูบนสุด 7 ใบหา 'Blaster'?")) {
                     if (deckPool.length < 7) { alert("กองการ์ดเหลือน้อยเกินไป!"); return; }
                     const top7 = deckPool.slice(0, 7);
-                    openViewer("Ordeal Dragon: Top 7", top7);
+                    openViewer("เลือก Ordeal Dragon: Top 7", top7);
                     const sel = (e) => {
                         const clicked = e.target.closest('.card');
                         if (clicked && clicked.parentElement === viewerGrid) {
@@ -10931,6 +10943,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (originalCard instanceof HTMLElement) {
                 node = originalCard.cloneNode(true);
                 node.dataset.originalId = originalCard.id;
+                
+                // cloneNode(true) does not copy event listeners. We must attach drag listeners here
+                // to allow dragging HTMLElement cards directly out of the Viewer Grid.
+                node.addEventListener('dragstart', (e) => {
+                    draggedCard = node;
+                    setTimeout(() => node.classList.add('dragging'), 0);
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', node.id);
+                });
+                node.addEventListener('dragend', () => {
+                    if (draggedCard) draggedCard.classList.remove('dragging');
+                    draggedCard = null;
+                    if (typeof updateHandCount === 'function') updateHandCount();
+                });
             } else {
                 node = createCardElement(originalCard);
                 if (originalCard.id) {
@@ -10956,8 +10982,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Make it easier: Left-click opens skill viewer if NOT in a selection mode
             node.addEventListener('click', (e) => {
                 const title = (viewerTitle.textContent || "").toLowerCase();
-                // If title contains "select", "choose", "choice", "เลือก", "ค้นหา" then it's a selection mode
-                const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา"];
+                // If title contains "select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู" then it's a selection mode
+                const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู"];
                 const isSelection = selectionKeywords.some(k => title.includes(k));
                 
                 if (!isSelection && !document.body.classList.contains('targeting-mode')) {
@@ -11012,7 +11038,61 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             el.classList.remove('zone-highlight');
             if (draggedCard) {
-                await await validateAndMoveCard(draggedCard, el);
+                const isFromViewer = draggedCard.closest('#viewer-grid');
+                if (isFromViewer) {
+                    // Extract the original card reference
+                    const originalId = draggedCard.dataset.originalId || draggedCard.id;
+                    let actualDom = document.getElementById(originalId);
+
+                    if (actualDom && actualDom.parentElement && actualDom.parentElement.id !== 'viewer-grid') {
+                        // Original is in a DOM zone (Drop, Damage, Order, etc.)
+                        const moved = await validateAndMoveCard(actualDom, el);
+                        if (moved) draggedCard.remove();
+                    } else {
+                        // Original is in an array pool (Deck, Soul, Bind)
+                        let cardObj = null;
+                        
+                        let idx = deckPool.findIndex(c => c.id === originalId);
+                        if (idx !== -1) { 
+                            cardObj = deckPool[idx]; 
+                            const newDomElem = createCardElement(cardObj);
+                            if (cardObj.id) newDomElem.id = cardObj.id; // preserve ID
+                            if (await validateAndMoveCard(newDomElem, el)) {
+                                deckPool.splice(idx, 1);
+                                if (typeof updateDeckCounter === 'function') updateDeckCounter();
+                                draggedCard.remove();
+                            }
+                        } else {
+                            idx = soulPool.findIndex(c => c.id === originalId);
+                            if (idx !== -1) { 
+                                cardObj = soulPool[idx]; 
+                                const newDomElem = createCardElement(cardObj);
+                                if (cardObj.id) newDomElem.id = cardObj.id;
+                                if (await validateAndMoveCard(newDomElem, el)) {
+                                    soulPool.splice(idx, 1);
+                                    if (typeof updateSoulUI === 'function') updateSoulUI();
+                                    draggedCard.remove();
+                                }
+                            } else {
+                                idx = bindPool.findIndex(c => c.id === originalId);
+                                if (idx !== -1) {
+                                    cardObj = bindPool[idx];
+                                    const newDomElem = createCardElement(cardObj);
+                                    if (cardObj.id) newDomElem.id = cardObj.id;
+                                    if (await validateAndMoveCard(newDomElem, el)) {
+                                        bindPool.splice(idx, 1);
+                                        draggedCard.remove();
+                                    }
+                                } else {
+                                    // Fallback: move the clone if no match found
+                                    await validateAndMoveCard(draggedCard, el);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    await validateAndMoveCard(draggedCard, el);
+                }
                 draggedCard = null;
             }
         });
@@ -11020,11 +11100,72 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('click', async (e) => {
             // TAP TO MOVE EXECUTION
             if (selectedCard) {
-                const moved = await validateAndMoveCard(selectedCard, el);
-                if (moved) {
-                    selectedCard.classList.remove('card-selected');
-                    selectedCard = null;
-                    return;
+                const isFromViewer = selectedCard.closest('#viewer-grid');
+                if (isFromViewer) {
+                    const originalId = selectedCard.dataset.originalId || selectedCard.id;
+                    let actualDom = document.getElementById(originalId);
+
+                    if (actualDom && actualDom.parentElement && actualDom.parentElement.id !== 'viewer-grid') {
+                        const moved = await validateAndMoveCard(actualDom, el);
+                        if (moved) {
+                            selectedCard.remove();
+                            selectedCard = null;
+                            return;
+                        }
+                    } else {
+                        let cardObj = null;
+                        let moved = false;
+                        
+                        let idx = deckPool.findIndex(c => c.id === originalId);
+                        if (idx !== -1) { 
+                            cardObj = deckPool[idx]; 
+                            const newDomElem = createCardElement(cardObj);
+                            if (cardObj.id) newDomElem.id = cardObj.id; // preserve ID
+                            if (await validateAndMoveCard(newDomElem, el)) {
+                                deckPool.splice(idx, 1);
+                                if (typeof updateDeckCounter === 'function') updateDeckCounter();
+                                moved = true;
+                            }
+                        } else {
+                            idx = soulPool.findIndex(c => c.id === originalId);
+                            if (idx !== -1) { 
+                                cardObj = soulPool[idx]; 
+                                const newDomElem = createCardElement(cardObj);
+                                if (cardObj.id) newDomElem.id = cardObj.id;
+                                if (await validateAndMoveCard(newDomElem, el)) {
+                                    soulPool.splice(idx, 1);
+                                    if (typeof updateSoulUI === 'function') updateSoulUI();
+                                    moved = true;
+                                }
+                            } else {
+                                idx = bindPool.findIndex(c => c.id === originalId);
+                                if (idx !== -1) {
+                                    cardObj = bindPool[idx];
+                                    const newDomElem = createCardElement(cardObj);
+                                    if (cardObj.id) newDomElem.id = cardObj.id;
+                                    if (await validateAndMoveCard(newDomElem, el)) {
+                                        bindPool.splice(idx, 1);
+                                        moved = true;
+                                    }
+                                } else {
+                                    moved = await validateAndMoveCard(selectedCard, el);
+                                }
+                            }
+                        }
+                        
+                        if (moved) {
+                            selectedCard.remove();
+                            selectedCard = null;
+                            return;
+                        }
+                    }
+                } else {
+                    const moved = await validateAndMoveCard(selectedCard, el);
+                    if (moved) {
+                        selectedCard.classList.remove('card-selected');
+                        selectedCard = null;
+                        return;
+                    }
                 }
             }
 
@@ -11129,7 +11270,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (oppGrade >= 3) {
                 isFinalBurst = true;
-                personaRideActive = true; // Final Burst includes Persona Ride
                 alert("DIABOLOS: Entering FINAL BURST state!");
             } else {
                 isFinalBurst = false;
