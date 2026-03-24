@@ -2346,6 +2346,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await handleEndOfBattle(attacker, currentAttackData);
         currentAttackData = null;
         pendingCriticalIncrease = 0;
+        
+        // --- Reset Guard Restrict (Fuujo) ---
+        attacker.dataset.guardRestrictCount = "0";
+        document.body.classList.remove('guard-restricted');
 
         // Ensure flags are reset AFTER battle resolution logic completes
         isWaitingForGuard = false;
@@ -4569,13 +4573,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const clicked = e.target.closest('.card');
                                 if (clicked && clicked.parentElement === viewerGrid) {
                                     const cName = clicked.dataset.name;
-                                    const selectedId = clicked.dataset.originalId;
+                                    const selectedId = clicked.dataset.originalId || clicked.id;
                                     const idx = deckPool.findIndex(c => c.id === selectedId);
                                     if (idx !== -1) {
                                         const pickedData = deckPool.splice(idx, 1)[0];
                                         const newlyAdded = createCardElement(pickedData);
                                         playerHand.appendChild(newlyAdded);
                                         sendMoveData(newlyAdded);
+                                        if (typeof updateHandCount === 'function') updateHandCount();
                                         updateHandSpacing();
                                         alert(`นำ ${cName} ขึ้นมือแล้ว!`);
                                     }
