@@ -6181,6 +6181,8 @@ document.addEventListener('DOMContentLoaded', () => {
             strategyActivatedCount = 0;
             lastStrategyPutIntoSoulName = "";
             strategyPutToOrderZoneThisTurn = false;
+            window.avantRestandUsedThisTurn = false;
+            window.richterRideBackUsedThisTurn = false;
 
             // State expiration check
             if (currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -10093,6 +10095,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleEndOfBattle(attacker, attackData) {
         if (!attacker) return;
+        window.richterSkillUsedThisAttack = false; // Reset for this attack resolution
 
         const name = (attacker.dataset.name || "").toLowerCase();
         const isMyTurn = (attacker.dataset.side !== 'opponent');
@@ -10348,16 +10351,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const isHitVG = attackData.isHit && attackData.isTargetVanguard;
             const isPersona = personaRideActive;
 
-            const canUseRichterSkill = hasSora && baseAvant && playerHand.querySelectorAll('.card').length >= 2;
-            const canUseAvantRestand = (isHitVG || isPersona);
-
-            // New approach: use resolveAbilityQueue
+            const canUseRichterSkill = hasSora && baseAvant && 
+                                       playerHand.querySelectorAll('.card').length >= 2 && 
+                                       !window.richterRideBackUsedThisTurn;
+            const canUseAvantRestand = (isHitVG || isPersona) && 
+                                       !window.avantRestandUsedThisTurn;
 
             if (canUseAvantRestand) {
                 queue.push({
                     name: "Avantgarda (Inherited AUTO): Restand",
-                    description: "[CB1 & ทิ้ง 1 ใบ] Stand และ Drive-1 (แนะนำให้ใช้ก่อน Ride back)",
+                    description: "[CB1 & ทิ้ง 1 ใบ] Stand และ Drive-1",
                     resolve: async (done) => {
+                        if (window.richterSkillUsedThisAttack) { if (done) done(); return; }
                         const handCount = playerHand.querySelectorAll('.card').length;
                         const openDamage = document.querySelectorAll('.my-side .damage-zone .card:not(.face-down)').length;
                         if (handCount >= 1 && openDamage >= 1) {
@@ -10365,7 +10370,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (await payDiscard(1)) {
                                     if (payCounterBlast(1)) {
                                         attacker.classList.remove('rest');
-                                        attacker.dataset.avantStandReady = "false";
+                                        window.avantRestandUsedThisTurn = true;
+                                        window.richterSkillUsedThisAttack = true;
                                         let currentDrive = parseInt(attacker.dataset.drive || "2");
                                         attacker.dataset.drive = Math.max(0, currentDrive - 1).toString();
                                         alert("Richter (Avantgarda Skill): Stand! Drive = " + attacker.dataset.drive);
@@ -10386,41 +10392,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: "Richter AUTO: Ride Back",
                     description: "[ทิ้งการ์ด 2 ใบ] ไรด์ Avantgarda จากไบนด์แบบ Stand + Power+10000 + Drive-1",
                     resolve: async (done) => {
+                        if (window.richterSkillUsedThisAttack) { if (done) done(); return; }
                         if (await vgConfirm("Richter: [ทิ้ง 2 ใบ] ไรด์ Avantgarda จากไบนด์แบบ [Stand]?")) {
                             if (await payDiscard(2)) {
                                 const idx = bindPool.indexOf(baseAvant);
-                                bindPool.splice(idx, 1);
-                                const vc = document.querySelector('.my-side .circle.vc');
+                                if (idx !== -1) {
+                                    bindPool.splice(idx, 1);
+                                    const vc = document.querySelector('.my-side .circle.vc');
+                                    const oldAttacker = attacker;
 
-                                // Store attacker data before removal to know if it was Richter
-                                const oldAttacker = attacker;
+                                    oldAttacker.remove();
+                                    soulPool.push(oldAttacker);
+                                    sendMoveData(oldAttacker, 'soul');
 
-                                oldAttacker.remove();
-                                soulPool.push(oldAttacker);
-                                sendMoveData(oldAttacker, 'soul');
+                                    vc.appendChild(baseAvant);
+                                    baseAvant.classList.remove('rest');
+                                    baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
+                                    baseAvant.dataset.drive = "1";
+                                    baseAvant.dataset.avantStandReady = "true";
+                                    
+                                    window.richterRideBackUsedThisTurn = true;
+                                    window.richterSkillUsedThisAttack = true;
 
-                                vc.appendChild(baseAvant);
-                                baseAvant.classList.remove('rest');
-                                baseAvant.dataset.power = (parseInt(baseAvant.dataset.power) + 10000).toString();
-                                baseAvant.dataset.drive = "1";
-                                baseAvant.dataset.avantStandReady = "true";
-                                syncPowerDisplay(baseAvant);
-                                updateAllStaticBonuses();
-                                updateSoulUI();
-                                sendMoveData(baseAvant);
-                                sendData({ type: 'syncBindCount', count: bindPool.length });
-                                alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
+                                    syncPowerDisplay(baseAvant);
+                                    updateAllStaticBonuses();
+                                    updateSoulUI();
+                                    sendMoveData(baseAvant);
+                                    sendData({ type: 'syncBindCount', count: bindPool.length });
+                                    alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
+                                }
                             }
                         }
                         if (done) done();
                     }
                 });
-            }
-
-            // Resolve Richter/Avantgarda skills
-            if (queue.length > 0) {
-                await resolveAbilityQueue(queue);
-                return; // Prevent falling through to other end-of-battle logic prematurely
             }
         }
 
