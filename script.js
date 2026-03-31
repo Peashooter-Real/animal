@@ -423,7 +423,25 @@ document.addEventListener('DOMContentLoaded', () => {
         'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
         'Front Trigger (Dark States)': 'picture/bruce_front.png',
         'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
-        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png'
+        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png',
+
+        // Brandt Gate - Prison (Seraph Snow)
+        'Aurora Battle Princess, Ruby Red': 'picture/ruby_red.png',
+        'Aurora Battle Princess, Kyanite Blue': 'picture/kyanite_blue.png',
+        'Aurora Battle Princess, Risatt Pink': 'picture/risatt_pink.png',
+        'Aurora Battle Princess, Seraph Snow': 'picture/seraph_snow.png',
+        'Aurora Fierce Princess, Seraph Purelight': 'picture/seraph_purelight.png',
+        'Aurora Battle Princess, Penetrate Aquas': 'picture/penetrate_aquas.png',
+        'Aurora Battle Princess, Launcher Charleen': 'picture/launcher_charleen.png',
+        'Aurora Battle Princess, Derii Violet': 'picture/derii_violet.png',
+        'Aurora Battle Princess, Accuse Makarite': 'picture/accuse_makarite.png',
+        'Aurora Battle Princess, Cuff Spring': 'picture/cuff_spring.png',
+        'Galaxy Central Prison, Galactolus': 'picture/galactolus.png',
+        'Security Upgrader': 'picture/security_upgrader.png',
+        'Aurora Battle Princess, Grenade Marieda': 'picture/grenade_marieda.png',
+        'Blitz Staff, Muna': 'picture/muna.png',
+        'Aurora Battle Princess, Lifle Royar': 'picture/lifle_royar.png',
+        'Front Trigger (Brandt Gate)': 'avantgarda/brandt_front.png'
     };
 
     // --- Deck Definitions ---
@@ -658,6 +676,34 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Draw Trigger (Dark States)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Heal Trigger (Dark States)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
             { name: 'Hades Dragon Deity, Gallmageveld', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
+    };
+
+    const seraphDeck = {
+        rideDeck: [
+            { name: 'Aurora Battle Princess, Ruby Red', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Aurora Battle Princess, Kyanite Blue', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]:When this unit is placed on (VC), search your deck for up to one Prison card, reveal it and put it into your hand, and shuffle your deck.' },
+            { name: 'Aurora Battle Princess, Risatt Pink', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]:When this unit is placed on (VC), your opponent chooses a card from their hand, and imprisons it in your Prison. (Put it into your Order Zone that has a Prison)' },
+            { name: 'Aurora Battle Princess, Seraph Snow', grade: 3, power: 13000, persona: true, skill: '[CONT](VC):During your turn, if one or more of your opponent\'s cards are imprisoned in your Prison, this unit gets [Power] +10000, and if three or more cards are imprisoned, this unit gets drive +1.\n[ACT](VC\\/RC)[1/turn]:[COST][Counter-Blast 1], choose two of your opponent\'s rear-guards, and imprison them in your Prison. (Put them into your Order Zone that has a Prison)' }
+        ],
+        mainDeck: [
+            ...Array(3).fill({ name: 'Aurora Fierce Princess, Seraph Purelight', grade: 4, power: 13000, skill: '[AUTO]: เมื่อวางบน (VC) คู่แข่งเลือกเรียร์การ์ด 2 ใบและในดาเมจ 2 ใบ ขังในคุก' }),
+            ...Array(4).fill({ name: 'Aurora Battle Princess, Penetrate Aquas', grade: 3, power: 13000, skill: '[AUTO](RC): เมื่อวางลง ดึงการ์ด 1 ใบจากดรอปคู่แข่งลงคุก\n[CONT](RC/GC): ติดคุก 2ใบ+ พลัง+5000/โหล่+10000 และเมื่อโจมตี คู่แข่งต้องนำการ์ดจากมือป้องกันทีละ 2 ใบขึ้นไป' }),
+            ...Array(1).fill({ name: 'Aurora Battle Princess, Launcher Charleen', grade: 3, power: 13000, skill: '[CONT](RC): เมื่อโจมตี คู่แข่งห้ามลงนอร์มอลยูนิทจากมือ และห้ามใช้ Blitz Order\n[CONT](RC): ตีไม่ได้ถ้าคู่แข่งติดคุก 5 ใบหรือน้อยกว่า' }),
+            ...Array(1).fill({ name: 'Aurora Battle Princess, Derii Violet', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](GC): วางลง (GC) คู่แข่งติดคุก 1 ใบ+ [SB1] เลือกยูนิท 1 ใบ จะไม่ถูก Hit โดยแวนเกรด 2 หริอต่ำกว่าจนจบการต่อสู้' }),
+            ...Array(3).fill({ name: 'Aurora Battle Princess, Accuse Makarite', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) จากมือ [SB1] ขังใบบนสุดกองคู่แข่ง หงายหน้า, ถ้านักโทษมี 2+ พลัง +5000 จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Aurora Battle Princess, Cuff Spring', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) สั่งให้คู่แข่งเลือกการ์ดในมือ 1 ใบลงคุก หากคู่แข่งขังสำเร็จ ให้จั่วการ์ด 1 ใบ' }),
+            ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: 'Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถประกินตัวการ์ดของตนใน Main Phase ได้โดย: จ่าย [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ.' }),
+            ...Array(3).fill({ name: 'Security Upgrader', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(1).fill({ name: 'Aurora Battle Princess, Grenade Marieda', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(4).fill({ name: 'Perfect guard', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] ยูนิทนี้ไม่ฮิต' }),
+            ...Array(3).fill({ name: 'Blitz Staff, Muna', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Aurora Battle Princess, Lifle Royar', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(5).fill({ name: 'Critical Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(4).fill({ name: 'Front Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
+            ...Array(2).fill({ name: 'Draw Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Star Dragon Deity of Infinitude, Eldobreath', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random())
     };
 
@@ -1100,6 +1146,107 @@ document.addEventListener('DOMContentLoaded', () => {
                                 });
                             } else {
                                 alert("ไม่พบการ์ดเกรด 1 ในกอง!");
+                            }
+                        }
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
+        // --- Seraph Ride Line Specifics ---
+        if (oldName.includes('ruby red') && newName.includes('kyanite blue')) {
+            queue.push({
+                name: 'Kyanite Blue Ride Skill',
+                description: "เมื่อ Kyanite Blue ไรด์ทับ ค้นหา Prison จากกอง 1 ใบนำขึ้นมือ",
+                resolve: async (done) => {
+                    if (await vgConfirm("Kyanite Blue: ค้นหา Prison จากกองการ์ด 1 ใบนำขึ้นมือ?")) {
+                        const prisonCards = deckPool.filter(c => c.name.toLowerCase().includes('prison'));
+                        if (prisonCards.length > 0) {
+                            openViewer("ค้นหา Prison 1 ใบขึ้นมือ", prisonCards);
+                            await new Promise(resolve => {
+                                const pickHandler = (e) => {
+                                    const clicked = e.target.closest('.card');
+                                    if (clicked && clicked.parentElement === viewerGrid) {
+                                        const selectedName = clicked.dataset.name;
+                                        const idx = deckPool.findIndex(c => c.name === selectedName);
+                                        if (idx !== -1) {
+                                            const pickedData = deckPool.splice(idx, 1)[0];
+                                            const newlyAdded = createCardElement(pickedData);
+                                            playerHand.appendChild(newlyAdded);
+                                            sendMoveData(newlyAdded);
+                                            updateHandSpacing();
+                                        }
+                                        deckPool.sort(() => 0.5 - Math.random());
+                                        updateDeckCounter();
+                                        viewerGrid.removeEventListener('click', pickHandler);
+                                        zoneViewer.classList.add('hidden');
+                                        resolve();
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', pickHandler);
+                            });
+                        } else {
+                            alert("ไม่พบใบ Prison ในกอง!");
+                        }
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
+        if (oldName.includes('kyanite blue') && newName.includes('risatt pink')) {
+            queue.push({
+                name: 'Risatt Pink Ride Skill',
+                description: "เมื่อ Risatt Pink ไรด์ทับ ให้คู่แข่งเลือกการ์ดในมือ 1 ใบนำไปขังในคุกของคุณ",
+                resolve: async (done) => {
+                    if (await vgConfirm("Risatt Pink: สั่งให้คู่แข่งเลือกการ์ดบนมือ 1 ใบเพื่อไปขังในคุก?")) {
+                        sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand' });
+                        alert("แจ้งเตือนไปที่คู่แข่งให้เลือกการ์ดบนมือแล้ว รอให้คู่แข่งเลือก...");
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
+        if (newName.includes('seraph purelight')) {
+            queue.push({
+                name: 'Seraph Purelight [AUTO]',
+                description: "เมื่อวางบน (VC) [CB1 & SB1 ถอด Seraph] ให้คู่แข่งเลือกมือ 2 / เรียร์ 2 / โซล 2 ไปขังในคุก!",
+                resolve: async (done) => {
+                    if (await vgConfirm("Seraph Purelight: [CB1 & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด มือ2 / RC2 / Soul2 ใบ?")) {
+                        if (payCounterBlast(1)) {
+                            const soulCards = Array.from(document.querySelectorAll('.my-side .card-container[data-zone="soul"] .card'));
+                            const validSB = soulCards.filter(c => c.dataset.name.toLowerCase().includes('seraph'));
+                            if (validSB.length > 0) {
+                                alert("คลิกเลือก Soul ที่ติดชื่อ Seraph 1 ใบเพื่อจ่ายคอสต์ SB");
+                                document.body.classList.add('targeting-mode');
+                                await new Promise(resolveSB => {
+                                    const sbListener = (e) => {
+                                        const c = e.target.closest('.my-side .card-container[data-zone="soul"] .card');
+                                        if (c && c.dataset.name.toLowerCase().includes('seraph')) {
+                                            e.stopPropagation();
+                                            document.querySelector('.my-side .drop-zone').appendChild(c);
+                                            sendMoveData(c, 'drop-zone');
+                                            updateSoulUI();
+                                            updateDropCount();
+                                            document.body.classList.remove('targeting-mode');
+                                            document.removeEventListener('click', sbListener, true);
+                                            resolveSB();
+                                        } else if (c) {
+                                            alert("การ์ดที่เลือกไม่มีชื่อ Seraph!");
+                                        }
+                                    };
+                                    document.addEventListener('click', sbListener, true);
+                                });
+                                
+                                sendData({ type: 'forceImprisonMass', count: 2 });
+                                alert("กำลังสั่งให้คู่แข่งส่งการ์ดจากมือ 2, บนสนาม 2 และโซล 2 ใบ ลงคุก (รอคู่แข่งทำรายการ)");
+                            } else {
+                                alert("คุณไม่มีโซลที่ชื่อ Seraph! (ทอน Damage คืน)");
+                                const dmgZone = document.querySelector('.my-side .damage-zone');
+                                const faceDownDmg = Array.from(dmgZone.querySelectorAll('.card.face-down'));
+                                if (faceDownDmg.length > 0) faceDownDmg[0].classList.remove('face-down');
                             }
                         }
                     }
@@ -1987,6 +2134,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const currentPhase = phases[currentPhaseIndex];
 
+            // Prison Bailout (Main Phase, clicking our own card inside the opponent's order zone)
+            if (card.parentElement && card.parentElement.classList.contains('order-zone') && card.parentElement.closest('.opponent-side')) {
+                if (isMyTurn && currentPhase === 'main' && !card.classList.contains('opponent-card') && card.classList.contains('imprisoned-card')) {
+                    const bailOut = async () => {
+                        let costPaid = false;
+                        if (window.freeBailout && window.freeBailout > 0) {
+                            window.freeBailout--;
+                            costPaid = true;
+                        } else {
+                            if (await vgConfirm("Bailout (ประกันตัว):\nต้องการจ่าย [SB1] เพื่อเรียกแค่ใบนี้กลับใช่หรือไม่?\n(ตอบ Cancel หากต้องการจ่าย [CB1] เพื่อเรียก 2 ใบ)")) {
+                                costPaid = await paySoulBlast(1);
+                            } else if (await vgConfirm("ต้องการจ่าย [CB1] เพื่อเรียกใบนี้ และได้รับสิทธิ์เรียกฟรีอีก 1 ใบใช่หรือไม่?")) {
+                                if (payCounterBlast(1)) {
+                                    window.freeBailout = (window.freeBailout || 0) + 1;
+                                    costPaid = true;
+                                }
+                            }
+                        }
+
+                        if (costPaid) {
+                            alert("คลิกเลือกช่อง (RC) ฝั่งคุณเพื่อคอลยูนิทที่ได้รับการประกันตัว");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolve => {
+                                const callListener = (e) => {
+                                    const targetCircle = e.target.closest('.my-side .circle.rc');
+                                    if (targetCircle) {
+                                        e.stopPropagation();
+                                        const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                        if (existing) {
+                                            document.querySelector('.my-side .drop-zone').appendChild(existing);
+                                            sendMoveData(existing);
+                                        }
+                                        targetCircle.appendChild(card);
+                                        card.classList.remove('imprisoned-card');
+                                        sendMoveData(card, 'rc'); 
+                                        sendData({ type: 'checkUpdateSeraph' }); // Triggers static bonus check for opponent
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', callListener, true);
+                                        resolve();
+                                    } else if (e.target.closest('.action-btn')) {
+                                         // Allow cancel
+                                         document.body.classList.remove('targeting-mode');
+                                         document.removeEventListener('click', callListener, true);
+                                         resolve();
+                                    }
+                                };
+                                document.addEventListener('click', callListener, true);
+                            });
+                        }
+                    };
+                    bailOut();
+                    return;
+                }
+            }
+
             // TAP TO MOVE (Mobile Friendly)
             const isInGC = card.parentElement && (card.parentElement.classList.contains('guardian-circle') || card.parentElement.dataset.zone === 'gc_player');
             const canSelect = (isMyTurn && currentPhase !== 'battle') || isGuarding || isInGC;
@@ -2245,6 +2447,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const isHit = finalPower >= targetDefendingPower;
         console.log(`Attack Resolution Check: Attacker ${finalPower} vs Target ${targetDefendingPower}. isHit: ${isHit}`);
 
+        // --- Derii Violet Restriction Check ---
+        let finalHit = isHit;
+        if (target.dataset.cannotBeHitByG2Lower === "true") {
+            const attackerGrade = parseInt(attacker.dataset.grade || "0");
+            if (attackerGrade <= 2) {
+                alert("สกิล Derii Violet ทำงาน! เนื่องจากยูนิทที่โจมตีมีเกรด 2 หรือต่ำกว่า จึงไม่สามารถทำให้การโจมตีฮิตได้!");
+                finalHit = false;
+            }
+        }
+
         // Check for Perfect Guard (PG) on target side if we were the attacker
         // In local logic, if opponent used PG, we handle it during their finishGuard callback which sets opponentShield
         // However, we should check if any PG was placed.
@@ -2276,12 +2488,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...currentAttackData,
                     totalPower: finalPower,
                     totalCritical: finalCritical,
-                    isHit: isHit
+                    isHit: finalHit
                 }
             });
         }
 
-        currentAttackData.isHit = (hasPG || isOpponentPG) ? false : isHit;
+        currentAttackData.isHit = (hasPG || isOpponentPG) ? false : finalHit;
+        
+        // Reset Derii Violet restriction
+        if (target.dataset.cannotBeHitByG2Lower === "true") {
+            target.dataset.cannotBeHitByG2Lower = "false";
+        }
 
         // --- Overlord On-Hit Abilities ---
         if (currentAttackData.isHit && attacker.dataset.side !== 'opponent') {
@@ -2672,6 +2889,17 @@ document.addEventListener('DOMContentLoaded', () => {
             attacker.classList.remove('attacking-glow');
             attackingCard = null;
             return;
+        }
+
+        // --- Launcher Charleen: Cannot attack if <= 5 imprisoned ---
+        if (attacker.dataset.name && attacker.dataset.name.includes('Launcher Charleen')) {
+            const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            if (imprisonedCount <= 5) {
+                alert("Launcher Charleen: ไม่สามารถโจมตีได้เนื่องจากการ์ดในคุกของคู่แข่งมีไม่เกิน 5 ใบ!");
+                attacker.classList.remove('attacking-glow');
+                attackingCard = null;
+                return;
+            }
         }
 
         // Booster Logic and Attack Sequence
@@ -3254,9 +3482,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 baurDriveCheck: attacker.dataset.baurDriveCheck === "true",
                 isMultiAttack: attacker.dataset.bojalcornActive === "true" && isAttackerBackRow,
                 guardRestrictGrades: attacker.dataset.guardRestrictGrades ? JSON.parse(attacker.dataset.guardRestrictGrades) : null,
-                guardRestrictCount: Math.max(parseInt(attacker.dataset.guardRestrictCount || "0"), window.activeGuardRestrictCount || 0),
+                guardRestrictCount: Math.max(parseInt(attacker.dataset.guardRestrictCount || "0"), window.activeGuardRestrictCount || 0, (attacker.dataset.name.includes('Penetrate Aquas') && document.querySelectorAll('.my-side .order-zone .card.opponent-card').length >= 2) ? 2 : 0),
                 bomberNoIntercept: isVanguardAttacker && bomberDustingNoIntercept,
-                bomberNoBlitz: isVanguardAttacker && bomberDustingNoBlitz
+                bomberNoBlitz: (isVanguardAttacker && bomberDustingNoBlitz) || attacker.dataset.name.includes('Launcher Charleen'),
+                charleenRestrictNormal: attacker.dataset.name.includes('Launcher Charleen')
             };
 
             // Reset Bojalcorn multi-attack flag if it was active
@@ -3386,6 +3615,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // --- Launcher Charleen Guard Restrict (Normal Units from Hand) ---
+            if (window.currentIncomingAttack && window.currentIncomingAttack.charleenRestrictNormal) {
+                if (isFromHand && (!card.dataset.trigger || card.dataset.trigger === "")) {
+                    alert("ผลของ Launcher Charleen! ไม่สามารถนำ 'นอร์มอลยูนิท' จากมือป้องกันได้ (สามารถนำทริกเกอร์ป้องกันเท่านั้น)!");
+                    return false;
+                }
+            }
+
             // Bomber Strategy Intercept Restrict
             if (window.currentIncomingAttack && window.currentIncomingAttack.bomberNoIntercept) {
                 if (isFromField && !isFromHand) {
@@ -3418,6 +3655,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const isPG = card.dataset.isPG === "true" || card.dataset.name.includes('(PG)');
+            
+            // --- Derii Violet [AUTO](GC) ---
+            if (card.dataset.name && card.dataset.name.includes('Derii Violet')) {
+                const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+                if (imprisonedCount >= 1) {
+                    if (await vgConfirm("Derii Violet: [SB1] เลือกยูนิท 1 ใบ จะไม่ถูก Hit โดยแวนเกรด 2 หริอต่ำกว่าจนจบการต่อสู้?")) {
+                        if (await paySoulBlast(1)) {
+                            // The unit being attacked is in currentAttackData.targetId
+                            const targetId = window.currentIncomingAttack ? window.currentIncomingAttack.targetId : null;
+                            if (targetId) {
+                                const targetCircle = document.querySelector(`.my-side .circle[data-zone="${targetId}"], .my-side .circle#${targetId}`);
+                                const targetUnit = targetCircle ? targetCircle.querySelector('.card') : null;
+                                if (targetUnit) {
+                                    targetUnit.dataset.cannotBeHitByG2Lower = "true";
+                                    alert(`สกิล Derii Violet: ${targetUnit.dataset.name} จะไม่ถูก Hit โดยแวนเกรด 2 หรือต่ำกว่าในการต่อสู้นี้!`);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (isPG) {
                 const cardsInHand = Array.from(playerHand.querySelectorAll('.card'));
                 // Filter out the current card being moved to GC if it's from hand
@@ -3736,6 +3995,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
                 card.dataset.asagiBonusApplied = "false";
             }
+        }
+
+        // --- Seraph Snow [CONT](VC) ---
+        if (name.includes('Seraph Snow') && zone === 'vc') {
+            const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            if (isMyTurn && imprisonedCount >= 1) {
+                if (card.dataset.seraphBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
+                    card.dataset.seraphBuffApplied = "true";
+                    syncPowerDisplay(card);
+                }
+                if (imprisonedCount >= 3) {
+                    card.dataset.drive = "3";
+                } else {
+                    delete card.dataset.drive;
+                }
+            } else {
+                if (card.dataset.seraphBuffApplied === "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
+                    card.dataset.seraphBuffApplied = "false";
+                    syncPowerDisplay(card);
+                }
+                delete card.dataset.drive;
+            }
+        }
+
+        // --- Penetrate Aquas [CONT](RC/GC) ---
+        if (name.includes('Penetrate Aquas') && (zone.startsWith('rc') || zone === 'gc_player')) {
+            const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            if (imprisonedCount >= 2) {
+                if (card.dataset.aquasBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.shield = (parseInt(card.dataset.shield || "0") + 10000).toString();
+                    card.dataset.aquasBuffApplied = "true";
+                    syncPowerDisplay(card);
+                    const shieldSpan = card.querySelector('.card-shield');
+                    if (shieldSpan) shieldSpan.innerHTML = `🛡️${card.dataset.shield}`;
+                }
+            } else if (card.dataset.aquasBuffApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.shield = (Math.max(0, parseInt(card.dataset.shield || "0") - 10000)).toString();
+                card.dataset.aquasBuffApplied = "false";
+                syncPowerDisplay(card);
+                const shieldSpan = card.querySelector('.card-shield');
+                if (shieldSpan) shieldSpan.innerHTML = `🛡️${card.dataset.shield}`;
+            }
+        }
+
+        // --- Seraph Purelight [CONT](VC) ---
+        const vgCardPurelight = document.querySelector('.my-side .circle.vc .card');
+        const isVgPurelight = vgCardPurelight && vgCardPurelight.dataset.name && vgCardPurelight.dataset.name.includes("Seraph Purelight");
+        if (isVgPurelight && isMyTurn && (zone === 'vc' || zone === 'rc_front_left' || zone === 'rc_front_right')) {
+            const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            const purelightPowerBuff = Math.floor(imprisonedCount / 2) * 5000;
+            const purelightCritBuff = imprisonedCount >= 10 ? 1 : 0;
+            
+            let oldPower = parseInt(card.dataset.purelightPower || "0");
+            let oldCrit = parseInt(card.dataset.purelightCrit || "0");
+            
+            if (oldPower !== purelightPowerBuff) {
+               card.dataset.power = (parseInt(card.dataset.power) - oldPower + purelightPowerBuff).toString();
+               card.dataset.purelightPower = purelightPowerBuff.toString();
+               syncPowerDisplay(card);
+            }
+            if (oldCrit !== purelightCritBuff) {
+               card.dataset.critical = (parseInt(card.dataset.critical || card.dataset.baseCritical || "1") - oldCrit + purelightCritBuff).toString();
+               card.dataset.purelightCrit = purelightCritBuff.toString();
+               syncPowerDisplay(card);
+            }
+        } else if (card.dataset.purelightPower !== undefined) {
+            let oldPower = parseInt(card.dataset.purelightPower || "0");
+            let oldCrit = parseInt(card.dataset.purelightCrit || "0");
+            if (oldPower > 0) card.dataset.power = (parseInt(card.dataset.power) - oldPower).toString();
+            if (oldCrit > 0) card.dataset.critical = (parseInt(card.dataset.critical || card.dataset.baseCritical || "1") - oldCrit).toString();
+            delete card.dataset.purelightPower;
+            delete card.dataset.purelightCrit;
+            syncPowerDisplay(card);
         }
 
         // --- Sequana [CONT](RC): +2000 during your turn if VG has "Youthberk" ---
@@ -4475,6 +4811,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const vg = document.querySelector('.my-side .circle.vc .card');
         const vgName = (vg && vg.dataset.name) ? vg.dataset.name : "";
         const hasBlueDeathsterOrAvant = vgName.includes('Blue Deathster') || vgName.includes('Avantgarda');
+
+        // --- Penetrate Aquas [AUTO]: Placed on RC ---
+        if (name.includes('Penetrate Aquas') && isRC) {
+            if (await vgConfirm("Penetrate Aquas: [AUTO] เมื่อวางลง (RC) สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก?")) {
+                sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
+                alert("ส่งคำสั่งให้คู่แข่ง เลือกการ์ดดรอปโซนลงคุกแล้ว รอให้คู่แข่งทำรายการ...");
+            }
+        }
+
+        // --- Accuse Makarite [AUTO]: Placed on RC from Hand ---
+        if (name.includes('Accuse Makarite') && isRC && isFromHand) {
+            if (await vgConfirm("Accuse Makarite: [AUTO] เมื่อคอลจากมือ [SB1] ขังใบบนสุดของกองการ์ดคู่แข่ง?\n(ถ้านักโทษมี 2 ใบ+ จะได้พลัง +5000 จนจบเทิร์น)")) {
+                if (await paySoulBlast(1)) {
+                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'deck' });
+                    alert("ส่งคำสั่งให้คู่แข่ง นำใบบนสุดกองลงคุกแล้ว...");
+                    const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+                    // Predict +1
+                    if (imprisonedCount + 1 >= 2) {
+                        card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                        card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                        card.dataset.turnEndBuffActive = "true";
+                        syncPowerDisplay(card);
+                        sendMoveData(card);
+                    }
+                }
+            }
+        }
+
+        // --- Cuff Spring [AUTO]: Placed on RC ---
+        if (name.includes('Cuff Spring') && isRC) {
+            if (await vgConfirm("Cuff Spring: [AUTO] เมื่อลง (RC) สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคู่แข่งได้จั่ว 1 ใบ)?")) {
+                sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand', drawAfterMove: true });
+                alert("ส่งคำสั่งให้คู่แข่ง เลือกการ์ดบนมือลงคุกแล้ว รอให้คู่แข่งทำรายการ...");
+            }
+        }
 
         // --- Burning Horn Dragon [AUTO]: เมื่อวางบน (RC) [CB1] ดูท็อป 7 เพื่อหา 'Overlord' ---
         if (name.includes('Burning Horn Dragon') && isRC) {
@@ -7349,6 +7720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (currentDeck === youthberkDeck) currentDeckName = 'youthberk';
                     else if (currentDeck === avantgardaDeck) currentDeckName = 'avantgarda';
                     else if (currentDeck === overlordDeck) currentDeckName = 'overlord';
+                    else if (currentDeck === seraphDeck) currentDeckName = 'seraph';
 
                     // Start game immediately to avoid losing messages during the 1s delay
                     setupConnection();
@@ -7419,6 +7791,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (pDeckKey === 'nirvana') currentDeck = nirvanaDeck;
         else if (pDeckKey === 'overlord') currentDeck = overlordDeck;
         else if (pDeckKey === 'greedon') currentDeck = greedonDeck;
+        else if (pDeckKey === 'seraph') currentDeck = seraphDeck;
 
         // Initialize AI state
         let aiFullDeck;
@@ -7430,6 +7803,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (aDeckKey === 'majesty') aiFullDeck = majestyDeck;
         else if (aDeckKey === 'overlord') aiFullDeck = overlordDeck;
         else if (aDeckKey === 'greedon') aiFullDeck = greedonDeck;
+        else if (aDeckKey === 'seraph') aiFullDeck = seraphDeck;
 
         aiRideDeck = [...aiFullDeck.rideDeck];
         aiDeck = [...aiFullDeck.mainDeck].sort(() => 0.5 - Math.random());
@@ -8341,7 +8715,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isBlitzOrder) {
             if (window.currentIncomingAttack && window.currentIncomingAttack.bomberNoBlitz) {
-                alert("Bomber Strategy Dusting! คุณไม่สามารถใช้งาน Blitz Order ได้!");
+                alert("Guard Restrict! คุณไม่สามารถใช้งาน Blitz Order ได้ในขณะนี้!");
                 return;
             }
         } else {
@@ -8439,6 +8813,87 @@ document.addEventListener('DOMContentLoaded', () => {
         const skillText = effectiveCard.dataset.skill || "";
         if (!skillText.toLowerCase().includes('order]')) {
              sendData({ type: 'announce', msg: `คู่แข่งใช้งานความสามารถของ: ${name}` });
+        }
+
+        // --- Seraph Snow [ACT](VC/RC) ---
+        if (name.includes('Seraph Snow') && (isVC || isRC)) {
+            if (await vgConfirm("Seraph Snow: [CB1] เลือกเรียร์การ์ดคู่แข่ง 2 ใบ ขังในคุก?")) {
+                if (payCounterBlast(1)) {
+                    effectiveCard.dataset.actUsed = "true";
+                    alert("คลิกเลือกเรียร์การ์ดคู่แข่ง 2 ใบเพื่อนำไปขังในคุก");
+                    let imprisoned = 0;
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resolve => {
+                        const targetListener = (e) => {
+                            const target = e.target.closest('.opponent-side .circle.rc .card.opponent-card');
+                            if (target) {
+                                e.stopPropagation();
+                                const targetId = target.dataset.originalId || target.id;
+                                sendData({ type: 'forceImprisonSpecific', targetId: targetId });
+                                const myOrderZone = document.querySelector('.my-side .order-zone');
+                                myOrderZone.appendChild(target);
+                                updateAllStaticBonuses();
+                                imprisoned++;
+                                if (imprisoned >= 2) {
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', targetListener, true);
+                                    resolve();
+                                } else {
+                                    alert(`ขังใบที่ 1 สำเร็จ! เลือกใบที่ 2`);
+                                }
+                            } else if (e.target.closest('.action-btn')) {
+                                // Allow cancellation
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', targetListener, true);
+                                resolve();
+                            }
+                        };
+                        document.addEventListener('click', targetListener, true);
+                    });
+                    return true;
+                }
+            }
+        }
+
+        // --- Galaxy Central Prison, Galactolus (Set Order) ---
+        if (name.includes('Galaxy Central Prison')) {
+            if (await vgConfirm("Play Galaxy Central Prison, Galactolus? Cost: [Rest] 1 unit.")) {
+                const myUnits = Array.from(document.querySelectorAll('.my-side .circle.vc .card:not(.opponent-card), .my-side .circle.rc .card:not(.opponent-card)'))
+                                     .filter(u => !u.classList.contains('rest'));
+                if (myUnits.length === 0) {
+                    alert("คุณไม่มียูนิทที่สามารถ [Rest] ได้!");
+                    return false;
+                }
+                
+                alert("กรุณาเลือกยูนิท 1 ใบเพื่อ [Rest] เป็นค่าคอสต์");
+                document.body.classList.add('targeting-mode');
+                const rested = await new Promise(resolve => {
+                    const restListener = (e) => {
+                        const target = e.target.closest('.my-side .circle .card:not(.opponent-card)');
+                        if (target && !target.classList.contains('rest')) {
+                            e.stopPropagation();
+                            target.classList.add('rest');
+                            sendMoveData(target);
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', restListener, true);
+                            resolve(true);
+                        } else if (e.target.closest('.action-btn')) {
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', restListener, true);
+                            resolve(false);
+                        }
+                    };
+                    document.addEventListener('click', restListener, true);
+                });
+
+                if (!rested) return false;
+
+                // [AUTO] When put into Order Zone, Soul Charge 3
+                alert("Prison Order ลงสู่ Order Zone! ทำการ Soul Charge 3");
+                soulCharge(3);
+                return true;
+            }
+            return false;
         }
 
         // --- Gratias Gradale (Regalis Piece) ---
@@ -9418,6 +9873,185 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'moveCard':
                 syncRemoteMove(data);
+                break;
+            case 'checkUpdateSeraph':
+                updateAllStaticBonuses();
+                break;
+            case 'forceImprisonSpecific':
+                const myTarget = document.getElementById(data.targetId);
+                if (myTarget && !myTarget.classList.contains('opponent-card')) {
+                    const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                    if (oppOrderZone) {
+                        oppOrderZone.appendChild(myTarget);
+                        myTarget.classList.add('imprisoned-card');
+                        updateAllStaticBonuses();
+                    }
+                }
+                break;
+            case 'forceImprison':
+                // Handles G2 Risatt Pink prompt: Opponent chooses 1 card from hand
+                if (data.fromZone === 'hand') {
+                    alert(`แจ้งเตือน: คู่แข่งใช้งานสกิลขังการ์ด กรุณาเลือกการ์ดจากมือ ${data.min} ใบเพื่อนำไปขังในคุกคู๋แข่ง`);
+                    document.body.classList.add('targeting-mode');
+                    let impCount = 0;
+                    const handCards = document.querySelectorAll('.my-side .card-container[data-zone="hand"] .card');
+                    if(handCards.length === 0) {
+                        alert("ไม่มีการ์ดในมือ!");
+                        document.body.classList.remove('targeting-mode');
+                        sendData({ type: 'announce', msg: `ไม่มีการ์ดในมือให้ขัง!` });
+                    } else {
+                        const imprisonListener = (e) => {
+                            const target = e.target.closest('.my-side .card-container[data-zone="hand"] .card');
+                            if (target) {
+                                e.stopPropagation();
+                                const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                                oppOrderZone.appendChild(target);
+                                target.classList.add('imprisoned-card');
+                                
+                                // Tell opponent what we moved
+                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
+                                
+                                impCount++;
+                                updateHandCount();
+                                updateAllStaticBonuses();
+                                
+                                if (impCount >= data.max) {
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', imprisonListener, true);
+                                    if (data.drawAfterMove) {
+                                        drawCard(true);
+                                        sendData({ type: 'announce', msg: `ลงคุกสำเร็จ คู่แข่งจั่วการ์ดชดเชย 1 ใบ!` });
+                                        alert(`เลือกการ์ดขังครบแล้ว! และจั่ว 1 ใบจากผลของการ์ดคู่แข่ง`);
+                                    } else {
+                                        alert(`เลือกการ์ดขังครบแล้ว!`);
+                                    }
+                                }
+                            }
+                        };
+                        document.addEventListener('click', imprisonListener, true);
+                    }
+                } else if (data.fromZone === 'drop') {
+                    alert(`แจ้งเตือน: คู่แข่งใช้งานสกิลขังการ์ด กรุณาเลือกการ์ดจาก 'ดรอปโซน' ${data.min} ใบเพื่อนำไปขังในคุกคู๋แข่ง`);
+                    document.body.classList.add('targeting-mode');
+                    let impCount = 0;
+                    const dropCards = document.querySelectorAll('.my-side .drop-zone .card');
+                    if(dropCards.length === 0) {
+                        alert("ไม่มีการ์ดในดรอปโซน!");
+                        document.body.classList.remove('targeting-mode');
+                        sendData({ type: 'announce', msg: `ไม่มีการ์ดในดรอปโซนให้ขัง!` });
+                    } else {
+                        const imprisonListener = (e) => {
+                            const target = e.target.closest('.my-side .drop-zone .card');
+                            if (target) {
+                                e.stopPropagation();
+                                const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                                oppOrderZone.appendChild(target);
+                                target.classList.add('imprisoned-card');
+                                
+                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
+                                sendData({ type: 'checkUpdateSeraph' });
+                                
+                                impCount++;
+                                updateDropCount();
+                                updateAllStaticBonuses();
+                                
+                                if (impCount >= data.max) {
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', imprisonListener, true);
+                                    alert(`เลือกการ์ดขังลงคุกจากดรอปโซนครบแล้ว!`);
+                                }
+                            }
+                        };
+                        document.addEventListener('click', imprisonListener, true);
+                    }
+                } else if (data.fromZone === 'deck') {
+                    if (deckPool.length > 0) {
+                        // Deck is top-down (0 index = top)
+                        const topCardData = deckPool.splice(0, 1)[0]; 
+                        updateDeckCounter();
+                        
+                        const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                        const target = createCardElement(topCardData);
+                        oppOrderZone.appendChild(target);
+                        target.classList.add('imprisoned-card');
+                        
+                        sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
+                        sendData({ type: 'checkUpdateSeraph' });
+                        updateAllStaticBonuses();
+                        sendData({ type: 'announce', msg: `ถูกดึงใบบนสุดของกองลงคุกแล้ว!` });
+                        alert("ถูกบังคับนำการ์ดใบบนสุดของกองการ์ดลงคุก!");
+                    } else {
+                        sendData({ type: 'announce', msg: `ไม่มีการ์ดในกองการ์ดให้ขัง!` });
+                    }
+                }
+                break;
+            case 'forceImprisonMass':
+                (async () => {
+                    const reqCount = data.count || 2;
+                    alert(`แจ้งเตือน: คู่แข่งใช้งาน Seraph Purelight! \nกรุณาเลือกการ์ดเข้าคุก:\n- จากมือ ${reqCount} ใบ\n- บนสนาม (RC) ${reqCount} ใบ\n- จากโซล ${reqCount} ใบ`);
+                    document.body.classList.add('targeting-mode');
+                    const zonesToPick = ['hand', 'rc', 'soul'];
+                    
+                    for (const z of zonesToPick) {
+                        let pickedCount = 0;
+                        let maxPick = reqCount;
+                        
+                        let available = [];
+                        if (z === 'hand') available = document.querySelectorAll('.my-side .card-container[data-zone="hand"] .card');
+                        else if (z === 'rc') available = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
+                        else if (z === 'soul') available = document.querySelectorAll('.my-side .card-container[data-zone="soul"] .card');
+                        
+                        maxPick = Math.min(reqCount, available.length);
+                        
+                        if (maxPick === 0) {
+                            alert(`ไม่มีการ์ดในโซน ${z.toUpperCase()} ให้ขัง! ข้ามไปโซนถัดไป`);
+                            continue;
+                        }
+
+                        alert(`กรุณาคลิกเลือกการ์ดในโซน [${z.toUpperCase()}] จำนวน ${maxPick} ใบ`);
+                        await new Promise(resolveZone => {
+                            const zListener = (e) => {
+                                let c = e.target.closest('.card');
+                                if (!c) return;
+                                
+                                let isValid = false;
+                                if (z === 'hand' && c.closest('.card-container[data-zone="hand"]')) isValid = true;
+                                else if (z === 'rc' && c.closest('.circle.rc') && !c.classList.contains('opponent-card') && c.closest('.my-side')) isValid = true;
+                                else if (z === 'soul' && c.closest('.card-container[data-zone="soul"]') && c.closest('.my-side')) isValid = true;
+
+                                if (isValid) {
+                                    e.stopPropagation();
+                                    const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                                    oppOrderZone.appendChild(c);
+                                    c.classList.add('imprisoned-card');
+                                    c.classList.remove('rest');
+                                    
+                                    // Send to opponent
+                                    sendData({ type: 'moveCard', cardId: c.id, zone: 'order-zone', cardData: c.dataset.cardData, name: c.dataset.name, grade: c.dataset.grade, power: c.dataset.power, shield: c.dataset.shield, imagePreview: c.dataset.imageUrl });
+                                    sendData({ type: 'checkUpdateSeraph' });
+
+                                    if(z === 'hand') updateHandCount();
+                                    else if(z === 'soul') updateSoulUI();
+                                    
+                                    updateAllStaticBonuses();
+                                    
+                                    pickedCount++;
+                                    if (pickedCount >= maxPick) {
+                                        document.removeEventListener('click', zListener, true);
+                                        resolveZone();
+                                    } else {
+                                    	alert(`เลือกสำเร็จแล้ว 1 เหลืออีก ${maxPick - pickedCount} ใบ!`);
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', zListener, true);
+                        });
+                    }
+                    
+                    document.body.classList.remove('targeting-mode');
+                    alert('ส่งการ์ดทั้งหมดเข้าสู่คุกของคู่แข่งเรียบร้อยแล้ว!');
+                    sendData({ type: 'announce', msg: 'ส่งการ์ดทั้งหมดลงคุกเรียบร้อยแล้ว!' });
+                })();
                 break;
             case 'removeCard':
                 const remCard = document.getElementById(`opp-${data.cardId}`);
@@ -10939,6 +11573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (deckChoice === 'youthberk') currentDeck = youthberkDeck;
         else if (deckChoice === 'overlord') currentDeck = overlordDeck;
         else if (deckChoice === 'greedon') currentDeck = greedonDeck;
+        else if (deckChoice === 'seraph') currentDeck = seraphDeck;
 
         if (role === 'host') {
             initPeer(customId);
