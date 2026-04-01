@@ -201,9 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const quickPrisonBtn = document.getElementById(`${sideId === 'my' ? '' : 'opp-'}quick-prison-btn`);
 
         if (prisonContainer) {
-            // Show the prison zone if there's a prison card
-            if (hasPrison) {
+            // Show the prison zone if there's a prison card OR inmates
+            if (hasPrison || actualImprisoned > 0) {
                 prisonContainer.classList.remove('hidden');
+                // Force global check to show related UI bits
                 showPrisonZonesIfNeeded();
             }
             
@@ -12083,15 +12084,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Determine the local player's version of the card ID
+        let resolvedCardId = data.cardId;
+        if (data.cardId.startsWith('opp-')) {
+            // Sender is referring to our card by its opponent name. Strip prefix.
+            resolvedCardId = data.cardId.replace(/^opp-/, '');
+        } else if (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) {
+            // Sender is referring to their own card. Add prefix.
+            resolvedCardId = 'opp-' + data.cardId;
+        }
+
         let targetZone;
         if (data.isImprisoned) {
-             // Smart mapping for prison inmates
-             const localCard = document.getElementById(data.cardId);
-             if (localCard && !localCard.classList.contains('opponent-card')) {
-                  // This is OUR card being moved by the opponent. Move to opponent side.
+             // Find if this card belongs to the local player
+             const localOrig = document.getElementById(resolvedCardId);
+             if (localOrig && !localOrig.classList.contains('opponent-card')) {
+                  // This is OUR card being imprisoned by the opponent. Move to opponent side.
                   targetZone = oppSide.querySelector('.order-zone');
              } else {
-                  // This is THEIR card moving to our side (as an inmate).
+                  // This is THEIR card moving to our prison (inmate).
                   targetZone = document.querySelector('.my-side .order-zone');
              }
         } else {
@@ -12102,26 +12113,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (targetZone) {
             updateAllPrisonUI(); 
-            let cardId = (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) ? `opp-${data.cardId}` : `opp-${data.cardId}`;
-
+            
             // Check if the card is already on our side but not as an opponent card
-            const myCard = document.getElementById(data.cardId);
+            // Use the resolved ID to find it locally.
+            const myCard = document.getElementById(resolvedCardId);
+
             // Strong Safety: Never let remote commands move our own Vanguard
             if (myCard && !myCard.classList.contains('opponent-card')) {
                 const myInVC = myCard.parentElement?.classList.contains('vc');
                 if (myInVC) {
-                    console.warn("Blocked remote move attempt on local Vanguard:", data.cardId);
+                    console.warn("Blocked remote move attempt on local Vanguard:", resolvedCardId);
                     return;
                 }
 
                 // If it's another unit of ours being moved (retired), allow only to non-VC zones
                 if (data.zone !== 'vc') {
+                    if (data.isImprisoned) myCard.classList.add('imprisoned-card');
+                    else myCard.classList.remove('imprisoned-card');
+                    
                     targetZone.appendChild(myCard);
                 }
+                updateAllPrisonUI(); // Crucial: Update prison UI before returning
                 return;
             }
 
-            let card = document.getElementById(cardId);
+            let card = document.getElementById(resolvedCardId);
 
             if (!card) {
                 card = createCardElement({
