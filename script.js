@@ -100,6 +100,35 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
+    function imprisonCard(cardElement) {
+        if (!cardElement) return;
+        const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+        if (!oppOrderZone) return;
+
+        oppOrderZone.appendChild(cardElement);
+        cardElement.classList.add('imprisoned-card');
+        cardElement.classList.remove('rest'); 
+
+        // Update counts
+        if (typeof updateHandCount === 'function') updateHandCount();
+        if (typeof updateDropCount === 'function') updateDropCount();
+        if (typeof updateSoulUI === 'function') updateSoulUI();
+
+        // Sync to opponent
+        if (typeof sendData === 'function') {
+            sendData({
+                type: 'moveCard',
+                cardId: cardElement.id,
+                zone: 'order-zone',
+                cardData: cardElement.dataset.cardData,
+                name: cardElement.dataset.name,
+                grade: cardElement.dataset.grade,
+                power: cardElement.dataset.power,
+                shield: cardElement.dataset.shield,
+                imagePreview: cardElement.dataset.imageUrl
+            });
+        }
+    }
 
 
     // --- UI Elements ---
@@ -219,6 +248,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingPowerIncrease = 0;
     let pendingCriticalIncrease = 0;
     let targetingType = null; // 'power' or 'critical' or 'both'
+
+    function imprisonCard(card) {
+        if (!card) return;
+        const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+        if (oppOrderZone) {
+            const wasInHand = card.closest('#player-hand');
+            
+            oppOrderZone.appendChild(card);
+            card.classList.add('imprisoned-card');
+            card.classList.remove('rest');
+            
+            sendData({ 
+                type: 'moveCard', 
+                cardId: card.id, 
+                zone: 'order-zone', 
+                cardData: card.dataset.cardData, 
+                name: card.dataset.name, 
+                grade: card.dataset.grade, 
+                power: card.dataset.power, 
+                shield: card.dataset.shield, 
+                imagePreview: card.dataset.imageUrl 
+            });
+            sendData({ type: 'checkUpdateSeraph' });
+            
+            if (wasInHand) updateHandSpacing();
+            updateAllStaticBonuses();
+        }
+    }
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
     let currentAttackData = null; // Store for recalculation after buffs
     let currentAttackResolving = false;
@@ -615,6 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(4).fill({ name: 'Youthberk "RevolForm: Tempest"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO](VC): เมื่อวางบน (VC) โดย [RevolDress], แถวหน้าทั้งหมดของคุณได้รับพลัง +5000 จนจบเทิร์น จากนั้น [CB1] เปิดการ์ด 2 ใบจากบนสุดของกอง เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้าใต้กอง, และนำการ์ดที่เปิดทั้งหมดขึ้นมือ\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Youthberk "RevolForm: Gust"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO]: เมื่อวางบน (VC) โดยความสามารถ [RevolDress] หากแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า [COST][ทิ้งมือ 1 ใบ] ยูนิทนี้ได้รับ [Power]+10000 และ [Drive]+1 จนจบเทิร์น\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Knight of Fracture, Schneizal', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 ที่มีชื่อ "Youthberk" 1 ใบขึ้นมือ สับกอง ยูนิทนี้พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตีแวนการ์ด หากแวนการ์ดของคุณถูกวางเทิร์นนี้โดยไรด์จาก G3 เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น' }),
+            ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: '[Set Order] Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถดึงการ์ดออกจากคุกใน Main Phase: [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ' }),
             ...Array(3).fill({ name: 'Knight of Plowing, Dolbraig', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](แถวหน้า RC): เมื่อแวนการ์ดถูกวางโดย [RevolDress] เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตียูนิท G3 หรือสูงกว่า [COST][SB1 การ์ดที่มี RevolForm ในชื่อ] ยูนิทนี้พลัง +10000 จนจบแบทเทิล' }),
             ...Array(2).fill({ name: 'Knight of Rendering Flash, Cairbre', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1 & SB1] ดู 3 ใบจากบนสุดของกอง เลือก 1 ใบ หากเป็นยูนิท G2 หรือต่ำกว่า คอลลง (RC) หากไม่ใช่ นำขึ้นมือ สับกอง' }),
             ...Array(4).fill({ name: 'Witch of Accumulation, Sequana', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): เทิร์นเรา หากแวนการ์ดมีชื่อ "Youthberk" ยูนิทนี้พลัง +2000\n[AUTO](RC): เมื่อยูนิทถูกวางบน (VC) โดย [RevolDress] [COST][นำยูนิทนี้เข้าโซล] เลือกแวนการ์ด 1 ใบ ปรับ Drive เป็น 1 จนจบเทิร์น' }),
@@ -693,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(1).fill({ name: 'Aurora Battle Princess, Derii Violet', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](GC): วางลง (GC) คู่แข่งติดคุก 1 ใบ+ [SB1] เลือกยูนิท 1 ใบ จะไม่ถูก Hit โดยแวนเกรด 2 หริอต่ำกว่าจนจบการต่อสู้' }),
             ...Array(3).fill({ name: 'Aurora Battle Princess, Accuse Makarite', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) จากมือ [SB1] ขังใบบนสุดกองคู่แข่ง หงายหน้า, ถ้านักโทษมี 2+ พลัง +5000 จนจบเทิร์น' }),
             ...Array(3).fill({ name: 'Aurora Battle Princess, Cuff Spring', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) สั่งให้คู่แข่งเลือกการ์ดในมือ 1 ใบลงคุก หากคู่แข่งขังสำเร็จ ให้จั่วการ์ด 1 ใบ' }),
-            ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: 'Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถประกินตัวการ์ดของตนใน Main Phase ได้โดย: จ่าย [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ.' }),
+            ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: '[Set Order] Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถประกันตัวการ์ดของตนใน Main Phase ได้โดย: จ่าย [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ.' }),
             ...Array(3).fill({ name: 'Security Upgrader', grade: 1, power: 8000, shield: 5000 }),
             ...Array(1).fill({ name: 'Aurora Battle Princess, Grenade Marieda', grade: 1, power: 8000, shield: 5000 }),
             ...Array(4).fill({ name: 'Perfect guard', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] ยูนิทนี้ไม่ฮิต' }),
@@ -1160,10 +1218,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Kyanite Blue Ride Skill',
                 description: "เมื่อ Kyanite Blue ไรด์ทับ ค้นหา Prison จากกอง 1 ใบนำขึ้นมือ",
                 resolve: async (done) => {
-                    if (await vgConfirm("Kyanite Blue: ค้นหา Prison จากกองการ์ด 1 ใบนำขึ้นมือ?")) {
+                    if (await vgConfirm("Kyanite Blue: ค้นหา Prison จากกองการ์ด 1 ใบเพื่อนำขึ้นมือ?")) {
                         const prisonCards = deckPool.filter(c => c.name.toLowerCase().includes('prison'));
                         if (prisonCards.length > 0) {
-                            openViewer("ค้นหา Prison 1 ใบขึ้นมือ", prisonCards);
+                            openViewer("ค้นหา Prison 1 ใบเพื่อนำขึ้นมือ", prisonCards);
                             await new Promise(resolve => {
                                 const pickHandler = (e) => {
                                     const clicked = e.target.closest('.card');
@@ -1173,38 +1231,22 @@ document.addEventListener('DOMContentLoaded', () => {
                                         if (idx !== -1) {
                                             const pickedData = deckPool.splice(idx, 1)[0];
                                             const newlyAdded = createCardElement(pickedData);
-                                            
-                                            // Put to Order Zone like Avantgarda's Strategy search
-                                            const orderZone = document.querySelector('.my-side .order-zone');
-                                            if (orderZone) {
-                                                orderZone.appendChild(newlyAdded);
-                                                sendMoveData(newlyAdded);
-                                                alert(`พบ Prison: ${pickedData.name}! นำลงช่อง Order Zone ทันที! (อย่าลืมคลิกที่การ์ดเพื่อใช้ความสามารถ SC3)`);
-                                                
-                                                // Trigger the AUTO SC3 if it's Prison
-                                                if (pickedData.name.includes('Galaxy Central Prison')) {
-                                                    // We handle SC3 here as it was put from deck by skill
-                                                    soulCharge(3);
-                                                    alert("Prison ทำงานอัตโนมัติ: Soul Charge 3!");
-                                                }
-                                            } else {
-                                                playerHand.appendChild(newlyAdded);
-                                                sendMoveData(newlyAdded);
-                                            }
+                                            playerHand.appendChild(newlyAdded);
+                                            sendMoveData(newlyAdded);
                                             updateHandSpacing();
+                                            alert(`พบ Prison: ${pickedData.name}! นำขึ้นมือเรียบร้อยแล้ว!`);
                                         }
                                         deckPool.sort(() => 0.5 - Math.random());
                                         updateDeckCounter();
                                         viewerGrid.removeEventListener('click', pickHandler);
                                         zoneViewer.classList.add('hidden');
-                                        if (done) done();
                                         resolve();
                                     }
                                 };
                                 viewerGrid.addEventListener('click', pickHandler);
                             });
                         } else {
-                            alert("ไม่พบใบ Prison ในกอง!");
+                            alert("ไม่พบใบ Prison ในกองการ์ด!");
                         }
                     }
                     if (done) done();
@@ -1231,39 +1273,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Seraph Purelight [AUTO]',
                 description: "เมื่อวางบน (VC) [CB1 & SB1 ถอด Seraph] ให้คู่แข่งเลือกมือ 2 / เรียร์ 2 / โซล 2 ไปขังในคุก!",
                 resolve: async (done) => {
-                    if (await vgConfirm("Seraph Purelight: [CB1 & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด มือ2 / RC2 / Soul2 ใบ?")) {
+                    if (await vgConfirm("Seraph Purelight: [CB1 & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด มือ 2 / สนาม 2 / โซล 2 ใบ?")) {
                         if (payCounterBlast(1)) {
-                            const soulCards = Array.from(document.querySelectorAll('.my-side .card-container[data-zone="soul"] .card'));
-                            const validSB = soulCards.filter(c => c.dataset.name.toLowerCase().includes('seraph'));
+                            // ใช้ soulPool โดยตรง
+                            const validSB = soulPool.filter(sc => (sc.dataset.name || "").toLowerCase().includes('seraph'));
                             if (validSB.length > 0) {
-                                alert("คลิกเลือก Soul ที่ติดชื่อ Seraph 1 ใบเพื่อจ่ายคอสต์ SB");
-                                document.body.classList.add('targeting-mode');
+                                openViewer("เลือก Soul ที่ติดชื่อ Seraph 1 ใบเพื่อจ่ายคอสต์ SB", validSB.map(sc => ({
+                                    name: sc.dataset.name,
+                                    grade: sc.dataset.grade,
+                                    id: sc.id
+                                })));
+                                
                                 await new Promise(resolveSB => {
-                                    const sbListener = (e) => {
-                                        const c = e.target.closest('.my-side .card-container[data-zone="soul"] .card');
-                                        if (c && c.dataset.name.toLowerCase().includes('seraph')) {
-                                            e.stopPropagation();
-                                            document.querySelector('.my-side .drop-zone').appendChild(c);
-                                            sendMoveData(c, 'drop-zone');
-                                            updateSoulUI();
-                                            updateDropCount();
-                                            document.body.classList.remove('targeting-mode');
-                                            document.removeEventListener('click', sbListener, true);
-                                            resolveSB();
-                                        } else if (c) {
-                                            alert("การ์ดที่เลือกไม่มีชื่อ Seraph!");
+                                    const sbHandler = (e) => {
+                                        const clicked = e.target.closest('.card');
+                                        if (clicked && clicked.parentElement === viewerGrid) {
+                                            const selectedId = clicked.dataset.id;
+                                            const idx = soulPool.findIndex(sc => sc.id === selectedId);
+                                            if (idx !== -1) {
+                                                const blasted = soulPool.splice(idx, 1)[0];
+                                                const dropZone = document.querySelector('.my-side .drop-zone');
+                                                dropZone.appendChild(blasted);
+                                                sendMoveData(blasted, 'drop-zone');
+                                                updateSoulUI();
+                                                updateDropCount();
+                                                viewerGrid.removeEventListener('click', sbHandler);
+                                                zoneViewer.classList.add('hidden');
+                                                resolveSB();
+                                            }
                                         }
                                     };
-                                    document.addEventListener('click', sbListener, true);
+                                    viewerGrid.addEventListener('click', sbHandler);
                                 });
                                 
                                 sendData({ type: 'forceImprisonMass', count: 2 });
-                                alert("กำลังสั่งให้คู่แข่งส่งการ์ดจากมือ 2, บนสนาม 2 และโซล 2 ใบ ลงคุก (รอคู่แข่งทำรายการ)");
+                                alert("ส่งคำสั่งขังคุกมวลชนไปที่ฝั่งตรงข้ามแล้ว!");
                             } else {
-                                alert("คุณไม่มีโซลที่ชื่อ Seraph! (ทอน Damage คืน)");
-                                const dmgZone = document.querySelector('.my-side .damage-zone');
-                                const faceDownDmg = Array.from(dmgZone.querySelectorAll('.card.face-down'));
-                                if (faceDownDmg.length > 0) faceDownDmg[0].classList.remove('face-down');
+                                alert("คุณไม่มีโซลที่ชื่อ Seraph ในขณะนี้!");
                             }
                         }
                     }
@@ -1933,6 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.trigger = cardData.trigger || '';
         card.dataset.name = cardData.name;
         card.dataset.skill = cardData.skill || 'No skill description available.';
+        card.dataset.cardType = cardData.type || 'Unit';
         card.dataset.persona = cardData.persona ? "true" : "false";
         card.dataset.isPG = cardData.isPG ? "true" : "false";
         card.dataset.imageUrl = cardData.imageUrl || "";
@@ -2254,6 +2301,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 return;
+            }
+
+            // --- CLICK INTERACTION FOR OWN ORDER ZONE ---
+            if (card.parentElement && card.parentElement.classList.contains('order-zone') && card.parentElement.closest('.my-side')) {
+                if (isMyTurn && phases[currentPhaseIndex] === 'main') {
+                    activateCardSkill(card);
+                    return;
+                }
             }
         });
 
@@ -3595,7 +3650,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const allowed = (isMySide && (isVanguard || isRearguard || isDropZone || isOrderZone)) || isSharedGC;
 
             if (isOrderZone) {
-               if (card.dataset.skill && (card.dataset.skill.includes('[Order]') || card.dataset.skill.includes('Set Order'))) {
+               if (card.dataset.cardType === 'Set Order' || (card.dataset.skill && (card.dataset.skill.includes('[Order]') || card.dataset.skill.includes('Set Order')))) {
                    playOrder(card);
                    return false; 
                } else {
@@ -8897,7 +8952,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const sideClass = effectiveCard.closest('.player-side')?.classList.contains('my-side') ? '.my-side' : '.opponent-side';
+        const sideClass = effectiveCard.closest('.opponent-side') ? '.opponent-side' : '.my-side';
         const isMySide = sideClass === '.my-side';
         const oppSideClass = isMySide ? '.opponent-side' : '.my-side';
         
@@ -8974,57 +9029,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Galaxy Central Prison, Galactolus (Set Order) ---
-        if (name.includes('Galaxy Central Prison')) {
-            if (await vgConfirm("Play Galaxy Central Prison, Galactolus? Cost: [Rest] 1 unit.")) {
-                if (isAIMode && !isMySide) {
-                    // AI Automated Cost Payment
-                    const aiUnits = Array.from(document.querySelectorAll(`${sideClass} .circle .card`))
-                                         .filter(u => !u.classList.contains('rest'));
-                    if (aiUnits.length > 0) {
-                        aiUnits[0].classList.add('rest');
-                        sendMoveData(aiUnits[0]);
+        if (name.toLowerCase().includes('galaxy central prison')) {
+            const isInOrderZone = card.parentElement && card.parentElement.classList.contains('order-zone');
+            
+            if (!isInOrderZone) {
+                // WHEN PLAYED FROM HAND [AUTO]
+                if (await vgConfirm("ต้องการเล่น Galaxy Central Prison? คอสต์: [Rest] ยูนิท 1 ใบ?")) {
+                    if (isAIMode && !isMySide) {
+                        const aiUnits = Array.from(document.querySelectorAll(`${sideClass} .circle .card`)).filter(u => !u.classList.contains('rest'));
+                        if (aiUnits.length > 0) {
+                            aiUnits[0].classList.add('rest');
+                            sendMoveData(aiUnits[0]);
+                        }
+                        alert("AI Prison: Soul Charge 3!");
+                        for (let i = 0; i < 3; i++) {
+                            if (aiDeck.length > 0) aiSoul.push(aiDeck.shift());
+                        }
+                        syncAIStateToUI();
+                        return true;
                     }
-                    alert("AI Prison: Soul Charge 3!");
-                    for (let i = 0; i < 3; i++) {
-                        if (aiDeck.length > 0) aiSoul.push(aiDeck.shift());
+
+                    const myUnits = Array.from(document.querySelectorAll(`${sideClass} .circle .card:not(.opponent-card)`)).filter(u => !u.classList.contains('rest'));
+                    if (myUnits.length === 0) {
+                        alert("คุณไม่มี Unit ให้ [Rest] เพื่อจ่ายคอสต์!");
+                        return false;
                     }
-                    syncAIStateToUI();
+                    
+                    alert("กรุณาเลือกยูนิท 1 ใบเพื่อ [Rest] (คอสต์เล่นออเดอร์)");
+                    document.body.classList.add('targeting-mode');
+                    const rested = await new Promise(resolve => {
+                        const restListener = (e) => {
+                            const target = e.target.closest(`${sideClass} .circle .card`);
+                            if (target && !target.classList.contains('rest')) {
+                                e.stopPropagation();
+                                target.classList.add('rest');
+                                sendMoveData(target);
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', restListener, true);
+                                resolve(true);
+                            }
+                        };
+                        document.addEventListener('click', restListener, true);
+                    });
+
+                    if (!rested) return false;
+                    alert("Galaxy Central Prison: Soul Charge 3!");
+                    soulCharge(3);
                     return true;
                 }
-
-                const myUnits = Array.from(document.querySelectorAll(`${sideClass} .circle.vc .card:not(.opponent-card), ${sideClass} .circle.rc .card:not(.opponent-card)`))
-                                     .filter(u => !u.classList.contains('rest'));
-                if (myUnits.length === 0) {
-                    alert("คุณไม่มียูนิทที่สามารถ [Rest] ได้!");
-                    return false;
-                }
-                
-                alert("กรุณาเลือกยูนิท 1 ใบเพื่อ [Rest] เป็นค่าคอสต์");
-                document.body.classList.add('targeting-mode');
-                const rested = await new Promise(resolve => {
-                    const restListener = (e) => {
-                        const target = e.target.closest(`${sideClass} .circle .card`);
-                        if (target && !target.classList.contains('rest')) {
-                            e.stopPropagation();
-                            target.classList.add('rest');
-                            sendMoveData(target);
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', restListener, true);
-                            resolve(true);
-                        } else if (e.target.closest('.action-btn')) {
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', restListener, true);
-                            resolve(false);
-                        }
-                    };
-                    document.addEventListener('click', restListener, true);
-                });
-
-                if (!rested) return false;
-
-                // [AUTO] When played, Soul Charge 3
-                alert("Galaxy Central Prison: Soul Charge 3!");
-                soulCharge(3);
+            } else {
+                // INTERACTION WHEN ALREADY ON FIELD [CONT/ACT]
+                alert("Prison กำลังทำงาน: ยูนิทแถวหน้าของคุณจะเก่งขึ้นตามจำนวนผู้ถูกกักกัน (CONT)");
+                // การเรียกประกันตัวนั้นจัดการโดยการคลิกที่การ์ดที่ถูกขังโดยตรงครับ
                 return true;
             }
             return false;
@@ -10028,25 +10084,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(`แจ้งเตือน: คู่แข่งใช้งานสกิลขังการ์ด กรุณาเลือกการ์ดจากมือ ${data.min} ใบเพื่อนำไปขังในคุกคู๋แข่ง`);
                     document.body.classList.add('targeting-mode');
                     let impCount = 0;
-                    const handCards = document.querySelectorAll('.my-side .card-container[data-zone="hand"] .card');
+                    const handCards = document.querySelectorAll('#player-hand .card');
                     if(handCards.length === 0) {
-                        alert("ไม่มีการ์ดในมือ!");
+                        alert("ไม่ต้องกังวล คุณไม่มีการ์ดในมือให้ขัง!");
                         document.body.classList.remove('targeting-mode');
                         sendData({ type: 'announce', msg: `ไม่มีการ์ดในมือให้ขัง!` });
                     } else {
                         const imprisonListener = (e) => {
-                            const target = e.target.closest('.my-side .card-container[data-zone="hand"] .card');
+                            const target = e.target.closest('#player-hand .card');
                             if (target) {
                                 e.stopPropagation();
-                                const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-                                oppOrderZone.appendChild(target);
-                                target.classList.add('imprisoned-card');
-                                
-                                // Tell opponent what we moved
-                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
-                                
+                                imprisonCard(target);  // Use our new helper!
                                 impCount++;
-                                updateHandCount();
                                 updateAllStaticBonuses();
                                 
                                 if (impCount >= data.max) {
@@ -10122,69 +10171,35 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'forceImprisonMass':
                 (async () => {
                     const reqCount = data.count || 2;
-                    alert(`แจ้งเตือน: คู่แข่งใช้งาน Seraph Purelight! \nกรุณาเลือกการ์ดเข้าคุก:\n- จากมือ ${reqCount} ใบ\n- บนสนาม (RC) ${reqCount} ใบ\n- จากโซล ${reqCount} ใบ`);
-                    document.body.classList.add('targeting-mode');
-                    const zonesToPick = ['hand', 'rc', 'soul'];
+                    alert(`⚠️ ประกาศจากศูนย์กักกัน: โดนสกิล Seraph Purelight!\nขังการ์ด มือ ${reqCount}, สนาม ${reqCount}, และโซล ${reqCount} ใบ!`);
                     
-                    for (const z of zonesToPick) {
-                        let pickedCount = 0;
-                        let maxPick = reqCount;
-                        
-                        let available = [];
-                        if (z === 'hand') available = document.querySelectorAll('.my-side .card-container[data-zone="hand"] .card');
-                        else if (z === 'rc') available = document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)');
-                        else if (z === 'soul') available = document.querySelectorAll('.my-side .card-container[data-zone="soul"] .card');
-                        
-                        maxPick = Math.min(reqCount, available.length);
-                        
-                        if (maxPick === 0) {
-                            alert(`ไม่มีการ์ดในโซน ${z.toUpperCase()} ให้ขัง! ข้ามไปโซนถัดไป`);
-                            continue;
-                        }
-
-                        alert(`กรุณาคลิกเลือกการ์ดในโซน [${z.toUpperCase()}] จำนวน ${maxPick} ใบ`);
-                        await new Promise(resolveZone => {
-                            const zListener = (e) => {
-                                let c = e.target.closest('.card');
-                                if (!c) return;
-                                
-                                let isValid = false;
-                                if (z === 'hand' && c.closest('.card-container[data-zone="hand"]')) isValid = true;
-                                else if (z === 'rc' && c.closest('.circle.rc') && !c.classList.contains('opponent-card') && c.closest('.my-side')) isValid = true;
-                                else if (z === 'soul' && c.closest('.card-container[data-zone="soul"]') && c.closest('.my-side')) isValid = true;
-
-                                if (isValid) {
-                                    e.stopPropagation();
-                                    const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-                                    oppOrderZone.appendChild(c);
-                                    c.classList.add('imprisoned-card');
-                                    c.classList.remove('rest');
-                                    
-                                    // Send to opponent
-                                    sendData({ type: 'moveCard', cardId: c.id, zone: 'order-zone', cardData: c.dataset.cardData, name: c.dataset.name, grade: c.dataset.grade, power: c.dataset.power, shield: c.dataset.shield, imagePreview: c.dataset.imageUrl });
-                                    sendData({ type: 'checkUpdateSeraph' });
-
-                                    if(z === 'hand') updateHandCount();
-                                    else if(z === 'soul') updateSoulUI();
-                                    
-                                    updateAllStaticBonuses();
-                                    
-                                    pickedCount++;
-                                    if (pickedCount >= maxPick) {
-                                        document.removeEventListener('click', zListener, true);
-                                        resolveZone();
-                                    } else {
-                                    	alert(`เลือกสำเร็จแล้ว 1 เหลืออีก ${maxPick - pickedCount} ใบ!`);
-                                    }
-                                }
-                            };
-                            document.addEventListener('click', zListener, true);
-                        });
+                    // 1. จัดการมือ
+                    const handCards = Array.from(document.querySelectorAll('#player-hand .card'));
+                    const handPick = Math.min(reqCount, handCards.length);
+                    for (let i = 0; i < handPick; i++) {
+                        const target = handCards.splice(Math.floor(Math.random() * handCards.length), 1)[0];
+                        imprisonCard(target);
                     }
-                    
-                    document.body.classList.remove('targeting-mode');
-                    alert('ส่งการ์ดทั้งหมดเข้าสู่คุกของคู่แข่งเรียบร้อยแล้ว!');
-                    sendData({ type: 'announce', msg: 'ส่งการ์ดทั้งหมดลงคุกเรียบร้อยแล้ว!' });
+
+                    // 2. จัดการสนาม
+                    const rgCards = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'));
+                    const rgPick = Math.min(reqCount, rgCards.length);
+                    for (let i = 0; i < rgPick; i++) {
+                        const target = rgCards.splice(Math.floor(Math.random() * rgCards.length), 1)[0];
+                        imprisonCard(target);
+                    }
+
+                    // 3. จัดการโซล (ใช้ soulPool)
+                    const soulPick = Math.min(reqCount, soulPool.length);
+                    for (let i = 0; i < soulPick; i++) {
+                        const target = soulPool.pop();
+                        imprisonCard(target);
+                    }
+
+                    updateSoulUI();
+                    updateHandSpacing();
+                    updateAllStaticBonuses();
+                    sendData({ type: 'announce', msg: 'การขังคุกมวลชนสำเร็จเรียบร้อย!' });
                 })();
                 break;
             case 'removeCard':
@@ -12339,11 +12354,3 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => popup.remove(), 4000);
     }
 });
-
-
-
-
-
-
-
-
