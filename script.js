@@ -100,34 +100,200 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
-    function imprisonCard(cardElement) {
-        if (!cardElement) return;
+    /* --- Prison Zone Management System --- */
+    
+    // Initialize prison zones visibility based on decks in play
+    function initPrisonZones() {
+        const myPrisonZone = document.getElementById('my-prison-zone');
+        const oppPrisonZone = document.getElementById('opp-prison-zone');
+        const quickPrisonBtn = document.getElementById('quick-prison-btn');
+        const oppQuickPrisonBtn = document.getElementById('opp-quick-prison-btn');
+        
+        // Check if either deck involves prison mechanics
+        const hasPrisonDeck = (deck) => {
+            if (!deck) return false;
+            const allCards = [...(deck.rideDeck || []), ...(deck.mainDeck || [])];
+            return allCards.some(c => (c.name || '').toLowerCase().includes('prison') || 
+                                     (c.name || '').toLowerCase().includes('seraph') ||
+                                     (c.name || '').toLowerCase().includes('aurora'));
+        };
+        
+        const myDeckIsPrison = hasPrisonDeck(currentDeck);
+        // For AI mode, check aiDeckType; for multiplayer, we detect from opponent's order zone
+        let oppDeckIsPrison = false;
+        if (isAIMode) {
+            let aiFullDeckRef;
+            if (aiDeckType === 'seraph') oppDeckIsPrison = true;
+        }
+        
+        // Show prison zones for both sides if EITHER player uses prison deck
+        // (because prison cards from either side end up in both order zones)
+        if (myDeckIsPrison || oppDeckIsPrison) {
+            if (myPrisonZone) myPrisonZone.classList.remove('hidden');
+            if (oppPrisonZone) oppPrisonZone.classList.remove('hidden');
+            if (quickPrisonBtn) quickPrisonBtn.classList.remove('hidden');
+            if (oppQuickPrisonBtn) oppQuickPrisonBtn.classList.remove('hidden');
+        }
+        
+        // Add click handlers to prison zones for viewing contents
+        if (myPrisonZone) {
+            myPrisonZone.addEventListener('click', () => viewPrisonZone('my'));
+        }
+        if (oppPrisonZone) {
+            oppPrisonZone.addEventListener('click', () => viewPrisonZone('opp'));
+        }
+        
+        // Initial update
+        updatePrisonUI('my');
+        updatePrisonUI('opponent');
+    }
+    
+    // Show prison zones dynamically (called when prison card detected)
+    function showPrisonZonesIfNeeded() {
+        const myOrderZone = document.querySelector('.my-side .order-zone');
         const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-        if (!oppOrderZone) return;
+        
+        const hasPrisonInZone = (zone) => {
+            if (!zone) return false;
+            return Array.from(zone.querySelectorAll('.card')).some(c => 
+                (c.dataset.name || '').toLowerCase().includes('prison')
+            );
+        };
+        
+        if (hasPrisonInZone(myOrderZone) || hasPrisonInZone(oppOrderZone)) {
+            const myPZ = document.getElementById('my-prison-zone');
+            const oppPZ = document.getElementById('opp-prison-zone');
+            const qPB = document.getElementById('quick-prison-btn');
+            const oqPB = document.getElementById('opp-quick-prison-btn');
+            if (myPZ) myPZ.classList.remove('hidden');
+            if (oppPZ) oppPZ.classList.remove('hidden');
+            if (qPB) qPB.classList.remove('hidden');
+            if (oqPB) oqPB.classList.remove('hidden');
+        }
+    }
 
-        oppOrderZone.appendChild(cardElement);
-        cardElement.classList.add('imprisoned-card');
-        cardElement.classList.remove('rest'); 
+    function updatePrisonUI(side) {
+        const sideClass = side === 'my' ? '.my-side' : '.opponent-side';
+        const sideId = side === 'my' ? 'my' : 'opp';
+        const orderZone = document.querySelector(`${sideClass} .order-zone`);
+        if (!orderZone) return;
 
-        // Update counts
-        if (typeof updateHandCount === 'function') updateHandCount();
-        if (typeof updateDropCount === 'function') updateDropCount();
-        if (typeof updateSoulUI === 'function') updateSoulUI();
+        // Check for Prison Order card in the zone
+        const hasPrison = Array.from(orderZone.querySelectorAll('.card')).some(c => 
+            (c.dataset.name || "").toLowerCase().includes('prison')
+        );
 
-        // Sync to opponent
-        if (typeof sendData === 'function') {
-            sendData({
-                type: 'moveCard',
-                cardId: cardElement.id,
-                zone: 'order-zone',
-                cardData: cardElement.dataset.cardData,
-                name: cardElement.dataset.name,
-                grade: cardElement.dataset.grade,
-                power: cardElement.dataset.power,
-                shield: cardElement.dataset.shield,
-                imagePreview: cardElement.dataset.imageUrl
+        // Count imprisoned cards (non-prison cards in the order zone)
+        const imprisonedCards = Array.from(orderZone.querySelectorAll('.card')).filter(c => 
+            !(c.dataset.name || "").toLowerCase().includes('prison')
+        );
+        const actualImprisoned = imprisonedCards.length;
+
+        // Update the dedicated prison zone container
+        const prisonContainer = document.getElementById(`${sideId}-prison-zone`);
+        const prisonCountEl = document.getElementById(`${sideId}-prison-count`);
+        const prisonCardStack = document.getElementById(`${sideId}-prison-cards`);
+        const quickPrisonNum = document.getElementById(`${sideId === 'my' ? '' : 'opp-'}quick-prison-num`);
+        const quickPrisonBtn = document.getElementById(`${sideId === 'my' ? '' : 'opp-'}quick-prison-btn`);
+
+        if (prisonContainer) {
+            // Show the prison zone if there's a prison card
+            if (hasPrison) {
+                prisonContainer.classList.remove('hidden');
+                showPrisonZonesIfNeeded();
+            }
+            
+            // Toggle has-inmates class
+            if (actualImprisoned > 0) {
+                prisonContainer.classList.add('has-inmates');
+            } else {
+                prisonContainer.classList.remove('has-inmates');
+            }
+        }
+
+        // Update count number with bump animation
+        if (prisonCountEl) {
+            const oldCount = parseInt(prisonCountEl.textContent || '0');
+            prisonCountEl.textContent = actualImprisoned;
+            if (oldCount !== actualImprisoned) {
+                prisonCountEl.classList.remove('bumped');
+                void prisonCountEl.offsetWidth; // Force reflow
+                prisonCountEl.classList.add('bumped');
+            }
+        }
+
+        // Update mini-card thumbnails
+        if (prisonCardStack) {
+            const existingMinis = prisonCardStack.querySelectorAll('.prison-mini-card');
+            const existingCount = existingMinis.length;
+            
+            // Clear and rebuild mini cards
+            prisonCardStack.innerHTML = '';
+            imprisonedCards.forEach((card, i) => {
+                const mini = document.createElement('div');
+                mini.className = 'prison-mini-card';
+                // Use card image if available
+                const imgUrl = card.dataset.imageUrl || cardImages[card.dataset.name] || '';
+                if (imgUrl) {
+                    mini.style.backgroundImage = `url('${imgUrl}')`;
+                }
+                mini.title = card.dataset.name || 'Unknown';
+                // Animate newly added cards
+                if (i >= existingCount) {
+                    mini.classList.add('just-added');
+                    setTimeout(() => mini.classList.remove('just-added'), 600);
+                }
+                prisonCardStack.appendChild(mini);
             });
         }
+
+        // Update quick access button
+        if (quickPrisonNum) {
+            quickPrisonNum.textContent = actualImprisoned;
+        }
+        if (quickPrisonBtn) {
+            if (hasPrison) quickPrisonBtn.classList.remove('hidden');
+            if (actualImprisoned > 0) {
+                quickPrisonBtn.classList.add('has-inmates');
+            } else {
+                quickPrisonBtn.classList.remove('has-inmates');
+            }
+        }
+
+        // Also maintain the old order-zone visual (prison-active class) for backward compatibility
+        if (hasPrison) {
+            orderZone.classList.add('prison-active');
+        } else {
+            orderZone.classList.remove('prison-active');
+        }
+
+        // Broadcast prison count to opponent for real-time sync
+        if (side === 'my' && (conn || isAIMode)) {
+            sendData({ type: 'prisonSync', count: actualImprisoned, side: 'opponent' });
+        }
+    }
+
+    // View imprisoned cards in the zone viewer
+    window.viewPrisonZone = (side) => {
+        const sideClass = side === 'my' ? '.my-side' : '.opponent-side';
+        const orderZone = document.querySelector(`${sideClass} .order-zone`);
+        if (!orderZone) return;
+        
+        const imprisonedCards = Array.from(orderZone.querySelectorAll('.card')).filter(c => 
+            !(c.dataset.name || "").toLowerCase().includes('prison')
+        );
+        
+        if (imprisonedCards.length === 0) {
+            alert(`🔒 ${side === 'my' ? 'My' : "Opponent's"} Prison: ไม่มีนักโทษในคุก`);
+            return;
+        }
+        openViewer(`🔒 ${side === 'my' ? 'My' : "Opponent's"} Prison (${imprisonedCards.length} inmates)`, imprisonedCards);
+    };
+
+    // Comprehensive update for both sides (called after any prison-related change)  
+    function updateAllPrisonUI() {
+        updatePrisonUI('my');
+        updatePrisonUI('opponent');
     }
 
 
@@ -274,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (wasInHand) updateHandSpacing();
             updateAllStaticBonuses();
+            updateAllPrisonUI();
         }
     }
     let pendingDamageChecks = 0; // Queue damage until drive checks finish
@@ -2246,6 +2413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         card.classList.remove('imprisoned-card');
                                         sendMoveData(card, 'rc'); 
                                         sendData({ type: 'checkUpdateSeraph' }); // Triggers static bonus check for opponent
+                                        updateAllPrisonUI();
                                         document.body.classList.remove('targeting-mode');
                                         document.removeEventListener('click', callListener, true);
                                         resolve();
@@ -7954,6 +8122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         networkInfo.textContent = `Solo vs AI (${diff.toUpperCase()})`;
 
         initGame();
+        initPrisonZones();
 
         // Place AI Starter
         const aiStarter = aiRideDeck.find(c => parseInt(c.grade) === 0);
@@ -8076,6 +8245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 syncAIStateToUI();
                 updateAllStaticBonuses();
+                updateAllPrisonUI();
                 break;
             case 'forceImprisonSpecific':
                 // AI specific card imprisonment (e.g. choice-based)
@@ -8088,6 +8258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendData({ type: 'announce', msg: `AI: ${aiTarget.dataset.name} ถูกขังในคุก!` });
                 }
                 updateAllStaticBonuses();
+                updateAllPrisonUI();
                 break;
             case 'forceRetire':
                 const retireId = data.cardId;
@@ -8102,6 +8273,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'checkUpdateSeraph':
                 updateAllStaticBonuses();
+                updateAllPrisonUI();
+                break;
+            case 'prisonSync':
+                // Real-time prison count sync from opponent
+                updateAllPrisonUI();
                 break;
         }
     }
@@ -9170,10 +9346,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                     if (inDrop) inDrop.remove();
 
                                     // RIDE
+                                    const vcCircle = document.querySelector('.my-side .circle.vc');
+                                    // 1. Move old VG to Soul
+                                    const oldVG = vcCircle.querySelector('.card:not(.opponent-card)');
+                                    if (oldVG) {
+                                        soulPool.push(oldVG);
+                                        sendMoveData(oldVG, 'soul');
+                                    }
+                                    vcCircle.innerHTML = '';
+                                    
+                                    // 2. Place new VG
                                     const newVG = createCardElement(cData);
-                                    document.querySelector('.my-side .circle.vc').appendChild(newVG);
+                                    vcCircle.appendChild(newVG);
                                     hasRiddenThisTurn = true;
                                     window.seraphCostReduction = true;
+                                    window.rodeFromG3ThisTurn = true; // since old VG was G3
                                     
                                     // Opponent imprisons 1 from drop
                                     sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
@@ -9181,6 +9368,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                     alert(`ไรด์ ${cData.name} สำเร็จ! คอสต์ของ Purelight ลดลง CB1 ในเทิร์นนี้!`);
                                     viewerGrid.removeEventListener('click', ridePicker);
                                     zoneViewer.classList.add('hidden');
+                                    
+                                    // 3. Trigger Ride abilities for Purelight
+                                    updateSoulUI();
+                                    handleRideAbilities(newVG);
+                                    checkOnPlaceAbilities(newVG);
+                                    sendMoveData(newVG);
+                                    
                                     resolveRide();
                                 }
                             };
@@ -10285,6 +10479,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'checkUpdateSeraph':
                 updateAllStaticBonuses();
+                updateAllPrisonUI();
+                break;
+            case 'prisonSync':
+                updateAllPrisonUI();
                 break;
             case 'forceImprisonSpecific':
                 const myTarget = document.getElementById(data.targetId);
@@ -10294,6 +10492,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         oppOrderZone.appendChild(myTarget);
                         myTarget.classList.add('imprisoned-card');
                         updateAllStaticBonuses();
+                        updateAllPrisonUI();
                     }
                 }
                 break;
@@ -10356,6 +10555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 impCount++;
                                 updateDropCount();
                                 updateAllStaticBonuses();
+                                updateAllPrisonUI();
                                 
                                 if (impCount >= data.max) {
                                     document.body.classList.remove('targeting-mode');
@@ -10380,6 +10580,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
                         sendData({ type: 'checkUpdateSeraph' });
                         updateAllStaticBonuses();
+                        updateAllPrisonUI();
                         sendData({ type: 'announce', msg: `ถูกดึงใบบนสุดของกองลงคุกแล้ว!` });
                         alert("ถูกบังคับนำการ์ดใบบนสุดของกองการ์ดลงคุก!");
                     } else {
@@ -10418,6 +10619,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateSoulUI();
                     updateHandSpacing();
                     updateAllStaticBonuses();
+                    updateAllPrisonUI();
                     sendData({ type: 'announce', msg: 'การขังคุกมวลชนสำเร็จเรียบร้อย!' });
                 })();
                 break;
@@ -11774,6 +11976,7 @@ document.addEventListener('DOMContentLoaded', () => {
             oppSide.querySelector(`.${mappedZone}`);
 
         if (targetZone) {
+            updateAllPrisonUI(); // UI update before move
             let cardId = (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) ? `opp-${data.cardId}` : `opp-${data.cardId}`;
 
             // Check if the card is already on our side but not as an opponent card
@@ -11918,6 +12121,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // AI Mode Setup: Player and AI both need to participate in RPS
         startRPS();
+
+        // Initialize prison zones if applicable
+        setTimeout(() => initPrisonZones(), 500);
     }
 
     // --- URL Parameters Orchestration ---
