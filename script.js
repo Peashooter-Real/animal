@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 grade: card.dataset.grade, 
                 power: card.dataset.power, 
                 shield: card.dataset.shield, 
-                imagePreview: card.dataset.imageUrl 
+                imageUrl: card.dataset.imageUrl 
             });
             sendData({ type: 'checkUpdateSeraph' });
             
@@ -2564,10 +2564,13 @@ document.addEventListener('DOMContentLoaded', () => {
             zone: pZone,
             isRest: card.classList.contains('rest'),
             isFaceDown: card.classList.contains('face-down'),
+            isImprisoned: card.classList.contains('imprisoned-card'),
             grade: card.dataset.grade,
             power: card.dataset.power,
             critical: card.dataset.critical,
             shield: card.dataset.shield,
+            imageUrl: card.dataset.imageUrl,
+            cardData: card.dataset.cardData,
             basePower: card.dataset.basePower,
             baseCritical: card.dataset.baseCritical,
             skill: card.dataset.skill, // Send skill text to opponent
@@ -12080,13 +12083,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const targetZone = data.isImprisoned ? document.querySelector('.my-side .order-zone') : 
-            oppSide.querySelector(`[data-zone="${mappedZone}"]`) ||
-            oppSide.querySelector(`.circle.${mappedZone}`) ||
-            oppSide.querySelector(`.${mappedZone}`);
+        let targetZone;
+        if (data.isImprisoned) {
+             // Smart mapping for prison inmates
+             const localCard = document.getElementById(data.cardId);
+             if (localCard && !localCard.classList.contains('opponent-card')) {
+                  // This is OUR card being moved by the opponent. Move to opponent side.
+                  targetZone = oppSide.querySelector('.order-zone');
+             } else {
+                  // This is THEIR card moving to our side (as an inmate).
+                  targetZone = document.querySelector('.my-side .order-zone');
+             }
+        } else {
+             targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`) || 
+                        oppSide.querySelector(`.circle.${mappedZone}`) ||
+                        oppSide.querySelector(`.${mappedZone}`);
+        }
 
         if (targetZone) {
-            updateAllPrisonUI(); // UI update before move
+            updateAllPrisonUI(); 
             let cardId = (data.cardId.startsWith('h-') || data.cardId.startsWith('g-')) ? `opp-${data.cardId}` : `opp-${data.cardId}`;
 
             // Check if the card is already on our side but not as an opponent card
