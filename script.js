@@ -126,12 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (aiDeckType === 'seraph') oppDeckIsPrison = true;
         }
         
-        // Show prison zones for both sides if EITHER player uses prison deck
-        // (because prison cards from either side end up in both order zones)
-        if (myDeckIsPrison || oppDeckIsPrison) {
+        // Reveal ONLY the specific side's prison UI if their deck dictates it
+        if (myDeckIsPrison) {
             if (myPrisonZone) myPrisonZone.classList.remove('hidden');
-            if (oppPrisonZone) oppPrisonZone.classList.remove('hidden');
             if (quickPrisonBtn) quickPrisonBtn.classList.remove('hidden');
+        }
+        if (oppDeckIsPrison) {
+            if (oppPrisonZone) oppPrisonZone.classList.remove('hidden');
             if (oppQuickPrisonBtn) oppQuickPrisonBtn.classList.remove('hidden');
         }
         
@@ -160,14 +161,17 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         };
         
-        if (hasPrisonInZone(myOrderZone) || hasPrisonInZone(oppOrderZone)) {
-            const myPZ = document.getElementById('my-prison-zone');
-            const oppPZ = document.getElementById('opp-prison-zone');
-            const qPB = document.getElementById('quick-prison-btn');
-            const oqPB = document.getElementById('opp-quick-prison-btn');
+        const myPZ = document.getElementById('my-prison-zone');
+        const oppPZ = document.getElementById('opp-prison-zone');
+        const qPB = document.getElementById('quick-prison-btn');
+        const oqPB = document.getElementById('opp-quick-prison-btn');
+
+        if (hasPrisonInZone(myOrderZone)) {
             if (myPZ) myPZ.classList.remove('hidden');
-            if (oppPZ) oppPZ.classList.remove('hidden');
             if (qPB) qPB.classList.remove('hidden');
+        }
+        if (hasPrisonInZone(oppOrderZone)) {
+            if (oppPZ) oppPZ.classList.remove('hidden');
             if (oqPB) oqPB.classList.remove('hidden');
         }
     }
@@ -1446,43 +1450,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: "เมื่อวางบน (VC) [CB1 & SB1 ถอด Seraph] ให้คู่แข่งเลือกมือ 2 / เรียร์ 2 / โซล 2 ไปขังในคุก! (คอสต์ลดลงถ้ามีผลของ Security Upgrader)",
                 resolve: async (done) => {
                     const reduced = window.seraphCostReduction === true;
+                    // Check SB requirement first before paying CB
+                    const validSB = soulPool.filter(sc => (sc.dataset.name || "").toLowerCase().includes('seraph'));
+                    
+                    if (validSB.length === 0) {
+                        alert("คุณไม่มีโซลที่ชื่อ Seraph สำหรับจ่ายคอสต์ SB (สกิลไม่ทำงาน)");
+                        if (done) done();
+                        return;
+                    }
+
                     if (await vgConfirm(`Seraph Purelight: [${reduced ? '0' : 'CB1'} & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด?`)) {
                         if (reduced || payCounterBlast(1)) {
-                            // ใช้ soulPool โดยตรง
-                            const validSB = soulPool.filter(sc => (sc.dataset.name || "").toLowerCase().includes('seraph'));
-                            if (validSB.length > 0) {
-                                openViewer("เลือก Soul ที่ติดชื่อ Seraph 1 ใบเพื่อจ่ายคอสต์ SB", validSB.map(sc => ({
-                                    name: sc.dataset.name,
-                                    grade: sc.dataset.grade,
-                                    id: sc.id
-                                })));
-                                
-                                await new Promise(resolveSB => {
-                                    const sbHandler = (e) => {
-                                        const clicked = e.target.closest('.card');
-                                        if (clicked && clicked.parentElement === viewerGrid) {
-                                            const selectedId = clicked.dataset.id;
-                                            const idx = soulPool.findIndex(sc => sc.id === selectedId);
-                                            if (idx !== -1) {
-                                                const blasted = soulPool.splice(idx, 1)[0];
-                                                const dropZone = document.querySelector('.my-side .drop-zone');
-                                                dropZone.appendChild(blasted);
-                                                sendMoveData(blasted, 'drop-zone');
-                                                updateSoulUI();
-                                                updateDropCount();
-                                                viewerGrid.removeEventListener('click', sbHandler);
-                                                zoneViewer.classList.add('hidden');
-                                                resolveSB();
-                                            }
+                            openViewer("เลือก Soul ที่ติดชื่อ Seraph 1 ใบเพื่อจ่ายคอสต์ SB", validSB.map(sc => ({
+                                name: sc.dataset.name,
+                                grade: sc.dataset.grade,
+                                id: sc.id
+                            })));
+
+                            let costPaid = false;
+                            await new Promise(resolveSB => {
+                                const sbHandler = (e) => {
+                                    const clicked = e.target.closest('.card');
+                                    if (clicked && clicked.parentElement === viewerGrid) {
+                                        const selectedId = clicked.dataset.originalId || clicked.dataset.id;
+                                        const idx = soulPool.findIndex(sc => sc.id === selectedId);
+                                        if (idx !== -1) {
+                                            const blasted = soulPool.splice(idx, 1)[0];
+                                            const dropZone = document.querySelector('.my-side .drop-zone');
+                                            dropZone.appendChild(blasted);
+                                            sendMoveData(blasted, 'drop-zone');
+                                            updateSoulUI();
+                                            updateDropCount();
+                                            costPaid = true;
+                                            cleanup();
                                         }
-                                    };
-                                    viewerGrid.addEventListener('click', sbHandler);
-                                });
+                                    }
+                                };
                                 
+                                const closeH = () => {
+                                    cleanup();
+                                };
+
+                                const cleanup = () => {
+                                    viewerGrid.removeEventListener('click', sbHandler);
+                                    closeViewerBtn.removeEventListener('click', closeH);
+                                    zoneViewer.classList.add('hidden');
+                                    resolveSB();
+                                };
+
+                                viewerGrid.addEventListener('click', sbHandler);
+                                closeViewerBtn.addEventListener('click', closeH);
+                            });
+
+                            if (costPaid) {
                                 sendData({ type: 'forceImprisonMass', count: 2 });
                                 alert("ส่งคำสั่งขังคุกมวลชนไปที่ฝั่งตรงข้ามแล้ว!");
                             } else {
-                                alert("คุณไม่มีโซลที่ชื่อ Seraph ในขณะนี้!");
+                                // Refund CB if possible or just inform
+                                alert("ยกเลิกการจ่าย SB สกิลไม่ทำงาน");
                             }
                         }
                     }
@@ -2371,9 +2396,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const currentPhase = phases[currentPhaseIndex];
 
+            let effectiveCard = card;
+            if (card.dataset.originalId) {
+                effectiveCard = document.getElementById(card.dataset.originalId) || card;
+            }
+
             // Prison Bailout (Main Phase, clicking our own card inside the opponent's order zone)
-            if (card.parentElement && card.parentElement.classList.contains('order-zone') && card.parentElement.closest('.opponent-side')) {
-                if (isMyTurn && currentPhase === 'main' && !card.classList.contains('opponent-card') && card.classList.contains('imprisoned-card')) {
+            if (effectiveCard.parentElement && effectiveCard.parentElement.classList.contains('order-zone') && effectiveCard.parentElement.closest('.opponent-side')) {
+                if (isMyTurn && currentPhase === 'main' && !effectiveCard.classList.contains('opponent-card') && effectiveCard.classList.contains('imprisoned-card')) {
                     const bailOut = async () => {
                         let costPaid = false;
                         if (window.freeBailout && window.freeBailout > 0) {
@@ -2410,9 +2440,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             document.querySelector('.my-side .drop-zone').appendChild(existing);
                                             sendMoveData(existing);
                                         }
-                                        targetCircle.appendChild(card);
-                                        card.classList.remove('imprisoned-card');
-                                        sendMoveData(card, 'rc'); 
+                                        targetCircle.appendChild(effectiveCard);
+                                        effectiveCard.classList.remove('imprisoned-card');
+                                        sendMoveData(effectiveCard, 'rc'); 
                                         sendData({ type: 'checkUpdateSeraph' }); // Triggers static bonus check for opponent
                                         updateAllPrisonUI();
                                         document.body.classList.remove('targeting-mode');
@@ -2429,6 +2459,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     };
+                    
+                    const zViewer = document.getElementById('zone-viewer');
+                    if (zViewer && !zViewer.classList.contains('hidden')) {
+                        zViewer.classList.add('hidden');
+                    }
+                    
                     bailOut();
                     return;
                 }
@@ -9215,7 +9251,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         return true;
                     }
 
-                    alert("คลิกเลือกเรียร์การ์ดคู่แข่ง 2 ใบเพื่อนำไปขังในคุก");
+                    const availableRCs = document.querySelectorAll(`${oppSideClass} .circle.rc .card:not(.opponent-card)`).length;
+                    const maxTargets = Math.min(2, availableRCs);
+
+                    if (maxTargets === 0) {
+                        alert("คู่แข่งไม่มีเรียร์การ์ดให้ขัง!");
+                        return true;
+                    }
+
+                    alert(`คลิกเลือกเรียร์การ์ดคู่แข่ง ${maxTargets} ใบเพื่อนำไปขังในคุก`);
                     let imprisoned = 0;
                     document.body.classList.add('targeting-mode');
                     await new Promise(resolve => {
@@ -9232,12 +9276,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 updateAllStaticBonuses();
                                 imprisoned++;
-                                if (imprisoned >= 2) {
+                                if (imprisoned >= maxTargets) {
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', targetListener, true);
                                     resolve();
                                 } else {
-                                    alert(`ขังใบที่ 1 สำเร็จ! เลือกใบที่ 2`);
+                                    alert(`ขังใบที่ ${imprisoned} สำเร็จ! เลือกใบถัดไป`);
                                 }
                             } else if (e.target.closest('.action-btn')) {
                                 document.body.classList.remove('targeting-mode');
@@ -10595,34 +10639,97 @@ document.addEventListener('DOMContentLoaded', () => {
                     const reqCount = data.count || 2;
                     alert(`⚠️ ประกาศจากศูนย์กักกัน: โดนสกิล Seraph Purelight!\nขังการ์ด มือ ${reqCount}, สนาม ${reqCount}, และโซล ${reqCount} ใบ!`);
                     
-                    // 1. จัดการมือ
+                    // 1. Hand
                     const handCards = Array.from(document.querySelectorAll('#player-hand .card'));
                     const handPick = Math.min(reqCount, handCards.length);
-                    for (let i = 0; i < handPick; i++) {
-                        const target = handCards.splice(Math.floor(Math.random() * handCards.length), 1)[0];
-                        imprisonCard(target);
+                    if (handPick > 0) {
+                        alert(`กรุณาเลือกการ์ดจากมือ ${handPick} ใบ เพื่อนำไปขัง`);
+                        document.body.classList.add('targeting-mode');
+                        let picked = 0;
+                        await new Promise(resolve => {
+                            const listener = (e) => {
+                                const target = e.target.closest('#player-hand .card');
+                                if (target) {
+                                    e.stopPropagation();
+                                    imprisonCard(target);
+                                    picked++;
+                                    if (picked >= handPick) {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', listener, true);
+                                        resolve();
+                                    } else {
+                                        alert(`ขังมือสำเร็จ! เลือกใบที่ ${picked + 1} จากมือ`);
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', listener, true);
+                        });
                     }
 
-                    // 2. จัดการสนาม
+                    // 2. Rear-guard
                     const rgCards = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'));
                     const rgPick = Math.min(reqCount, rgCards.length);
-                    for (let i = 0; i < rgPick; i++) {
-                        const target = rgCards.splice(Math.floor(Math.random() * rgCards.length), 1)[0];
-                        imprisonCard(target);
+                    if (rgPick > 0) {
+                        alert(`กรุณาเลือกสนาม (RC) ${rgPick} ใบ เพื่อนำไปขัง`);
+                        document.body.classList.add('targeting-mode');
+                        let picked = 0;
+                        await new Promise(resolve => {
+                            const listener = (e) => {
+                                const target = e.target.closest('.my-side .circle.rc .card:not(.opponent-card)');
+                                if (target) {
+                                    e.stopPropagation();
+                                    imprisonCard(target);
+                                    picked++;
+                                    if (picked >= rgPick) {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', listener, true);
+                                        resolve();
+                                    } else {
+                                        alert(`ขังสนามสำเร็จ! เลือกใบที่ ${picked + 1} จาก RC`);
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', listener, true);
+                        });
                     }
 
-                    // 3. จัดการโซล (ใช้ soulPool)
+                    // 3. Soul
                     const soulPick = Math.min(reqCount, soulPool.length);
-                    for (let i = 0; i < soulPick; i++) {
-                        const target = soulPool.pop();
-                        imprisonCard(target);
+                    if (soulPick > 0) {
+                        alert(`กรุณาเลือกการ์ดจากโซล ${soulPick} ใบ เพื่อนำไปขัง`);
+                        let picked = 0;
+                        await new Promise(resolve => {
+                            openViewer(`เลือกไพ่จากโซลไปขังคุก (${soulPick} ใบ)`, soulPool, false);
+                            const listener = (e) => {
+                                const targetNode = e.target.closest('.viewer-grid .card');
+                                if (targetNode) {
+                                    e.stopPropagation();
+                                    const originalId = targetNode.dataset.originalId;
+                                    const cardIndex = soulPool.findIndex(c => c.id === originalId || c.dataset.originalId === originalId);
+                                    if (cardIndex !== -1) {
+                                        const removedCard = soulPool.splice(cardIndex, 1)[0];
+                                        imprisonCard(removedCard);
+                                        targetNode.classList.add('effect-retired');
+                                        setTimeout(() => targetNode.remove(), 300);
+                                        picked++;
+                                        if (picked >= soulPick) {
+                                            const viewer = document.getElementById('zone-viewer');
+                                            if (viewer) viewer.classList.add('hidden');
+                                            document.removeEventListener('click', listener, true);
+                                            resolve();
+                                        }
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', listener, true);
+                        });
                     }
 
                     updateSoulUI();
                     updateHandSpacing();
                     updateAllStaticBonuses();
                     updateAllPrisonUI();
-                    sendData({ type: 'announce', msg: 'การขังคุกมวลชนสำเร็จเรียบร้อย!' });
+                    sendData({ type: 'announce', msg: 'ขังคุกมวลชนตามคำสั่ง Seraph Purelight สำเร็จ!' });
                 })();
                 break;
             case 'removeCard':
