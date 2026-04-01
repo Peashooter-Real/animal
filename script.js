@@ -429,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: 'moveCard', 
                 cardId: card.id, 
                 zone: 'order-zone', 
+                isImprisoned: true,
                 cardData: card.dataset.cardData, 
                 name: card.dataset.name, 
                 grade: card.dataset.grade, 
@@ -10485,7 +10486,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateAllPrisonUI();
                 break;
             case 'forceImprisonSpecific':
-                const myTarget = document.getElementById(data.targetId);
+                const localCardId = data.targetId.replace(/^opp-/, '');
+                const myTarget = document.getElementById(localCardId);
                 if (myTarget && !myTarget.classList.contains('opponent-card')) {
                     const oppOrderZone = document.querySelector('.opponent-side .order-zone');
                     if (oppOrderZone) {
@@ -10549,7 +10551,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 oppOrderZone.appendChild(target);
                                 target.classList.add('imprisoned-card');
                                 
-                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
+                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', isImprisoned: true, cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
                                 sendData({ type: 'checkUpdateSeraph' });
                                 
                                 impCount++;
@@ -10577,7 +10579,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         oppOrderZone.appendChild(target);
                         target.classList.add('imprisoned-card');
                         
-                        sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
+                        sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', isImprisoned: true, cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
                         sendData({ type: 'checkUpdateSeraph' });
                         updateAllStaticBonuses();
                         updateAllPrisonUI();
@@ -11971,7 +11973,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const targetZone = oppSide.querySelector(`[data-zone="${mappedZone}"]`) ||
+        const targetZone = data.isImprisoned ? document.querySelector('.my-side .order-zone') : 
+            oppSide.querySelector(`[data-zone="${mappedZone}"]`) ||
             oppSide.querySelector(`.circle.${mappedZone}`) ||
             oppSide.querySelector(`.${mappedZone}`);
 
@@ -12049,9 +12052,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Announcement of opponent actions
             if (mappedZone === 'vc') {
                 alert(`คู่แข่งทำการ ไรด์ (Ride): ${data.cardName}!`);
-            } else if (mappedZone.startsWith('rc')) {
+            } else if (mappedZone.startsWith('rc') && !data.isImprisoned) {
                 alert(`คู่แข่งทำการ คอล (Call): ${data.cardName}!`);
-            } else if (mappedZone === 'order-zone') {
+            } else if (mappedZone === 'order-zone' && !data.isImprisoned) {
                 alert(`คู่แข่งทำการ เล่นออเดอร์ (Play Order): ${data.cardName}!`);
             }
 
@@ -12065,6 +12068,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.isFaceDown) card.classList.add('face-down');
             else card.classList.remove('face-down');
+
+            if (data.isImprisoned) {
+                card.classList.add('imprisoned-card');
+            } else {
+                card.classList.remove('imprisoned-card');
+            }
+            updateAllPrisonUI(); // Always update UI in case card moved into OR out of prison
 
             // Set OD / X-OD badges
             if (data.isOD || data.isXOD) {
