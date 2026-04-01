@@ -127,6 +127,20 @@
                         <div class="zone order-zone" data-zone="order">
                             <span class="zone-label">Order</span>
                         </div>
+                        <div class="prison-zone-container hidden" id="opp-prison-zone">
+                            <div class="prison-zone-header">
+                                <span class="prison-icon">🔒</span>
+                                <span class="prison-title">PRISON</span>
+                            </div>
+                            <div class="prison-zone-body" data-zone="prison">
+                                <div class="prison-card-stack" id="opp-prison-cards"></div>
+                                <div class="prison-count-display">
+                                    <span class="prison-count-number" id="opp-prison-count">0</span>
+                                    <span class="prison-count-label">INMATES</span>
+                                </div>
+                            </div>
+                            <div class="prison-scan-line"></div>
+                        </div>
                     </div>
 
                     <!-- Center Column (Circles) (Opponent) -->
@@ -225,6 +239,20 @@
                         <div class="zone order-zone" data-zone="order">
                             <span class="zone-label">Order</span>
                         </div>
+                        <div class="prison-zone-container hidden" id="my-prison-zone">
+                            <div class="prison-zone-header">
+                                <span class="prison-icon">🔒</span>
+                                <span class="prison-title">PRISON</span>
+                            </div>
+                            <div class="prison-zone-body" data-zone="prison">
+                                <div class="prison-card-stack" id="my-prison-cards"></div>
+                                <div class="prison-count-display">
+                                    <span class="prison-count-number" id="my-prison-count">0</span>
+                                    <span class="prison-count-label">INMATES</span>
+                                </div>
+                            </div>
+                            <div class="prison-scan-line"></div>
+                        </div>
                     </div>
 
                     <!-- Center Column (Circles) -->
@@ -315,6 +343,7 @@
                     <button onclick="document.getElementById('view-damage-btn').click()" class="quick-btn damage">Damage (<span id="quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('my')" class="quick-btn order">Order (<span id="quick-order-num">0</span>)</button>
                     <button class="quick-btn bind">Bound (<span id="quick-bind-num">0</span>)</button>
+                    <button onclick="viewPrisonZone('my')" class="quick-btn prison hidden" id="quick-prison-btn">🔒 Prison (<span id="quick-prison-num">0</span>)</button>
                 </div>
                 <div class="quick-group">
                     <span class="group-label">OPP ZONES</span>
@@ -322,6 +351,7 @@
                     <button onclick="document.getElementById('opp-view-damage-btn').click()" class="quick-btn damage">Damage (<span id="opp-quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('opp')" class="quick-btn order">Order (<span id="opp-quick-order-num">0</span>)</button>
                     <button class="quick-btn bind">Bound (<span id="opp-quick-bind-num">0</span>)</button>
+                    <button onclick="viewPrisonZone('opp')" class="quick-btn prison hidden" id="opp-quick-prison-btn">🔒 Prison (<span id="opp-quick-prison-num">0</span>)</button>
                 </div>
             </div>
         </div>

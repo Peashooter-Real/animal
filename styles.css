@@ -435,6 +435,14 @@ body {
   border-color: #aa00ff;
 }
 
+/* Order Zone - Prison Active State */
+.order-zone.prison-active {
+  border: 2px solid #00f2ff !important;
+  box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.4), 0 0 10px rgba(0, 242, 255, 0.2);
+  background: rgba(0, 20, 40, 0.6) !important;
+  position: relative;
+}
+
 /* Hand Area */
 .hand-area {
   height: 220px;
@@ -2707,4 +2715,229 @@ body.targeting-mode::after {
 .battle-hub.guarded .hub-result-text {
   color: #00ffcc;
   text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+/* ============================= */
+/*   PRISON ZONE - DEDICATED     */
+/* ============================= */
+.prison-zone-container {
+  width: var(--card-width);
+  min-height: 60px;
+  border: 1.5px solid rgba(0, 242, 255, 0.5);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 15, 30, 0.85) 0%, rgba(0, 5, 20, 0.95) 100%);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 0 8px rgba(0, 242, 255, 0.15),
+    inset 0 0 15px rgba(0, 242, 255, 0.05);
+  cursor: pointer;
+}
+
+.prison-zone-container:hover {
+  border-color: rgba(0, 242, 255, 0.8);
+  box-shadow: 
+    0 0 20px rgba(0, 242, 255, 0.3),
+    inset 0 0 20px rgba(0, 242, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.prison-zone-container.has-inmates {
+  border-color: #ff4d4d;
+  box-shadow: 
+    0 0 12px rgba(255, 77, 77, 0.3),
+    0 0 25px rgba(255, 77, 77, 0.1),
+    inset 0 0 15px rgba(255, 0, 0, 0.08);
+  animation: prisonPulse 3s ease-in-out infinite;
+}
+
+@keyframes prisonPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 12px rgba(255, 77, 77, 0.3),
+      0 0 25px rgba(255, 77, 77, 0.1),
+      inset 0 0 15px rgba(255, 0, 0, 0.08);
+  }
+  50% { 
+    box-shadow: 
+      0 0 20px rgba(255, 77, 77, 0.5),
+      0 0 40px rgba(255, 77, 77, 0.2),
+      inset 0 0 25px rgba(255, 0, 0, 0.12);
+  }
+}
+
+.prison-zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 6px;
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.15), rgba(0, 100, 200, 0.1), rgba(0, 242, 255, 0.15));
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+}
+
+.prison-zone-container.has-inmates .prison-zone-header {
+  background: linear-gradient(90deg, rgba(255, 0, 0, 0.15), rgba(200, 0, 0, 0.1), rgba(255, 0, 0, 0.15));
+  border-bottom-color: rgba(255, 77, 77, 0.3);
+}
+
+.prison-icon {
+  font-size: 0.65rem;
+}
+
+.prison-title {
+  font-family: var(--font-cyber);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00f2ff;
+  text-shadow: 0 0 6px rgba(0, 242, 255, 0.5);
+}
+
+.prison-zone-container.has-inmates .prison-title {
+  color: #ff6b6b;
+  text-shadow: 0 0 6px rgba(255, 107, 107, 0.5);
+}
+
+.prison-zone-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  min-height: 40px;
+  position: relative;
+}
+
+.prison-card-stack {
+  display: flex;
+  justify-content: center;
+  gap: -5px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.prison-card-stack .prison-mini-card {
+  width: 22px;
+  height: 30px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 77, 77, 0.4);
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  background-size: cover;
+  background-position: center;
+  margin-left: -5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.prison-card-stack .prison-mini-card:first-child {
+  margin-left: 0;
+}
+
+.prison-card-stack .prison-mini-card:hover {
+  transform: translateY(-3px) scale(1.15);
+  z-index: 10;
+  box-shadow: 0 3px 8px rgba(255, 77, 77, 0.4);
+}
+
+.prison-count-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  margin-top: 3px;
+}
+
+.prison-count-number {
+  font-family: var(--font-cyber);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #666;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  line-height: 1;
+  transition: all 0.4s;
+}
+
+.prison-zone-container.has-inmates .prison-count-number {
+  color: #ff4d4d;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.6), 0 0 20px rgba(255, 0, 0, 0.3);
+  font-size: 1.3rem;
+}
+
+.prison-count-label {
+  font-family: var(--font-cyber);
+  font-size: 0.45rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.prison-zone-container.has-inmates .prison-count-label {
+  color: #ff8888;
+}
+
+/* Prison Scan Line */
+.prison-scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.6), transparent);
+  animation: prisonScan 4s linear infinite;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.prison-zone-container.has-inmates .prison-scan-line {
+  background: linear-gradient(90deg, transparent, rgba(255, 77, 77, 0.6), transparent);
+}
+
+@keyframes prisonScan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* Quick Access Prison Button */
+.quick-btn.prison {
+  border-color: #00f2ff;
+  color: #00f2ff;
+}
+
+.quick-btn.prison.has-inmates {
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
+  animation: prisonQuickPulse 2s infinite;
+}
+
+@keyframes prisonQuickPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Prison card animation on add */
+@keyframes prisonCardDrop {
+  0% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+  60% { transform: translateY(3px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.prison-mini-card.just-added {
+  animation: prisonCardDrop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prison count change animation */
+@keyframes countBump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.prison-count-number.bumped {
+  animation: countBump 0.4s ease-out;
 }
