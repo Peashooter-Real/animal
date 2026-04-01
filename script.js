@@ -752,11 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(3).fill({ name: 'Aurora Battle Princess, Accuse Makarite', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) จากมือ [SB1] ขังใบบนสุดกองคู่แข่ง หงายหน้า, ถ้านักโทษมี 2+ พลัง +5000 จนจบเทิร์น' }),
             ...Array(3).fill({ name: 'Aurora Battle Princess, Cuff Spring', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อคอลลง (RC) สั่งให้คู่แข่งเลือกการ์ดในมือ 1 ใบลงคุก หากคู่แข่งขังสำเร็จ ให้จั่วการ์ด 1 ใบ' }),
             ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: '[Set Order] Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถประกันตัวการ์ดของตนใน Main Phase ได้โดย: จ่าย [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ.' }),
-            ...Array(3).fill({ name: 'Security Upgrader', grade: 1, power: 8000, shield: 5000 }),
-            ...Array(1).fill({ name: 'Aurora Battle Princess, Grenade Marieda', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Security Upgrader', grade: 1, power: 8000, shield: 5000, 
+                skill: '[ACT](RC): ถ้า Vanguard เกรด 3+ ติดชื่อ Seraph และเทิร์นนี้ไม่ได้ไรด์ [COST][Retire ใบนี้], ค้นหา Seraph เกรด 4 จาก (กอง/มือ/ดรอป) 1 ใบไรด์ทับแบบ Stand, คู่แข่งเลือกการ์ดจากดรอป 1 ใบเข้าคุก และคอสต์ [AUTO] ของแวนที่ไรด์จะลด CB1 จนจบเทิร์น' }),
+            ...Array(1).fill({ name: 'Aurora Battle Princess, Grenade Marieda', grade: 1, power: 8000, shield: 5000, 
+                skill: '[AUTO]: เมื่อวางลง (RC), เลือกการ์ดในคุก 1 ใบลงใต้กองคู่แข่ง, คู่แข่งเลือก G0 ในดรอป 1 ใบเข้าคุก, ใบนี้พลัง +5000 จนจบเทิร์น' }),
             ...Array(4).fill({ name: 'Perfect guard', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] ยูนิทนี้ไม่ฮิต' }),
-            ...Array(3).fill({ name: 'Blitz Staff, Muna', grade: 1, power: 8000, shield: 5000 }),
-            ...Array(3).fill({ name: 'Aurora Battle Princess, Lifle Royar', grade: 1, power: 8000, shield: 5000 }),
+            ...Array(3).fill({ name: 'Blitz Staff, Muna', grade: 1, power: 8000, shield: 5000, 
+                skill: '[CONT](RC): ถ้าคุกมี 3+ ใบ, ใบนี้ไม่เป็นเป้าหมายสกิลคู่แข่ง และพลัง +5000\n[AUTO](RC)[1/turn]: เมื่อยูนิทถูกเรียกออกจากคุกลง (RC) [COST][SB1] เพื่อจั่วการ์ด 1 ใบ' }),
+            ...Array(3).fill({ name: 'Aurora Battle Princess, Lifle Royar', grade: 1, power: 8000, shield: 5000, 
+                skill: '[CONT](RC): ในเทิร์นคุณ ถ้าคู่แข่งมี 2+ ใบในคุก, ใบนี้พลัง +5000\n[ACT](RC)[1/turn]: ถ้าเทิร์นนี้มีคนติดคุก [COST][CB1], เลือก RC คู่แข่ง 1 ใบเข้าคุก, ดู 5 ใบจากบนสุดกอง เรียก G <= แวน 1 ใบลง (RC)' }),
             ...Array(5).fill({ name: 'Critical Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(4).fill({ name: 'Front Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Front' }),
             ...Array(2).fill({ name: 'Draw Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
@@ -1271,10 +1275,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newName.includes('seraph purelight')) {
             queue.push({
                 name: 'Seraph Purelight [AUTO]',
-                description: "เมื่อวางบน (VC) [CB1 & SB1 ถอด Seraph] ให้คู่แข่งเลือกมือ 2 / เรียร์ 2 / โซล 2 ไปขังในคุก!",
+                description: "เมื่อวางบน (VC) [CB1 & SB1 ถอด Seraph] ให้คู่แข่งเลือกมือ 2 / เรียร์ 2 / โซล 2 ไปขังในคุก! (คอสต์ลดลงถ้ามีผลของ Security Upgrader)",
                 resolve: async (done) => {
-                    if (await vgConfirm("Seraph Purelight: [CB1 & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด มือ 2 / สนาม 2 / โซล 2 ใบ?")) {
-                        if (payCounterBlast(1)) {
+                    const reduced = window.seraphCostReduction === true;
+                    if (await vgConfirm(`Seraph Purelight: [${reduced ? '0' : 'CB1'} & SB1 การ์ดชื่อ Seraph] สั่งคู่แข่งขังการ์ด?`)) {
+                        if (reduced || payCounterBlast(1)) {
                             // ใช้ soulPool โดยตรง
                             const validSB = soulPool.filter(sc => (sc.dataset.name || "").toLowerCase().includes('seraph'));
                             if (validSB.length > 0) {
@@ -2220,6 +2225,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (costPaid) {
                             alert("คลิกเลือกช่อง (RC) ฝั่งคุณเพื่อคอลยูนิทที่ได้รับการประกันตัว");
                             document.body.classList.add('targeting-mode');
+                            
+                            // Trigger Muna [AUTO]
+                            document.querySelectorAll('.my-side .circle.rc .card').forEach(c => {
+                                if (c.dataset.name.includes('Muna')) {
+                                    triggerMunaSkill(c);
+                                }
+                            });
                             await new Promise(resolve => {
                                 const callListener = (e) => {
                                     const targetCircle = e.target.closest('.my-side .circle.rc');
@@ -4102,6 +4114,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     syncPowerDisplay(card);
                 }
                 delete card.dataset.drive;
+            }
+        }
+
+        // --- Blitz Staff, Muna [CONT](RC) (+5000 and Resist if 3+ Prison) ---
+        if (name.includes('Muna') && zone.startsWith('rc')) {
+            const impCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            if (impCount >= 3) {
+                if (card.dataset.munaBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.munaBuffApplied = "true";
+                    card.dataset.resist = "true";
+                    syncPowerDisplay(card);
+                }
+            } else if (card.dataset.munaBuffApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.munaBuffApplied = "false";
+                card.dataset.resist = "false";
+                syncPowerDisplay(card);
+            }
+        }
+
+        // --- Aurora Battle Princess, Lifle Royar [CONT](RC) (+5000 if 2+ Prison) ---
+        if (name.includes('Lifle Royar') && zone.startsWith('rc')) {
+            const impCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+            if (isMyTurn && impCount >= 2) {
+                if (card.dataset.lifleBuffApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.lifleBuffApplied = "true";
+                    syncPowerDisplay(card);
+                }
+            } else if (card.dataset.lifleBuffApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.lifleBuffApplied = "false";
+                syncPowerDisplay(card);
             }
         }
 
@@ -6133,6 +6179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Resetting unit power/critical for new turn...");
         personaRideActive = false; // Reset Persona Ride
         isOpponentPersonaRide = false;
+        window.seraphCostReduction = false; // Reset Seraph Cost Reduction
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .vc .card:not(.opponent-card)').forEach(c => {
             // Clean up all persistent skill flags
             const flags = [
@@ -9086,6 +9133,168 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        // --- Security Upgrader [ACT] ---
+        if (name.toLowerCase().includes('security upgrader')) {
+            const vg = document.querySelector('.my-side .circle.vc .card');
+            const vgGrade = parseInt(vg?.dataset.grade || 0);
+            const vgName = (vg?.dataset.name || "").toLowerCase();
+            if (vgGrade >= 3 && vgName.includes('seraph') && !hasRiddenThisTurn) {
+                if (await vgConfirm("Security Upgrader: [Retire ตัวเอง] เพื่อไรด์ Seraph G4 จาก (มือ/กอง/ดรอป) และลด CB1 ในเทิร์นนี้?")) {
+                    const g4Seraphs = [
+                        ...deckPool.filter(c => c.name.toLowerCase().includes('purelight')),
+                        ...Array.from(playerHand.querySelectorAll('.card')).map(c => JSON.parse(c.dataset.cardData)).filter(c => c.name.toLowerCase().includes('purelight')),
+                        ...Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(c => JSON.parse(c.dataset.cardData)).filter(c => c.name.toLowerCase().includes('purelight'))
+                    ];
+
+                    if (g4Seraphs.length > 0) {
+                        // Retire self
+                        card.classList.add('effect-retired');
+                        setTimeout(() => {
+                            document.querySelector('.my-side .drop-zone').appendChild(card);
+                            updateDropCount();
+                        }, 500);
+
+                        // Pick one to ride
+                        openViewer("เลือก Seraph เกรด 4 1 ใบเพื่อไรด์", g4Seraphs);
+                        await new Promise(resolveRide => {
+                            const ridePicker = (e) => {
+                                const selected = e.target.closest('.card');
+                                if (selected && selected.parentElement === viewerGrid) {
+                                    const cData = JSON.parse(selected.dataset.cardData);
+                                    // Remove from wherever it was
+                                    const fromHand = playerHand.querySelector(`.card[data-name="${cData.name}"]`);
+                                    if (fromHand) fromHand.remove();
+                                    const inDeckIdx = deckPool.findIndex(c => c.name === cData.name);
+                                    if (inDeckIdx !== -1) deckPool.splice(inDeckIdx, 1);
+                                    const inDrop = document.querySelector(`.my-side .drop-zone .card[data-name="${cData.name}"]`);
+                                    if (inDrop) inDrop.remove();
+
+                                    // RIDE
+                                    const newVG = createCardElement(cData);
+                                    document.querySelector('.my-side .circle.vc').appendChild(newVG);
+                                    hasRiddenThisTurn = true;
+                                    window.seraphCostReduction = true;
+                                    
+                                    // Opponent imprisons 1 from drop
+                                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
+                                    
+                                    alert(`ไรด์ ${cData.name} สำเร็จ! คอสต์ของ Purelight ลดลง CB1 ในเทิร์นนี้!`);
+                                    viewerGrid.removeEventListener('click', ridePicker);
+                                    zoneViewer.classList.add('hidden');
+                                    resolveRide();
+                                }
+                            };
+                            viewerGrid.addEventListener('click', ridePicker);
+                        });
+                        return true;
+                    } else {
+                        alert("ไม่พบ Seraph เกรด 4 ใน มือ/กอง/ดรอป!");
+                    }
+                }
+            } else {
+                alert("เงื่อนไขไม่ครบ: ต้องมีแวน Seraph G3+ และยังไม่ได้ไรด์ในเทิร์นนี้");
+            }
+            return false;
+        }
+
+        // --- Aurora Battle Princess, Grenade Marieda [AUTO] ---
+        if (name.toLowerCase().includes('grenade marieda')) {
+            const oppPrison = document.querySelectorAll('.opponent-side .order-zone .card.imprisoned-card');
+            if (oppPrison.length > 0 && await vgConfirm("Marieda: เลือกการ์ดในคุกคู่แข่งลงใต้กอง, คู่แข่งขัง G0 ในดรอป 1 ใบ, ใบนี้ +5000?")) {
+                alert("คลิกเลือกการ์ดในคุกคู่แข่ง 1 ใบเพื่อนำลงใต้กอง");
+                document.body.classList.add('targeting-mode');
+                const moved = await new Promise(resolveSwap => {
+                    const swapListener = (e) => {
+                        const target = e.target.closest('.opponent-side .order-zone .card.imprisoned-card');
+                        if (target) {
+                            e.stopPropagation();
+                            target.remove(); // Put to bottom (just remove here for simplicity)
+                            sendData({ type: 'announce', msg: 'ขังในคุกถูกสลับลงใต้กองกองการ์ดแล้ว!' });
+                            document.body.classList.remove('targeting-mode');
+                            document.removeEventListener('click', swapListener, true);
+                            resolveSwap(true);
+                        }
+                    };
+                    document.addEventListener('click', swapListener, true);
+                });
+
+                if (moved) {
+                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' }); // Simplified G0 check via prompt
+                    card.dataset.power = parseInt(card.dataset.power) + 5000;
+                    updateAllStaticBonuses();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- Aurora Battle Princess, Lifle Royar [ACT] ---
+        if (name.toLowerCase().includes('lifle royar')) {
+            if (await vgConfirm("Lifle Royar: [CB1] ขัง RC คู่แข่ง 1 ใบ และเรียกการ์ดใหม่จากบนสุดกอง 5 ใบ?")) {
+                if (payCounterBlast(1)) {
+                    // Imprison 1
+                    alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเข้าคุก");
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resImp => {
+                        const impL = (e) => {
+                            const t = e.target.closest('.opponent-side .circle.rc .card');
+                            if (t) {
+                                e.stopPropagation();
+                                imprisonCard(t);
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', impL, true);
+                                resImp();
+                            }
+                        };
+                        document.addEventListener('click', impL, true);
+                    });
+
+                    // Top 5 Call
+                    const top5 = deckPool.slice(0, 5);
+                    const vgGrade = parseInt(document.querySelector('.my-side .circle.vc .card').dataset.grade);
+                    const validUnits = top5.filter(c => c.grade <= vgGrade);
+
+                    if (validUnits.length > 0) {
+                        openViewer("เลือกการ์ดเรียกเกรดไม่เกินแวนการ์ดลง (RC)", validUnits);
+                        await new Promise(resCall => {
+                            const callP = (e) => {
+                                const clicked = e.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    const cData = JSON.parse(clicked.dataset.cardData);
+                                    const idx = deckPool.findIndex(c => c.name === cData.name);
+                                    if (idx !== -1) {
+                                        const callUnit = createCardElement(deckPool.splice(idx, 1)[0]);
+                                        alert("เลือกช่อง (RC) เพื่อวางยูนิท");
+                                        document.body.classList.add('targeting-mode');
+                                        const placeL = (pe) => {
+                                            const circle = pe.target.closest('.my-side .circle.rc');
+                                            if (circle) {
+                                                circle.appendChild(callUnit);
+                                                sendMoveData(callUnit);
+                                                document.body.classList.remove('targeting-mode');
+                                                document.removeEventListener('click', placeL, true);
+                                                resCall();
+                                            }
+                                        };
+                                        document.addEventListener('click', placeL, true);
+                                    }
+                                    viewerGrid.removeEventListener('click', callP);
+                                    zoneViewer.classList.add('hidden');
+                                }
+                            };
+                            viewerGrid.addEventListener('click', callP);
+                        });
+                    } else {
+                        alert("ไม่พบยูนิทที่เกรดไม่เกินแวนการ์ดใน 5 ใบแรก!");
+                    }
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // --- Gratias Gradale (Regalis Piece) ---
         if (name.includes('Gratias Gradale')) {
             const vgCard = document.querySelector(`${sideClass} .circle.vc .card`);
@@ -10030,6 +10239,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeSkillBtn) {
         closeSkillBtn.onclick = () => skillViewer.classList.add('hidden');
+    }
+
+    async function triggerMunaSkill(munaCard) {
+        if (munaCard.dataset.actUsed === "true") return;
+        if (await vgConfirm("Muna: [SB1] เพื่อจั่วการ์ด 1 ใบ?")) {
+            if (await paySoulBlast(1)) {
+                munaCard.dataset.actUsed = "true"; // use 1/turn
+                drawCard(true);
+            }
+        }
     }
 
     function handleIncomingData(data) {
