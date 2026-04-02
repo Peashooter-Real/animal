@@ -12149,7 +12149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     skill: data.skill,
                     imageUrl: data.imageUrl
                 });
-                card.id = cardId;
+                card.id = resolvedCardId;
                 card.classList.add('opponent-card');
                 card.draggable = false;
             } else {
@@ -12177,8 +12177,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle Vanguard replacement: ONLY clear if moving to VC AND IDs are different
             if (data.zone === 'vc') {
                 targetZone.querySelectorAll('.card').forEach(c => {
-                    if (c.id !== cardId) {
-                        console.log("Replacing remote Vanguard:", c.id, "with", cardId);
+                    if (c.id !== resolvedCardId) {
+                        console.log("Replacing remote Vanguard:", c.id, "with", resolvedCardId);
                         c.remove();
                     }
                 });
