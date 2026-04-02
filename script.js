@@ -2913,12 +2913,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const finishThisCheck = () => {
-                checkCard.remove();
-                // Check if it's an Over Trigger - if so, move to Remove Zone (or just hide it), otherwise move to hand
+                if (checkCard && checkCard.parentElement) {
+                    checkCard.remove();
+                }
+                
+                // Check if it's an Over Trigger - move to Bind (Remove Zone)
                 if (cardData.trigger === 'Over') {
-                    alert("Over Trigger! Moving to Remove Zone (Bind) as per rules.");
+                    alert("Over Trigger! เข้าสู่ Remove Zone (Bind) และประมวลผลพลัง 100M");
                     bindPool.push(cardData);
-                    if (checkCard) checkCard.remove();
                     updateCountsUI();
                     sendData({ type: 'syncBindCount', count: bindPool.length });
                 } else {
@@ -2929,21 +2931,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendData({ type: 'syncHandCount', count: playerHand.querySelectorAll('.card').length });
                 }
 
+                // Continue to NEXT drive check OR resolve the battle
                 if (count > 1) {
                     setTimeout(() => driveCheck(count - 1, crit, isOpponentPG), 800);
                 } else {
-                    // ALL DRIVE CHECKS COMPLETE - Now resolve the hit
+                    console.log("Drive Checks complete. Resolving attack hit...");
                     setTimeout(() => {
                         attackHitCheck(crit, isOpponentPG);
                     }, 500);
                 }
             };
 
-            // How long to show the card? If targeting, wait for click. If not, auto-move.
+            // Wait for targeting to complete before finishing the check
+            let waitTime = 0;
             const checkTargeting = setInterval(() => {
-                if (!document.body.classList.contains('targeting-mode')) {
+                waitTime += 200;
+                // Fallback: If stuck in targeting mode for too long (e.g. 15s), force continue
+                if (!document.body.classList.contains('targeting-mode') || waitTime > 15000) {
                     clearInterval(checkTargeting);
-                    setTimeout(finishThisCheck, 1500);
+                    document.body.classList.remove('targeting-mode'); // Safety cleanup
+                    setTimeout(finishThisCheck, 1000);
                 }
             }, 200);
         }, 500);
