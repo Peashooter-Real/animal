@@ -386,9 +386,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (bailoutSbBtn) {
         bailoutSbBtn.onclick = async () => {
+            if (!isMyTurn || phases[currentPhaseIndex] !== 'main') {
+                alert("คุณสามารถประกันตัวได้ในเทิร์นของคุณและช่วง Main Phase เท่านั้น!");
+                return;
+            }
             if (await paySoulBlast(1)) {
                 alert("จ่าย [SB1] สำเร็จ! กรุณาเลือกการ์ด 1 ใบจากในหน้าต่างนี้เพื่อประกันตัวกลับลง (RC)");
-                // Stay in viewer, just set the mode
                 window.bailoutPendingCount = 1; 
                 document.body.classList.add('targeting-mode');
             }
@@ -397,8 +400,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (bailoutCbBtn) {
         bailoutCbBtn.onclick = async () => {
+            if (!isMyTurn || phases[currentPhaseIndex] !== 'main') {
+                alert("คุณสามารถประกันตัวได้ในเทิร์นของคุณและช่วง Main Phase เท่านั้น!");
+                return;
+            }
             if (payCounterBlast(1)) {
-                // CB1 allows 2 cards (one now, one free later)
                 window.freeBailout = (window.freeBailout || 0) + 1;
                 alert("จ่าย [CB1] สำเร็จ! คุณสามารถประกันตัวการ์ดได้สูงสุด 2 ใบ (เลือกใบแรกจากในหน้าต่างนี้)");
                 window.bailoutPendingCount = 2;
@@ -3246,10 +3252,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const idx = soulPool.indexOf(fuujoInSoul);
                     soulPool.splice(idx, 1);
                     bindPool.push(fuujoInSoul);
-                    sendData({ type: 'moveCard', cardId: fuujoInSoul.id, zone: 'bind' });
                     updateSoulUI();
                     updateCountsUI();
+                    
+                    // Mark Vanguard for guard restrict
                     attacker.dataset.guardRestrictCount = "2";
+                    
+                    sendData({ 
+                        type: 'moveCard', 
+                        cardId: fuujoInSoul.id, 
+                        zone: 'bind',
+                        side: 'my',
+                        syncData: { guardRestrictCount: "2", attackerId: attacker.id }
+                    });
+                    
                     alert("Fuujo: เปิดใช้งาน Guard Restrict! (คู่แข่งต้องคอล 2 ใบขึ้นไป)");
                 }
             }
@@ -4311,7 +4327,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Seraph Snow [CONT](VC) ---
         if (name.includes('Seraph Snow') && zone === 'vc') {
             const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
-            if (isMyTurn && imprisonedCount >= 1) {
+            const meetsCondition = isMyTurn && (imprisonedCount >= 1);
+            if (meetsCondition) {
                 if (card.dataset.seraphBuffApplied !== "true") {
                     card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
                     card.dataset.seraphBuffApplied = "true";
@@ -4449,15 +4466,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Greedon (Boshokku Soul Bonus) (+5000 for EACH copy in soul) ---
-        if (card.dataset.name && card.dataset.name.includes('Greedon') && isMyTurn && zone === 'vc') {
-            const boshokkuInSoul = soulPool.filter(c => c.dataset.name && c.dataset.name.includes('Boshokku'));
+        if (card.dataset.name && card.dataset.name.includes('Greedon') && zone === 'vc') {
+            const boshokkuInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Boshokku'));
             const count = boshokkuInSoul.length;
             const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
+            const meetsCondition = isMyTurn && count > 0 && damageCount >= 4;
             
-            if (count > 0 && damageCount >= 4) {
+            if (meetsCondition) {
                 const totalBuff = count * 5000;
                 if (parseInt(card.dataset.greedonSoulBonusApplied || "0") !== totalBuff) {
-                    // Reset previous if changed (not ideal for performance but correct)
                     card.dataset.power = (parseInt(card.dataset.power) - parseInt(card.dataset.greedonSoulBonusApplied || "0")).toString();
                     card.dataset.power = (parseInt(card.dataset.power) + totalBuff).toString();
                     card.dataset.greedonSoulBonusApplied = totalBuff.toString();
