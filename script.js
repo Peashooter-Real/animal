@@ -293,6 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         openViewer(`🔒 ${side === 'my' ? 'My' : "Opponent's"} Prison (${imprisonedCards.length} inmates)`, imprisonedCards);
+        
+        // Show bailout actions if viewing opponent's prison (where our cards are)
+        if (side === 'opp') {
+            const prisonActions = document.getElementById('prison-bailout-actions');
+            if (prisonActions) prisonActions.classList.remove('hidden');
+        }
     };
 
     // Comprehensive update for both sides (called after any prison-related change)  
@@ -375,6 +381,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiDeckSelect = document.getElementById('ai-deck-select');
     const aiDifficultySelect = document.getElementById('ai-difficulty');
 
+    const bailoutSbBtn = document.getElementById('bailout-sb-btn');
+    const bailoutCbBtn = document.getElementById('bailout-cb-btn');
+
+    if (bailoutSbBtn) {
+        bailoutSbBtn.onclick = async () => {
+            if (await paySoulBlast(1)) {
+                alert("จ่าย [SB1] สำเร็จ! กรุณาเลือกการ์ด 1 ใบจากในหน้าต่างนี้เพื่อประกันตัวกลับลง (RC)");
+                // Stay in viewer, just set the mode
+                window.bailoutPendingCount = 1; 
+                document.body.classList.add('targeting-mode');
+            }
+        };
+    }
+    
+    if (bailoutCbBtn) {
+        bailoutCbBtn.onclick = async () => {
+            if (payCounterBlast(1)) {
+                // CB1 allows 2 cards (one now, one free later)
+                window.freeBailout = (window.freeBailout || 0) + 1;
+                alert("จ่าย [CB1] สำเร็จ! คุณสามารถประกันตัวการ์ดได้สูงสุด 2 ใบ (เลือกใบแรกจากในหน้าต่างนี้)");
+                window.bailoutPendingCount = 2;
+                document.body.classList.add('targeting-mode');
+            }
+        };
+    }
+
     if (startAIModeBtn) {
         startAIModeBtn.onclick = () => {
             aiSetupOverlay.classList.remove('hidden');
@@ -422,26 +454,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function imprisonCard(card) {
         if (!card) return;
+        
+        let targetZone;
+        const myOrderZone = document.querySelector('.my-side .order-zone');
         const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-        if (oppOrderZone) {
+
+        // Check which side has the Prison card set
+        const myHasPrison = myOrderZone && Array.from(myOrderZone.querySelectorAll('.card')).some(c => 
+            (c.dataset.name || "").toLowerCase().includes('prison')
+        );
+        const oppHasPrison = oppOrderZone && Array.from(oppOrderZone.querySelectorAll('.card')).some(c => 
+            (c.dataset.name || "").toLowerCase().includes('prison')
+        );
+
+        if (myHasPrison && !oppHasPrison) {
+            // Only we have a prison (We are Seraph) -> All inmates come here
+            targetZone = myOrderZone;
+        } else if (!myHasPrison && oppHasPrison) {
+            // Only opponent has a prison (They are Seraph) -> All inmates go there
+            targetZone = oppOrderZone;
+        } else {
+            // Mirror match or no prison set yet -> move to opposite side of owner
+            if (card.classList.contains('opponent-card')) {
+                targetZone = myOrderZone;
+            } else {
+                targetZone = oppOrderZone;
+            }
+        }
+
+        if (targetZone) {
             const wasInHand = card.closest('#player-hand');
             
-            oppOrderZone.appendChild(card);
+            targetZone.appendChild(card);
             card.classList.add('imprisoned-card');
             card.classList.remove('rest');
             
-            sendData({ 
-                type: 'moveCard', 
-                cardId: card.id, 
-                zone: 'order-zone', 
-                isImprisoned: true,
-                cardData: card.dataset.cardData, 
-                name: card.dataset.name, 
-                grade: card.dataset.grade, 
-                power: card.dataset.power, 
-                shield: card.dataset.shield, 
-                imageUrl: card.dataset.imageUrl 
-            });
+            // Standard sync call
+            sendMoveData(card, 'order-zone');
             sendData({ type: 'checkUpdateSeraph' });
             
             if (wasInHand) updateHandSpacing();
@@ -2402,71 +2451,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 effectiveCard = document.getElementById(card.dataset.originalId) || card;
             }
 
-            // Prison Bailout (Main Phase, clicking our own card inside the opponent's order zone)
             if (effectiveCard.parentElement && effectiveCard.parentElement.classList.contains('order-zone') && effectiveCard.parentElement.closest('.opponent-side')) {
                 if (isMyTurn && currentPhase === 'main' && !effectiveCard.classList.contains('opponent-card') && effectiveCard.classList.contains('imprisoned-card')) {
-                    const bailOut = async () => {
-                        let costPaid = false;
-                        if (window.freeBailout && window.freeBailout > 0) {
-                            window.freeBailout--;
-                            costPaid = true;
-                        } else {
-                            if (await vgConfirm("Bailout (ประกันตัว):\nต้องการจ่าย [SB1] เพื่อเรียกแค่ใบนี้กลับใช่หรือไม่?\n(ตอบ Cancel หากต้องการจ่าย [CB1] เพื่อเรียก 2 ใบ)")) {
-                                costPaid = await paySoulBlast(1);
-                            } else if (await vgConfirm("ต้องการจ่าย [CB1] เพื่อเรียกใบนี้ และได้รับสิทธิ์เรียกฟรีอีก 1 ใบใช่หรือไม่?")) {
-                                if (payCounterBlast(1)) {
-                                    window.freeBailout = (window.freeBailout || 0) + 1;
-                                    costPaid = true;
-                                }
-                            }
-                        }
-
-                        if (costPaid) {
-                            alert("คลิกเลือกช่อง (RC) ฝั่งคุณเพื่อคอลยูนิทที่ได้รับการประกันตัว");
-                            document.body.classList.add('targeting-mode');
-                            
-                            // Trigger Muna [AUTO]
-                            document.querySelectorAll('.my-side .circle.rc .card').forEach(c => {
-                                if (c.dataset.name.includes('Muna')) {
-                                    triggerMunaSkill(c);
-                                }
-                            });
-                            await new Promise(resolve => {
-                                const callListener = (e) => {
-                                    const targetCircle = e.target.closest('.my-side .circle.rc');
-                                    if (targetCircle) {
-                                        e.stopPropagation();
-                                        const existing = targetCircle.querySelector('.card:not(.opponent-card)');
-                                        if (existing) {
-                                            document.querySelector('.my-side .drop-zone').appendChild(existing);
-                                            sendMoveData(existing);
-                                        }
-                                        targetCircle.appendChild(effectiveCard);
-                                        effectiveCard.classList.remove('imprisoned-card');
-                                        sendMoveData(effectiveCard, 'rc'); 
-                                        sendData({ type: 'checkUpdateSeraph' }); // Triggers static bonus check for opponent
-                                        updateAllPrisonUI();
-                                        document.body.classList.remove('targeting-mode');
-                                        document.removeEventListener('click', callListener, true);
-                                        resolve();
-                                    } else if (e.target.closest('.action-btn')) {
-                                         // Allow cancel
-                                         document.body.classList.remove('targeting-mode');
-                                         document.removeEventListener('click', callListener, true);
-                                         resolve();
-                                    }
-                                };
-                                document.addEventListener('click', callListener, true);
-                            });
-                        }
-                    };
-                    
-                    const zViewer = document.getElementById('zone-viewer');
-                    if (zViewer && !zViewer.classList.contains('hidden')) {
-                        zViewer.classList.add('hidden');
-                    }
-                    
-                    bailOut();
+                    // Open prison viewer to allow choosing bailout method
+                    window.viewPrisonZone('opp');
                     return;
                 }
             }
@@ -2657,27 +2645,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     clearInterval(waitLoop);
                     setTimeout(finishDamageProcess, 1500);
                 }
-            }, 200);
+            }, 2000); // Give a bit more time for OT resolve
         }, 500);
 
         function finishDamageProcess() {
             if (cardData.trigger === 'Over') {
-                alert("Over Trigger ออกตอนเช็คดาเมจ! นำการ์ดไปยัง Remove Zone (Bind) และฟื้นฟู/ไม่รับดาเมจนี้เพิ่ม");
+                alert("Over Trigger ออกตอนเช็คดาเมจ! (เลือกยูนิทรับพลัง 100M) และข้ามดาเมจใบนี้");
+                
                 bindPool.push(cardData);
-                checkCard.remove();
+                if (checkCard) checkCard.remove();
                 updateCountsUI();
                 sendData({ type: 'syncBindCount', count: bindPool.length });
 
-                // Assuming OverTrigger removes itself and nullifies this point of damage.
-                // We don't add it to damage zone.
-                isDealingDamage = false;
+                isDealingDamage = false; 
                 if (checksLeft > 1) {
                     setTimeout(() => dealDamage(checksLeft - 1), 800);
                 }
                 return;
             }
 
-            checkCard.remove();
+            if (checkCard) checkCard.remove();
             const damageCard = createCardElement(cardData);
             const damageZone = document.querySelector('.my-side .damage-zone');
             damageZone.appendChild(damageCard);
@@ -2930,8 +2917,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check if it's an Over Trigger - if so, move to Remove Zone (or just hide it), otherwise move to hand
                 if (cardData.trigger === 'Over') {
                     alert("Over Trigger! Moving to Remove Zone (Bind) as per rules.");
-                    bindPool.push(checkCard);
-                    checkCard.remove();
+                    bindPool.push(cardData);
+                    if (checkCard) checkCard.remove();
                     updateCountsUI();
                     sendData({ type: 'syncBindCount', count: bindPool.length });
                 } else {
@@ -3111,6 +3098,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Standard OT gives 100M Power
         pendingPowerIncrease = powerIncrease;
         document.body.classList.add('targeting-mode');
 
@@ -3118,9 +3106,20 @@ document.addEventListener('DOMContentLoaded', () => {
             pendingCriticalIncrease = 1;
             targetingType = 'critical';
             alert(`Step 1: Select a unit to receive +1 Critical.`);
+        } else if (triggerType === 'Over') {
+            const otName = cardData.name || "";
+            if (otName.includes('Blessfavor')) {
+                // Stoicheia OT gives both 100M and +1 Crit
+                pendingCriticalIncrease = 1;
+                targetingType = 'both';
+                alert(`Select a unit to receive +100M Power and +1 Critical! (Stoicheia OT)`);
+            } else {
+                targetingType = 'power';
+                alert(`Select a unit to receive +100M Power!`);
+            }
         } else {
             targetingType = 'power';
-            alert(`Select a unit to receive +${powerIncrease >= 100000 ? '100M' : powerIncrease} Power.`);
+            alert(`Select a unit to receive +${powerIncrease} Power.`);
         }
 
         // After targeting is complete (or if no targeting needed for power/crit), apply Brandt Gate OT
@@ -10537,13 +10536,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const localCardId = data.targetId.replace(/^opp-/, '');
                 const myTarget = document.getElementById(localCardId);
                 if (myTarget && !myTarget.classList.contains('opponent-card')) {
-                    const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-                    if (oppOrderZone) {
-                        oppOrderZone.appendChild(myTarget);
-                        myTarget.classList.add('imprisoned-card');
-                        updateAllStaticBonuses();
-                        updateAllPrisonUI();
-                    }
+                    imprisonCard(myTarget);
                 }
                 break;
             case 'forceImprison':
@@ -10595,12 +10588,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             const target = e.target.closest('.my-side .drop-zone .card');
                             if (target) {
                                 e.stopPropagation();
-                                const oppOrderZone = document.querySelector('.opponent-side .order-zone');
-                                oppOrderZone.appendChild(target);
-                                target.classList.add('imprisoned-card');
-                                
-                                sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', isImprisoned: true, cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
-                                sendData({ type: 'checkUpdateSeraph' });
+                                const targetZone = document.querySelector('.opponent-side .order-zone');
+                                if (targetZone) {
+                                    targetZone.appendChild(target);
+                                    target.classList.add('imprisoned-card');
+                                    sendMoveData(target, 'order-zone');
+                                    sendData({ type: 'checkUpdateSeraph' });
+                                }
                                 
                                 impCount++;
                                 updateDropCount();
@@ -10622,13 +10616,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         const topCardData = deckPool.splice(0, 1)[0]; 
                         updateDeckCounter();
                         
-                        const oppOrderZone = document.querySelector('.opponent-side .order-zone');
+                        const targetZone = document.querySelector('.opponent-side .order-zone');
                         const target = createCardElement(topCardData);
-                        oppOrderZone.appendChild(target);
-                        target.classList.add('imprisoned-card');
-                        
-                        sendData({ type: 'moveCard', cardId: target.id, zone: 'order-zone', isImprisoned: true, cardData: target.dataset.cardData, name: target.dataset.name, grade: target.dataset.grade, power: target.dataset.power, shield: target.dataset.shield, imagePreview: target.dataset.imageUrl });
-                        sendData({ type: 'checkUpdateSeraph' });
+                        if (targetZone) {
+                            targetZone.appendChild(target);
+                            target.classList.add('imprisoned-card');
+                            sendMoveData(target, 'order-zone');
+                            sendData({ type: 'checkUpdateSeraph' });
+                        }
                         updateAllStaticBonuses();
                         updateAllPrisonUI();
                         sendData({ type: 'announce', msg: `ถูกดึงใบบนสุดของกองลงคุกแล้ว!` });
@@ -11992,7 +11987,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let targetId = attackData.targetId;
-        const targetCard = document.getElementById(targetId);
+        const targetElement = document.getElementById(targetId);
+        let targetCard = null;
+        if (targetElement) {
+            targetCard = targetElement.classList.contains('circle') ? targetElement.querySelector('.card') : targetElement;
+        }
 
         if (attackData.isTargetVanguard) {
             let totalDmg = parseInt(attackData.totalCritical || "1");
@@ -12141,13 +12140,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!card) {
                 card = createCardElement({
-                    name: data.cardName,
+                    name: data.cardName || data.name,
                     grade: data.grade,
                     power: data.power,
                     shield: data.shield,
                     critical: data.critical,
                     skill: data.skill,
-                    imageUrl: data.imageUrl
+                    imageUrl: data.imageUrl || data.imagePreview
                 });
                 card.id = resolvedCardId;
                 card.classList.add('opponent-card');
@@ -12338,20 +12337,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function executeBailoutMove(card) {
+        if (!card) return;
+        
+        // Hide the viewer automatically to let player choose RC
+        const zViewer = document.getElementById('zone-viewer');
+        if (zViewer) zViewer.classList.add('hidden');
+        
+        alert(`เลือกช่อง (RC) เพื่อคอล ${card.dataset.name} ที่เตรียมประกันตัว`);
+        document.body.classList.add('targeting-mode');
+        
+        // Trigger Muna [AUTO]
+        document.querySelectorAll('.my-side .circle.rc .card').forEach(c => {
+            if ((c.dataset.name || "").includes('Muna')) {
+                triggerMunaSkill(c);
+            }
+        });
+        
+        await new Promise(resolve => {
+            const callListener = async (ev) => {
+                const targetCircle = ev.target.closest('.my-side .circle.rc');
+                if (targetCircle) {
+                    ev.stopPropagation();
+                    const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                    if (existing) {
+                        const dropZone = document.querySelector('.my-side .drop-zone');
+                        if (dropZone) {
+                            dropZone.appendChild(existing);
+                            existing.classList.remove('rest');
+                            sendMoveData(existing);
+                        }
+                    }
+                    targetCircle.appendChild(card);
+                    card.classList.remove('imprisoned-card');
+                    card.classList.remove('rest');
+                    card.style.transform = 'none';
+                    
+                    sendMoveData(card, 'rc'); 
+                    sendData({ type: 'checkUpdateSeraph' }); 
+                    updateAllPrisonUI();
+                    
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', callListener, true);
+                    
+                    if (window.bailoutPendingCount > 0) window.bailoutPendingCount--;
+                    
+                    // If we have more cards to bailout (from CB1), reopen viewer if possible
+                    if (window.bailoutPendingCount > 0 || (window.freeBailout && window.freeBailout > 0)) {
+                         // Free bailout logic is handled differently, usually CB1 allows +1 more.
+                         // For now, let's just finish the current one.
+                    }
+                    resolve();
+                } else if (ev.target.closest('.close-btn') || ev.target.closest('#next-phase-btn')) {
+                     document.body.classList.remove('targeting-mode');
+                     document.removeEventListener('click', callListener, true);
+                     resolve();
+                }
+            };
+            document.addEventListener('click', callListener, true);
+        });
+    }
+
     function openViewer(title, cards) {
         if (!zoneViewer || !viewerTitle || !viewerGrid) return;
+        
+        // Hide prison actions by default
+        const prisonActions = document.getElementById('prison-bailout-actions');
+        if (prisonActions) prisonActions.classList.add('hidden');
+
         viewerTitle.textContent = title;
         viewerGrid.innerHTML = '';
 
         cards.forEach(originalCard => {
-            // Support both DOM elements and data objects
             let node;
             if (originalCard instanceof HTMLElement) {
                 node = originalCard.cloneNode(true);
                 node.dataset.originalId = originalCard.id;
                 
-                // cloneNode(true) does not copy event listeners. We must attach drag listeners here
-                // to allow dragging HTMLElement cards directly out of the Viewer Grid.
                 node.addEventListener('dragstart', (e) => {
                     draggedCard = node;
                     setTimeout(() => node.classList.add('dragging'), 0);
@@ -12377,7 +12439,6 @@ document.addEventListener('DOMContentLoaded', () => {
             node.style.left = 'auto';
             node.style.margin = '0';
 
-            // Allow viewing skill from viewer
             node.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 const original = document.getElementById(node.dataset.originalId);
@@ -12385,12 +12446,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 else openSkillViewer(node);
             });
 
-            // Make it easier: Left-click opens skill viewer if NOT in a selection mode
             node.addEventListener('click', (e) => {
-                const title = (viewerTitle.textContent || "").toLowerCase();
-                // If title contains "select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู" then it's a selection mode
+                const titleLower = (viewerTitle.textContent || "").toLowerCase();
+                
+                // --- CUSTOM PRISON BAILOUT LOGIC ---
+                if (document.body.classList.contains('targeting-mode') && titleLower.includes('prison')) {
+                    e.stopPropagation();
+                    const originalId = node.dataset.originalId;
+                    const originalCard = document.getElementById(originalId);
+                    if (originalCard && originalCard.classList.contains('imprisoned-card')) {
+                        // Move this card back!
+                        executeBailoutMove(originalCard);
+                    }
+                    return;
+                }
+
                 const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู"];
-                const isSelection = selectionKeywords.some(k => title.includes(k));
+                const isSelection = selectionKeywords.some(k => titleLower.includes(k));
                 
                 if (!isSelection && !document.body.classList.contains('targeting-mode')) {
                     e.stopPropagation();
@@ -12401,7 +12473,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             viewerGrid.appendChild(node);
-
         });
 
         zoneViewer.classList.remove('hidden');
