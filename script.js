@@ -4315,12 +4315,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     delete card.dataset.drive;
                 }
-            } else {
-                if (card.dataset.seraphBuffApplied === "true") {
-                    card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
-                    card.dataset.seraphBuffApplied = "false";
-                    syncPowerDisplay(card);
-                }
+            } else if (card.dataset.seraphBuffApplied === "true") {
+                // Return to base if buff was applied but conditions no longer met
+                card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
+                card.dataset.seraphBuffApplied = "false";
+                syncPowerDisplay(card);
                 delete card.dataset.drive;
             }
         }
@@ -6402,7 +6401,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'findanisBonusApplied', 'otDarkStatesActiveBuff', 'otStoicheiaBuff', 'turnEndBuffApplied',
                 'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied',
                 'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
-                'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn'
+                'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
+                'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -9235,7 +9235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Seraph Snow [ACT](VC/RC) ---
         if (name.includes('Seraph Snow') && (isVC || isRC)) {
-            if (await vgConfirm("Seraph Snow: [CB1] เลือกเรียร์การ์ดคู่แข่ง 2 ใบ ขังในคุก?")) {
+            if (await vgConfirm("Seraph Snow: [CB1] เลือกเรียร์การ์ดคู่แข่งสูงสุด 2 ใบ ขังเข้าในคุก?")) {
                 if (payCounterBlast(1)) {
                     effectiveCard.dataset.actUsed = "true";
                     
@@ -9250,19 +9250,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             aiOrderZone.appendChild(target);
                             target.classList.add('imprisoned-card');
                         }
+                        updateCountsUI();
                         updateAllStaticBonuses();
                         return true;
                     }
 
-                    const availableRCs = document.querySelectorAll(`${oppSideClass} .circle.rc .card:not(.opponent-card)`).length;
-                    const maxTargets = Math.min(2, availableRCs);
+                    // Count ONLY opponent rear-guards (on their side relative to player)
+                    const opponentRCs = Array.from(document.querySelectorAll(`${oppSideClass} .circle.rc .card`));
+                    const maxTargets = Math.min(2, opponentRCs.length);
 
                     if (maxTargets === 0) {
-                        alert("คู่แข่งไม่มีเรียร์การ์ดให้ขัง!");
+                        alert("คู่แข่งไม่มีเรียร์การ์ดเหลือบนสนามให้ขัง!");
                         return true;
                     }
 
-                    alert(`คลิกเลือกเรียร์การ์ดคู่แข่ง ${maxTargets} ใบเพื่อนำไปขังในคุก`);
+                    alert(`คลิกเลือกเรียร์การ์ดคู่แข่งไม่เกิน ${maxTargets} ใบเพื่อนำไปขังในคุก`);
                     let imprisoned = 0;
                     document.body.classList.add('targeting-mode');
                     await new Promise(resolve => {
@@ -9272,11 +9274,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 e.stopPropagation();
                                 const targetId = target.dataset.originalId || target.id;
                                 sendData({ type: 'forceImprisonSpecific', targetId: targetId });
-                                const myOrderZone = document.querySelector(`${sideClass} .order-zone`);
+                                const myOrderZone = document.querySelector('.my-side .order-zone');
                                 if (myOrderZone) {
                                     myOrderZone.appendChild(target);
                                     target.classList.add('imprisoned-card');
                                 }
+                                updateCountsUI();
                                 updateAllStaticBonuses();
                                 imprisoned++;
                                 if (imprisoned >= maxTargets) {
@@ -9284,9 +9287,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                     document.removeEventListener('click', targetListener, true);
                                     resolve();
                                 } else {
-                                    alert(`ขังใบที่ ${imprisoned} สำเร็จ! เลือกใบถัดไป`);
+                                    alert(`ขังใบที่ ${imprisoned} สำเร็จ! เลือกใบถัดไป (หรือคลิกที่อื่นเพื่อจบ)`);
                                 }
-                            } else if (e.target.closest('.action-btn')) {
+                            } else if (e.target.closest('.action-btn') || e.target.closest('.menu-container')) {
                                 document.body.classList.remove('targeting-mode');
                                 document.removeEventListener('click', targetListener, true);
                                 resolve();
