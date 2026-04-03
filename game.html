@@ -22,7 +22,7 @@
                 <div id="lobby-actions" class="lobby-actions">
                     <div id="id-display-box" class="id-display-card hidden">
                         <div class="card-glow-bg"></div>
-                        <span class="label">SHARE THIS ACCESS ID</span>
+                        <span class="label">รหัสเข้าเล่น (แชร์ให้คู่แข่ง)</span>
                         <div class="id-main-row">
                             <span id="game-peer-id" class="id-text">...</span>
                             <button id="copy-game-id-btn" class="copy-icon-btn">📋</button>
@@ -43,21 +43,21 @@
                             <div class="radar-circle"></div>
                             <div class="radar-circle"></div>
                         </div>
-                        <p class="waiting-text">SEARCHING FOR RIVAL...</p>
-                        <a href="lobby.html" class="glass-btn secondary-btn" style="margin-top: 1rem; display: inline-block; text-decoration: none;">BACK TO LOBBY</a>
+                        <p class="waiting-text">กำลังค้นหาคู่แข่ง...</p>
+                        <a href="lobby.html" class="glass-btn secondary-btn" style="margin-top: 1rem; display: inline-block; text-decoration: none;">กลับสู่หน้าล็อบบี้</a>
                     </div>
 
                     <div class="divider-text">OR</div>
 
-                    <button id="start-ai-mode-btn" class="glass-btn highlight-btn" style="width: 100%;">🤖 PLAY SOLO VS AI</button>
+                    <button id="start-ai-mode-btn" class="glass-btn highlight-btn" style="width: 100%;">🤖 เล่นคนเดียว (สู้กับ AI)</button>
                 </div>
 
                 <!-- Deck Selection (Show when starting AI mode) -->
                 <div id="ai-setup-overlay" class="setup-overlay hidden">
                     <div class="setup-card">
-                        <h3>GAME SETUP</h3>
+                        <h3>ตั้งค่าการเล่น</h3>
                         <div class="setup-row">
-                            <label>YOUR DECK:</label>
+                            <label>เด็คของคุณ:</label>
                             <select id="player-deck-select" class="glass-select">
                                 <option value="bruce">Diabolos, Bruce</option>
                                 <option value="magnolia">Sylvan Horned Beast, Magnolia</option>
@@ -70,7 +70,7 @@
                             </select>
                         </div>
                         <div class="setup-row">
-                            <label>AI DECK:</label>
+                            <label>เด็คของ AI:</label>
                             <select id="ai-deck-select" class="glass-select">
                                 <option value="bruce">Diabolos, Bruce (Aggro)</option>
                                 <option value="magnolia">Sylvan, Magnolia (6-Attack)</option>
@@ -80,18 +80,17 @@
                             </select>
                         </div>
                         <div class="setup-row">
-                            <label>DIFFICULTY:</label>
+                            <label>ระดับความยาก:</label>
                             <select id="ai-difficulty" class="glass-select">
                                 <option value="hard">Hard (Heuristic AI)</option>
                                 <option value="easy">Easy (Random Moves)</option>
                             </select>
                         </div>
-                        <button id="confirm-ai-start-btn" class="glass-btn primary-btn" style="margin-top: 1rem;">START BATTLE</button>
+                        <button id="confirm-ai-start-btn" class="glass-btn primary-btn" style="margin-top: 1rem;">เริ่มการต่อสู้</button>
                     </div>
                 </div>
 
-                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem; opacity: 0.5;">Return
-                    to Lobby</button>
+                <button onclick="window.location.href='lobby.html'" class="glass-btn" style="margin-top: 2rem; opacity: 0.5;">กลับสู่ล็อบบี้</button>
             </div>
         </div>
 
@@ -116,27 +115,27 @@
 
                 <!-- Opponent Side -->
                 <div class="player-side opponent-side side-disabled">
-                    <div class="side-overlay">Waiting for rival...</div>
+                    <div class="side-overlay">กำลังรอคู่แข่ง...</div>
 
                     <!-- Left Column Zones (Opponent) -->
                     <div class="col-zones left-col">
                         <div class="zone damage-zone" data-zone="damage">
-                            <span class="zone-label">Damage (<span id="opp-damage-count-num">0</span>)</span>
-                            <button id="opp-view-damage-btn" class="view-zone-btn">View</button>
+                            <span class="zone-label">ดาเมจ (<span id="opp-damage-count-num">0</span>)</span>
+                            <button id="opp-view-damage-btn" class="view-zone-btn">ดู</button>
                         </div>
                         <div class="zone order-zone" data-zone="order">
-                            <span class="zone-label">Order</span>
+                            <span class="zone-label">ออร์เดอร์</span>
                         </div>
                         <div class="prison-zone-container hidden" id="opp-prison-zone">
                             <div class="prison-zone-header">
                                 <span class="prison-icon">🔒</span>
-                                <span class="prison-title">PRISON</span>
+                                <span class="prison-title">PRISON (คุก)</span>
                             </div>
                             <div class="prison-zone-body" data-zone="prison">
                                 <div class="prison-card-stack" id="opp-prison-cards"></div>
                                 <div class="prison-count-display">
                                     <span class="prison-count-number" id="opp-prison-count">0</span>
-                                    <span class="prison-count-label">INMATES</span>
+                                    <span class="prison-count-label">จำนวนนักโทษ</span>
                                 </div>
                             </div>
                             <div class="prison-scan-line"></div>
@@ -164,7 +163,7 @@
                             </div>
                             <div class="circle vc" data-zone="vc">
                                 <div class="glow-ring"></div>
-                                <div id="opp-soul-counter" class="soul-badge hidden">Soul: 0</div>
+                                <div id="opp-soul-counter" class="soul-badge hidden">โซล: 0</div>
                             </div>
                             <div class="circle rc" data-zone="rc_front_left">
                                 <div class="glow-ring"></div>
@@ -175,36 +174,40 @@
                     <!-- Right Column Zones (Opponent) -->
                     <div class="col-zones right-col">
                         <div class="zone drop-zone" data-zone="drop">
-                            <span class="zone-label">Drop (<span id="opp-drop-count-num">0</span>)</span>
-                            <button id="opp-view-drop-btn" class="view-zone-btn">View</button>
+                            <span class="zone-label">ดรอป (<span id="opp-drop-count-num">0</span>)</span>
+                            <button id="opp-view-drop-btn" class="view-zone-btn">ดู</button>
                         </div>
                         <div class="zone deck-zone" data-zone="deck">
-                            <span class="zone-label">Deck (<span id="opp-deck-count-num">50</span>)</span>
+                            <span class="zone-label">เด็ค (<span id="opp-deck-count-num">50</span>)</span>
                         </div>
                         <div class="zone ride-deck-zone" data-zone="ride">
-                            <span class="zone-label">Ride Deck</span>
+                            <span class="zone-label">ไรด์เด็ค</span>
                         </div>
                     </div>
 
                     <!-- Opponent Hand Info Overlay -->
                     <div class="opp-hand-info">
-                        Hand: <span id="opp-hand-count">0</span>
+                        บนมือ: <span id="opp-hand-count">0</span>
                     </div>
                 </div>
 
                 <div id="battle-hub" class="battle-hub">
                     <div class="scanline"></div>
-                    <div class="battle-hub-header">BATTLE SETTLEMENT</div>
+                    <div class="battle-hub-header">สรุปผลการต่อสู้</div>
                     <div class="battle-hub-main">
                         <div class="hub-unit-box">
-                            <div id="hub-attacker-name" class="hub-unit-name">Attacker</div>
+                            <div id="hub-attacker-name" class="hub-unit-name">ผู้โจมตี</div>
                             <div class="hub-power-container">
                                 <span id="hub-attacker-power" class="hub-power-val">0</span>
+                            </div>
+                            <div class="hub-extra-info">
+                                <span id="hub-attacker-crit" class="hub-crit-val">★1</span>
+                                <span id="hub-attacker-drive" class="hub-drive-val">ไดร์ฟ: 2</span>
                             </div>
                         </div>
                         <div class="hub-vs">VS</div>
                         <div class="hub-unit-box">
-                            <div id="hub-defender-name" class="hub-unit-name">Defender</div>
+                            <div id="hub-defender-name" class="hub-unit-name">ผู้ป้องกัน</div>
                             <div class="hub-power-container">
                                 <span id="hub-defender-power" class="hub-power-val">0</span>
                                 <span id="hub-shield-bonus" class="hub-plus hidden">+0</span>
@@ -215,16 +218,16 @@
                         <div id="hub-progress" class="hub-progress"></div>
                     </div>
                     <div class="hub-result-area">
-                        <span class="hub-result-label">COMBAT STATUS:</span>
-                        <span id="hub-status-text" class="hub-result-text">HITTING</span>
+                        <span class="hub-result-label">สถานะการโจมตี:</span>
+                        <span id="hub-status-text" class="hub-result-text">กำลังเข้าเป้า</span>
                     </div>
                 </div>
 
                 <div class="divider">
                     <div class="guardian-circle" data-zone="gc_player" id="shared-gc">
-                        <div class="clash-text">GUARDIAN CIRCLE</div>
+                        <div class="clash-text">การ์เดี้ยนเซอร์เคิล (GC)</div>
                         <div id="gc-shield-display" class="soul-badge"
-                            style="top: auto; bottom: -15px; right: 50%; transform: translateX(50%);">Shield: 0</div>
+                            style="top: auto; bottom: -15px; right: 50%; transform: translateX(50%);">ชิลด์: 0</div>
                     </div>
                 </div>
 
@@ -233,22 +236,22 @@
                     <!-- Left Column Zones -->
                     <div class="col-zones left-col">
                         <div class="zone damage-zone" data-zone="damage">
-                            <span class="zone-label">Damage (<span id="damage-count-num">0</span>)</span>
-                            <button id="view-damage-btn" class="view-zone-btn">View</button>
+                            <span class="zone-label">ดาเมจ (<span id="damage-count-num">0</span>)</span>
+                            <button id="view-damage-btn" class="view-zone-btn">ดู</button>
                         </div>
                         <div class="zone order-zone" data-zone="order">
-                            <span class="zone-label">Order</span>
+                            <span class="zone-label">ออร์เดอร์</span>
                         </div>
                         <div class="prison-zone-container hidden" id="my-prison-zone">
                             <div class="prison-zone-header">
                                 <span class="prison-icon">🔒</span>
-                                <span class="prison-title">PRISON</span>
+                                <span class="prison-title">PRISON (คุก)</span>
                             </div>
                             <div class="prison-zone-body" data-zone="prison">
                                 <div class="prison-card-stack" id="my-prison-cards"></div>
                                 <div class="prison-count-display">
                                     <span class="prison-count-number" id="my-prison-count">0</span>
-                                    <span class="prison-count-label">INMATES</span>
+                                    <span class="prison-count-label">จำนวนนักโทษ</span>
                                 </div>
                             </div>
                             <div class="prison-scan-line"></div>
@@ -266,7 +269,7 @@
                             <div class="circle vc" data-zone="vc">
                                 <div class="glow-ring"></div>
                                 <span class="circle-label">V</span>
-                                <div id="soul-counter" class="soul-badge hidden">Soul: 0</div>
+                                <div id="soul-counter" class="soul-badge hidden">โซล: 0</div>
                             </div>
                             <div class="circle rc" data-zone="rc_front_right">
                                 <div class="glow-ring"></div>
@@ -293,14 +296,14 @@
                     <!-- Right Column Zones -->
                     <div class="col-zones right-col">
                         <div class="zone drop-zone" data-zone="drop" id="drop-zone">
-                            <span class="zone-label">Drop (<span id="drop-count-num">0</span>)</span>
-                            <button id="view-drop-btn" class="view-zone-btn">View</button>
+                            <span class="zone-label">ดรอป (<span id="drop-count-num">0</span>)</span>
+                            <button id="view-drop-btn" class="view-zone-btn">ดู</button>
                         </div>
                         <div class="zone deck-zone" data-zone="deck" id="main-deck">
-                            <span class="zone-label">Deck (<span id="deck-count-num">46</span>)</span>
+                            <span class="zone-label">เด็ค (<span id="deck-count-num">46</span>)</span>
                         </div>
                         <div class="zone ride-deck-zone" data-zone="ride" id="ride-deck">
-                            <span class="zone-label">Ride Deck</span>
+                            <span class="zone-label">ไรด์เด็ค</span>
                         </div>
                     </div>
                 </div>
@@ -309,7 +312,7 @@
             <!-- Player Hand -->
             <div class="hand-area">
                 <div class="hand-controls">
-                    <div class="hand-count">Hand: <span id="hand-count-num">0</span></div>
+                    <div class="hand-count">มือ: <span id="hand-count-num">0</span></div>
 
                     <!-- Phase Tracker (Moved from Header) -->
                     <div class="phase-tracker">
@@ -323,7 +326,7 @@
 
                     <!-- Turn Controls (Moved from Header) -->
                     <div class="game-info" style="display: flex; align-items: center;">
-                        <span id="turn-indicator" class="status pulse">Turn 1 (First Player)</span>
+                        <span id="turn-indicator" class="status pulse">เทิร์น 1 (ฝ่ายเริ่มก่อน)</span>
                         <div id="bruce-status-badge" class="rush-status hidden">Final Rush</div>
                         <button id="next-phase-btn" class="glass-btn highlight-btn"
                             style="margin-left: 1rem; padding: 0.3rem 1.2rem; font-size: 0.9rem;">Next Phase</button>
@@ -338,19 +341,19 @@
 
             <div class="quick-access-panel">
                 <div class="quick-group">
-                    <span class="group-label">MY ZONES</span>
+                    <span class="group-label">โซนของฉัน</span>
                     <button onclick="document.getElementById('view-drop-btn').click()" class="quick-btn drop">Drop (<span id="quick-drop-num">0</span>)</button>
                     <button onclick="document.getElementById('view-damage-btn').click()" class="quick-btn damage">Damage (<span id="quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('my')" class="quick-btn order">Order (<span id="quick-order-num">0</span>)</button>
-                    <button class="quick-btn bind">Bound (<span id="quick-bind-num">0</span>)</button>
+                    <button class="quick-btn bind">ไบนด์ (<span id="quick-bind-num">0</span>)</button>
                     <button onclick="viewPrisonZone('my')" class="quick-btn prison hidden" id="quick-prison-btn">🔒 Prison (<span id="quick-prison-num">0</span>)</button>
                 </div>
                 <div class="quick-group">
-                    <span class="group-label">OPP ZONES</span>
+                    <span class="group-label">โซนของคู่แข่ง</span>
                     <button onclick="document.getElementById('opp-view-drop-btn').click()" class="quick-btn drop">Drop (<span id="opp-quick-drop-num">0</span>)</button>
                     <button onclick="document.getElementById('opp-view-damage-btn').click()" class="quick-btn damage">Damage (<span id="opp-quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('opp')" class="quick-btn order">Order (<span id="opp-quick-order-num">0</span>)</button>
-                    <button class="quick-btn bind">Bound (<span id="opp-quick-bind-num">0</span>)</button>
+                    <button class="quick-btn bind">ไบนด์ (<span id="opp-quick-bind-num">0</span>)</button>
                     <button onclick="viewPrisonZone('opp')" class="quick-btn prison hidden" id="opp-quick-prison-btn">🔒 Prison (<span id="opp-quick-prison-num">0</span>)</button>
                 </div>
             </div>
@@ -361,7 +364,7 @@
     <div id="zone-viewer" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="viewer-title">Zone Content</h2>
+                <h2 id="viewer-title">รายละเอียดในโซน</h2>
                 <button id="close-viewer-btn" class="close-btn">&times;</button>
             </div>
             <div id="viewer-grid" class="viewer-grid">
@@ -378,22 +381,22 @@
     <div id="skill-viewer" class="modal-overlay hidden">
         <div class="modal-content skill-modal">
             <div class="modal-header">
-                <h2 id="skill-card-name">Card Name</h2>
+                <h2 id="skill-card-name">ชื่อการ์ด</h2>
                 <button id="close-skill-btn" class="close-btn">&times;</button>
             </div>
             <div class="skill-body">
                 <div class="skill-info">
-                    <span id="skill-card-grade">Grade: 0</span> |
-                    <span id="skill-card-power">Power: 0</span> |
-                    <span id="skill-card-shield">Shield: 0</span>
+                    <span id="skill-card-grade">เกรด: 0</span> |
+                    <span id="skill-card-power">พลัง: 0</span> |
+                    <span id="skill-card-shield">ชิลด์: 0</span>
                 </div>
                 <div id="skill-text" class="skill-description">
                     Skill text goes here...
                 </div>
                 <div class="skill-actions"
                     style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-                    <button id="activate-skill-btn" class="glass-btn primary-btn hidden">Activate [ACT] Skill</button>
-                    <button id="play-order-btn" class="glass-btn highlight-btn hidden">Play Order Card</button>
+                    <button id="activate-skill-btn" class="glass-btn primary-btn hidden">ใช้งานสกิล [ACT]</button>
+                    <button id="play-order-btn" class="glass-btn highlight-btn hidden">ใช้งานการ์ดออร์เดอร์</button>
                     <button id="x-overdress-btn" class="glass-btn accent-btn hidden">Perform X-overDress</button>
                 </div>
             </div>
@@ -403,12 +406,12 @@
     <!-- Rock Paper Scissors Overlay -->
     <div id="rps-overlay" class="modal-overlay hidden">
         <div class="modal-content rps-content">
-            <h2 class="rps-title">ROCK PAPER SCISSORS</h2>
-            <p id="rps-status">Waiting for Rival...</p>
+            <h2 class="rps-title">เป่ายิ้งฉุบ</h2>
+            <p id="rps-status">รอคู่แข่ง...</p>
             <div id="rps-options" class="rps-options hidden">
-                <button class="rps-btn" data-choice="rock">✊ ROCK</button>
-                <button class="rps-btn" data-choice="paper">✋ PAPER</button>
-                <button class="rps-btn" data-choice="scissors">✌️ SCISSORS</button>
+                <button class="rps-btn" data-choice="rock">✊ ค้อน</button>
+                <button class="rps-btn" data-choice="paper">✋ กระดาษ</button>
+                <button class="rps-btn" data-choice="scissors">✌️ กรรไกร</button>
             </div>
             <div id="rps-result" class="rps-result hidden">
                 <div class="rps-compare">

@@ -1138,6 +1138,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update UI elements
             document.getElementById('hub-attacker-name').textContent = attackData.attackerName;
             document.getElementById('hub-attacker-power').textContent = attackerPower.toLocaleString();
+            
+            // Add Critical and Drive display
+            const hubAttackerCrit = document.getElementById('hub-attacker-crit');
+            const hubAttackerDrive = document.getElementById('hub-attacker-drive');
+            if (hubAttackerCrit) hubAttackerCrit.textContent = `★${attackData.totalCritical || 1}`;
+            if (hubAttackerDrive) hubAttackerDrive.textContent = `Drive: ${attackData.driveCount || 0}`;
             document.getElementById('hub-defender-name').textContent = attackData.targetName;
             
             const defenderBaseDisp = document.getElementById('hub-defender-power');
@@ -2982,7 +2988,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 sendMoveData(unit);
             });
-            alert("Front Trigger! +10,000 Power to all your front row units!");
+            alert("ฟรอนท์ทริกเกอร์! แถวหน้าทั้งหมดได้รับพลัง +10,000!");
 
             // Reset targeting states and exit
             pendingPowerIncrease = 0;
@@ -3009,7 +3015,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardToHeal.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
                     sendMoveData(cardToHeal);
                     updateDropCount();
-                    alert("Heal successful!");
+                    alert("ฮีลทริกเกอร์สำเร็จ!");
                 } else {
                     openViewer("เลือกการ์ด 1 ใบจากดาเมจโซนเพื่อฮีล", damageCards);
                     const healPick = (e) => {
@@ -3032,7 +3038,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewerGrid.addEventListener('click', healPick);
                 }
             } else {
-                alert("Heal failed (your damage must be >= opponent's damage).");
+                alert("ฮีลไม่สำเร็จ! (ดาเมจของคุณต้องมากกว่าหรือเท่ากับคู่แข่ง)");
             }
         } else if (triggerType === 'Over') {
             drawCard(true); // Draw 1 card for revealing Over Trigger (Drive or Damage)
@@ -3095,7 +3101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         vg.classList.remove('rest');
                         vg.style.transform = 'none';
                         sendMoveData(vg);
-                        alert("Dragon Empire OT: Stand your Vanguard!");
+                        alert("โอเวอร์ทริกเกอร์ (Dragon Empire): สแตนด์แวนการ์ดของคุณ!");
                     }
                 } else if (otName.includes('Amartinoa')) {
                     window.otKeterActive = true;
@@ -4151,7 +4157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
 
                     if (getCol(oldZone) !== getCol(newZone)) {
-                        alert("Movement Restricted: Rear-guards can only move within the same vertical column!");
+                        alert("กฎกติกา: เรียร์การ์ดสามารถย้ายหรือสลับตำแหน่งได้เฉพาะในแถวเดียวกัน (แนวตั้ง) เท่านั้น!");
                         return false;
                     }
 
@@ -6823,7 +6829,7 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.innerHTML = '';
 
         // Draw initial 5
-        deckPool = [...currentDeck.mainDeck];
+        // Use existing deckPool to preserve unique IDs assigned in initGame
         deckPool.sort(() => 0.5 - Math.random());
         const initialHand = deckPool.splice(0, 5);
 
@@ -11065,7 +11071,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="mobile-guard-box" style="width: 90%; max-width: 500px; text-align: center; padding: 2rem; background: rgba(20,20,30,0.8); border: 2px solid var(--accent-vanguard); border-radius: 20px; box-shadow: 0 0 30px rgba(255, 42, 109, 0.4);">
                 <h3 style="color: var(--accent-vanguard); font-family: 'Orbitron'; margin-bottom: 10px; font-size: 1.2rem;">INCOMING ATTACK!</h3>
                 <h2 style="color: white; font-size: 1.5rem; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #f87171; margin-bottom: 30px;">
-                    ${attackData.attackerName} (${attackData.totalPower}) → ${attackData.targetName}
+                    ${attackData.attackerName} (${attackData.totalPower}) → ${attackData.targetName}<br>
+                    <span style="font-size: 1.1rem; color: gold; display: block; margin-top: 5px;">
+                        Critical: ★${attackData.totalCritical || 1} | Drive Check: ${attackData.driveCount || 0}
+                    </span>
                 </h2>
                 ${restrictMsg}
                 <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -12492,12 +12501,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isSelection = selectionKeywords.some(k => titleLower.includes(k));
                 
                 if (!isSelection && !document.body.classList.contains('targeting-mode')) {
+                    // --- Tap to Select for Movement from Viewer ---
+                    if (isMyMyTurn()) {
+                        e.stopPropagation();
+                        if (selectedCard) selectedCard.classList.remove('card-selected');
+                        
+                        if (selectedCard === node) {
+                            selectedCard = null;
+                        } else {
+                            selectedCard = node;
+                            node.classList.add('card-selected');
+                        }
+                        return;
+                    }
+
                     e.stopPropagation();
                     const original = document.getElementById(node.dataset.originalId);
                     if (original) openSkillViewer(original);
                     else openSkillViewer(node);
                 }
             });
+
+            function isMyMyTurn() {
+                return (typeof isMyTurn !== 'undefined' && isMyTurn);
+            }
 
             viewerGrid.appendChild(node);
         });
