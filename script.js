@@ -1075,8 +1075,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!gc || !display) return;
 
         let total = 0;
+        const hasOverlordInSoul = soulPool.some(c => c.dataset.name && c.dataset.name.includes("Overlord"));
+
         gc.querySelectorAll('.card').forEach(c => {
-            total += parseInt(c.dataset.shield || "0");
+            let s = parseInt(c.dataset.shield || "0");
+            if (c.dataset.name && c.dataset.name.includes("Ardor Hatchet Dragon") && hasOverlordInSoul) {
+                s += 5000;
+            }
+            total += s;
         });
 
         if (window.currentIncomingAttack && isGuarding) {
@@ -2666,7 +2672,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 bindPool.push(cardData);
                 if (checkCard) checkCard.remove();
-                updateCountsUI();
+                syncCounts();
                 sendData({ type: 'syncBindCount', count: bindPool.length });
 
                 isDealingDamage = false; 
@@ -2933,7 +2939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cardData.trigger === 'Over') {
                     alert("Over Trigger! เข้าสู่ Remove Zone (Bind) และประมวลผลพลัง 100M");
                     bindPool.push(cardData);
-                    updateCountsUI();
+                    syncCounts();
                     sendData({ type: 'syncBindCount', count: bindPool.length });
                 } else {
                     const cardInHand = createCardElement(cardData);
@@ -5313,8 +5319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const clicked = e.target.closest('.card');
                                 if (clicked && clicked.parentElement === viewerGrid) {
                                     const cName = clicked.dataset.name;
-                                    const selectedId = clicked.dataset.originalId || clicked.id;
-                                    const idx = deckPool.findIndex(c => c.id === selectedId);
+                                    const idx = deckPool.findIndex(c => c.name === cName);
                                     if (idx !== -1) {
                                         const pickedData = deckPool.splice(idx, 1)[0];
                                         const newlyAdded = createCardElement(pickedData);
@@ -6432,7 +6437,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'killshroudDebuffApplied', 'vilsXoverBuffed', 'garouXoverBuffed', 'sequanaBuffApplied',
                 'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
                 'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
-                'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied'
+                'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied',
+                'greedonSoulBonusApplied', 'purelightPower', 'purelightCrit', 'aquasBuffApplied'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -11677,12 +11683,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         attacker.classList.remove('rest');
                         attacker.dataset.doteStandUsed = "true";
 
-                        const hasDOBase = soulPool.some(c => c.dataset.name.includes('Dragonic Overlord') && !c.dataset.name.includes('the End'));
-                        if (!hasDOBase) {
+                        const hasOverlordInSoul = soulPool.some(c => c.dataset.name && c.dataset.name.includes('Overlord'));
+                        if (!hasOverlordInSoul) {
                             attacker.dataset.drive = Math.max(0, parseInt(attacker.dataset.drive || "2") - 1);
                             alert("Dragonic Overlord the End Stand! (Drive -1)");
                         } else {
-                            alert("Dragonic Overlord the End Stand! (ไดร์ฟไม่ลดลงเพราะมี Dragonic Overlord ในโซล)");
+                            alert("Dragonic Overlord the End Stand! (ไดร์ฟไม่ลดลงเพราะมี Overlord ในโซล)");
                         }
 
                         applyStaticBonuses(attacker);
@@ -12023,6 +12029,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let targetId = attackData.targetId;
+        if (targetId && targetId.startsWith('opp-')) {
+            targetId = targetId.replace('opp-', '');
+        }
         const targetElement = document.getElementById(targetId);
         let targetCard = null;
         if (targetElement) {
