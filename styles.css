@@ -1808,25 +1808,161 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   }
 }
 
-/* Zone Viewer Mobile */
-@media (max-width: 600px) {
-  .viewer-content {
-    width: 98vw;
-    height: 90vh;
-    max-height: 90vh;
-    padding: 1rem;
+/* ===== Zone Viewer / Card Picker - Responsive Layout ===== */
+
+/* Base: make modal fill screen nicely */
+#zone-viewer .modal-content {
+  width: 95vw;
+  max-width: 900px;
+  max-height: 88vh;
+  padding: 1.2rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#zone-viewer .viewer-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Landscape (wide screen / phone rotated) --- */
+@media (orientation: landscape) {
+  #zone-viewer .modal-content {
+    width: 96vw;
+    max-width: 98vw;
+    height: 88vh;
+    max-height: 88vh;
+    padding: 0.8rem 1rem;
+  }
+
+  #zone-viewer .modal-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+  }
+
+  #zone-viewer .modal-header h2 {
+    font-size: 1rem;
+  }
+
+  #zone-viewer .viewer-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 14px;
+    padding: 8px 4px;
+    align-items: center;
+    justify-content: flex-start;
+    scroll-snap-type: x mandatory;
+  }
+
+  #zone-viewer .viewer-grid .card {
+    flex-shrink: 0;
+    width: clamp(100px, 18vh, 140px);
+    height: clamp(145px, 26vh, 200px);
+    scroll-snap-align: center;
+  }
+}
+
+/* --- Portrait (tall screen / phone upright) --- */
+@media (orientation: portrait) {
+  #zone-viewer .modal-content {
+    width: 96vw;
+    max-width: 96vw;
+    height: 85vh;
+    max-height: 85vh;
+    padding: 0.8rem;
+  }
+
+  #zone-viewer .modal-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+  }
+
+  #zone-viewer .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  #zone-viewer .viewer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
+    gap: 10px;
+    padding: 8px;
+    overflow-y: auto !important;
+  }
+
+  #zone-viewer .viewer-grid .card {
+    width: 100%;
+    max-width: 110px;
+    height: auto;
+    aspect-ratio: 63 / 88;
+  }
+}
+
+/* --- Small portrait phones (under 400px wide) --- */
+@media (orientation: portrait) and (max-width: 400px) {
+  #zone-viewer .viewer-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+  }
+}
+
+/* --- Small landscape phones (short height) --- */
+@media (orientation: landscape) and (max-height: 500px) {
+  #zone-viewer .modal-content {
+    height: 94vh;
+    max-height: 94vh;
+    padding: 0.4rem 0.8rem;
     border-radius: 12px;
   }
 
-  .viewer-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
-    padding: 10px;
+  #zone-viewer .modal-header {
+    margin-bottom: 0.3rem;
   }
 
-  .viewer-grid .card {
-    width: 120px;
-    height: 173px;
+  #zone-viewer .viewer-grid .card {
+    width: clamp(80px, 16vh, 120px);
+    height: clamp(115px, 23vh, 173px);
+  }
+}
+
+/* Smooth scrollbar for viewer grid */
+#zone-viewer .viewer-grid::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+#zone-viewer .viewer-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+#zone-viewer .viewer-grid::-webkit-scrollbar-thumb {
+  background: rgba(5, 217, 232, 0.3);
+  border-radius: 3px;
+}
+
+/* Skill Viewer responsive */
+@media (orientation: landscape) and (max-height: 600px) {
+  .skill-modal {
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+  }
+  .skill-description {
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 600px) {
+  .skill-modal {
+    max-width: 95vw !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
   }
 }
 
