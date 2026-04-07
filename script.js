@@ -1367,55 +1367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function resolveAbilityQueue(queue) {
-        return new Promise(resolveAll => {
-            if (!queue || queue.length === 0) {
-                resolveAll();
-                return;
-            }
 
-            if (queue.length === 1) {
-                queue[0].resolve(() => {
-                    resolveAll();
-                });
-                return;
-            }
-
-            viewerTitle.textContent = "Select ability resolution order";
-            viewerGrid.innerHTML = '';
-            zoneViewer.classList.remove('hidden');
-
-            queue.forEach((ability, index) => {
-                const tile = document.createElement('div');
-                tile.className = 'card';
-                tile.style.position = 'relative';
-                tile.style.cursor = 'pointer';
-                tile.style.display = 'flex';
-                tile.style.flexDirection = 'column';
-                tile.style.justifyContent = 'center';
-                tile.style.alignItems = 'center';
-                tile.style.textAlign = 'center';
-                tile.style.padding = '10px';
-                tile.style.background = 'rgba(255, 42, 109, 0.1)';
-                tile.style.border = '2px solid var(--accent-vanguard)';
-
-                tile.innerHTML = `
-                <div style="font-weight:bold; color:white; margin-bottom:5px; font-size:0.9rem;">${ability.name}</div>
-                <div style="font-size:0.65rem; color:#aaa;">${ability.description}</div>
-            `;
-
-                tile.onclick = () => {
-                    zoneViewer.classList.add('hidden');
-                    ability.resolve(() => {
-                        const nextQueue = queue.filter((_, i) => i !== index);
-                        // Using thenable or async recursion
-                        resolveAbilityQueue(nextQueue).then(resolveAll);
-                    });
-                };
-                viewerGrid.appendChild(tile);
-            });
-        });
-    }
 
     async function checkRideAbilities(oldVanguard, newCard, discardedCard = null) {
         const queue = [];
@@ -7571,7 +7523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 2. Inlet Pulse Dragon [AUTO](RC) End of Turn Ability
                 const inletPluseUnits = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'))
-                    .filter(c => c.dataset.name.includes('Inlet Pulse Dragon'));
+                    .filter(c => c.dataset.name && c.dataset.name.includes('Inlet Pulse Dragon'));
 
                 if (inletPluseUnits.length > 0 && turnAttackCount >= 4) {
                     endQueue.push({
@@ -14433,3 +14385,4 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => popup.remove(), 4000);
     }
 });
+window.addEventListener('error', function(event) { alert('ERROR: ' + event.message + ' at ' + event.filename + ':' + event.lineno); }); window.addEventListener('unhandledrejection', function(event) { alert('UNHANDLED REJECTION: ' + (event.reason && event.reason.stack ? event.reason.stack : event.reason)); });
