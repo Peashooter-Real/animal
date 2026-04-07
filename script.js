@@ -5380,6 +5380,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const zone = parent.dataset.zone || "";
         const isRC = zone.startsWith('rc');
         const isFromHand = card.dataset.fromHand === "true";
+        const isVC = zone === 'vc';
+
+        // --- Black Tears Husk Dragon [AUTO]: Placed on VC ---
+        if (name.includes('Husk Dragon') && isVC) {
+            if (await vgConfirm("Black Tears Husk Dragon: [AUTO] เมื่อวางบน (VC) เลือกนำ Normal Order 1 ใบจากดรอปขึ้นมือ?")) {
+                const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
+                    const sk = (c.dataset.skill || '').toLowerCase();
+                    return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
+                });
+                if (normalOrdersInDrop.length > 0) {
+                    openViewer("นำ Normal Order 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
+                        name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ''
+                    })));
+                    await new Promise(resolve => {
+                        const addOrderPick = (e) => {
+                            const picked = e.target.closest('.card');
+                            if (picked && picked.parentElement === viewerGrid) {
+                                const selectedId = picked.dataset.originalId || picked.id;
+                                const actual = normalOrdersInDrop.find(c => c.id === selectedId);
+                                if (actual) {
+                                    playerHand.appendChild(actual);
+                                    sendMoveData(actual);
+                                    updateHandSpacing();
+                                    updateDropCount();
+                                    alert(`นำ ${actual.dataset.name} ขึ้นมือสำเร็จ!`);
+                                }
+                                viewerGrid.removeEventListener('click', addOrderPick);
+                                zoneViewer.classList.add('hidden');
+                                resolve();
+                            }
+                        };
+                        viewerGrid.addEventListener('click', addOrderPick);
+                        closeViewerBtn.onclick = () => {
+                            viewerGrid.removeEventListener('click', addOrderPick);
+                            zoneViewer.classList.add('hidden');
+                            resolve();
+                        };
+                    });
+                } else {
+                    alert("ไม่พบ Normal Order ใน Drop Zone!");
+                }
+            }
+        }
 
         const vg = document.querySelector('.my-side .circle.vc .card');
         const vgName = (vg && vg.dataset.name) ? vg.dataset.name : "";
@@ -10943,7 +10986,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawCard(true);
 
                     const handCards = Array.from(playerHand.querySelectorAll('.card'));
-                    const orders = handCards.filter(c => c.dataset.skill && c.dataset.skill.includes('[Order]'));
+                    const orders = handCards.filter(c => c.dataset.skill && c.dataset.skill.toLowerCase().includes('order]'));
 
                     let discarded = false;
                     if (orders.length > 0) {
@@ -10953,7 +10996,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             await new Promise(resolve => {
                                 const orderDiscardListener = (e) => {
                                     const target = e.target.closest('.card');
-                                    if (target && target.parentElement && target.parentElement.dataset.zone === 'hand' && target.dataset.skill.includes('[Order]')) {
+                                    if (target && target.parentElement && target.parentElement.dataset.zone === 'hand' && target.dataset.skill.toLowerCase().includes('order]')) {
                                         e.stopPropagation();
                                         const dropZone = document.querySelector('.my-side .drop-zone');
                                         dropZone.appendChild(target);
@@ -13485,7 +13528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู"];
+                const selectionKeywords = ["select", "choose", "choice", "เลือก", "ค้นหา", "หา", "top", "ดู", "นำ"];
                 const isSelection = selectionKeywords.some(k => titleLower.includes(k));
                 
                 if (!isSelection && !document.body.classList.contains('targeting-mode')) {
