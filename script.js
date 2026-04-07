@@ -1035,14 +1035,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, skill: '[Normal Order]\n[ACT]: ดู 5 ใบ เลือกการ์ดที่มี Dragontree หรือ Masques 1 ใบขึ้นมือ จากนั้นสับกอง\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
             ...Array(3).fill({ name: 'Shadowcloak', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากมือ ค้นหา Order 1 ใบจากกองเปิดเผย ถ้าดรอปไม่มีชื่อเดียวกันให้ทิ้งใบที่เปิด สับกอง\\n[AUTO](RC): เมื่อเล่น Order [SB1] พลัง +5000 ถ้า Alchemagic เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ' }),
             ...Array(1).fill({ name: 'Gather Upon Me, Ye Wandering Souls', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][ทิ้ง Order 1 ใบจากมือ]! แวนการ์ดได้รับ Drive +1 จนจบเทิร์น' }),
-            ...Array(1).fill({ name: 'Fine Drink of Abolishment for Sins', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][SB1]! จั่ว 1 ใบ เลือกยูนิท 1 ใบ +5000 ต่อ Order ชื่อต่างกันในดรอป+ไบนด์รวม จนจบแบทเทิล' }),
+            ...Array(1).fill({ name: 'Fine Drink of Abolishment for Sins', grade: 2, power: 0, skill: '[Blitz Order] เล่นด้วย [COST][SB1]! จั่ว 1 ใบ เลือกยูนิท 1 ใบ +5000 ต่อ Order ชื่อต่างกันในดรอป+ไบนด์รวม จนจบแบทเทิล' }),
             ...Array(3).fill({ name: 'Dragontree Wretch, Depth Iweleth', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [CB1 & SB1] เลือก RC ที่ไม่มี Dragontree Marker วาง Marker ค้นหา Masque of Hydragrum 1 ใบขึ้นมือ สับกอง' }),
             ...Array(1).fill({ name: 'Tearful Malice', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][รีไทร์เรียร์การ์ด 2 ใบ]! จั่ว 1 ใบ นำการ์ดนี้เข้าโซล Counter-Charge 1' }),
             ...Array(1).fill({ name: 'Keel Severing', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](Drop): เมื่อ Zorga Masques บน (VC) โจมตี ถ้าไม่มี Keel Severing บน (RC) [CB1 & รีไทร์เรียร์การ์ด 1 ใบ] คอลการ์ดนี้ลง RC ที่มี Dragontree Marker' }),
             ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
-            ...Array(2).fill({ name: 'Rogue Headhunter', grade: 1, power: 8000, shield: 5000, skill: '' }),
+            ...Array(2).fill({ name: 'Rogue Headhunter', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): ถ้าคุณเล่น Order ในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +5000\n[AUTO]: เมื่อวางบน (RC), การทำ Alchemagic และเล่นในเทิร์นนี้ครั้งถัดไป ลดคอสต์ลง [CB1]' }),
             ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, skill: '[Order]: [SB1] ดูการ์ด 3 ใบจากบนสุดของกอง เลือก 1 ใบเพื่อทิ้ง สับกอง จากนั้นเลือกการ์ดเกรดไม่เกินแวนการ์ด 1 ใบจากดรอปโซนคอลลง (RC)' }),
-            ...Array(1).fill({ name: 'Dragontree Wretch, Bist Aiyatvas', grade: 1, power: 8000, shield: 5000, skill: '' }),
+            ...Array(1).fill({ name: 'Dragontree Wretch, Bist Aiyatvas', grade: 1, power: 8000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [CB1] เลือก (RC) 1 ช่องที่ไม่มี Dragontree marker แล้วเอาไปวาง\n[ACT](RC)[1/turn]: ถ้าแวนการ์ดเกรด 3 หรือสูงกว่า [CB1 & SB1] นำนอร์มอลออเดอร์ 1 ใบจากดรอปขึ้นมือ' }),
             ...Array(8).fill({ name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
             ...Array(3).fill({ name: 'Draw Trigger (Stoicheia)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Heal Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
@@ -4480,6 +4480,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Shock Strategy check removed (Legacy)
 
+        // --- Rogue Headhunter [CONT](RC) ---
+        if (name.includes('Rogue Headhunter') && zone.startsWith('rc')) {
+            if (orderPlayedThisTurn) {
+                if (card.dataset.headhunterBonusApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") + 5000).toString();
+                    card.dataset.headhunterBonusApplied = "true";
+                }
+            } else if (card.dataset.headhunterBonusApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
+                card.dataset.headhunterBonusApplied = "false";
+            }
+        }
+
         // --- Blue Deathster, Asagi Milestone [CONT] ---
         if (name.includes('Asagi Milestone') && zone.startsWith('rc')) {
             if (isMyTurn && lastStrategyPutIntoSoulName !== "") {
@@ -5598,6 +5611,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Rogue Headhunter [AUTO]: Placed on RC ---
+        if (name.includes('Rogue Headhunter') && isRC) {
+            if (await vgConfirm("Rogue Headhunter: [AUTO] เมื่อวางบน (RC) ลดคอสต์การทำ Alchemagic ในเทิร์นนี้ลง [CB1]?")) {
+                window.alchemagicCbDiscountAmount = (window.alchemagicCbDiscountAmount || 0) + 1;
+                alert(`ลดคอสต์ Alchemagic ไป ${window.alchemagicCbDiscountAmount} CB แล้ว!`);
+            }
+        }
+
+        // --- Bist Aiyatvas [AUTO]: Placed on RC ---
+        if (name.includes('Bist Aiyatvas') && isRC) {
+            if (await vgConfirm("Bist Aiyatvas: [AUTO] เมื่อวางบน (RC) [CB1] เลือกว่าง Dragontree marker บนช่อง (RC)?")) {
+                if (payCounterBlast(1)) {
+                    alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker");
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resolveM => {
+                        const rcListener = (ev) => {
+                            const circle = ev.target.closest('.my-side .circle.rc');
+                            if (circle) {
+                                ev.stopPropagation();
+                                if (circle.dataset.dragontreeMarker === "true") {
+                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                    return;
+                                }
+                                circle.dataset.dragontreeMarker = "true";
+                                circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', rcListener, true);
+                                alert("วาง Dragontree Marker สำเร็จ!");
+                                resolveM();
+                            }
+                        };
+                        document.addEventListener('click', rcListener, true);
+                    });
+                }
+            }
+        }
+
         // --- Dragontree Wretch, Depth Iweleth [AUTO]: Placed on RC ---
         if (name.includes('Depth Iweleth') && isRC) {
             if (await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
@@ -6030,6 +6080,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function payCounterBlast(cost) {
+        if (window.currentlyResolvingAlchemagic && window.alchemagicCbDiscountAmount > 0) {
+            let discount = Math.min(cost, window.alchemagicCbDiscountAmount);
+            cost -= discount;
+            window.alchemagicCbDiscountAmount -= discount;
+        }
+        if (cost <= 0) return true;
+
         if (isAIMode && !isMyTurn) {
             const openCards = Array.from(document.querySelectorAll('.opponent-side .damage-zone .card:not(.face-down)'));
             if (openCards.length < cost) return false;
@@ -7251,6 +7308,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.richterRideBackUsedThisTurn = false;
             window.alchemagicUsedThisTurn = false;
             window.cloudedMiasmaBuff = false;
+            window.alchemagicCbDiscountAmount = 0;
 
             // State expiration check
             if (currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -9140,9 +9198,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playOrderBtn) {
             const skillLC = (effectiveCard.dataset.skill || "").toLowerCase();
             const isOrder = skillLC.includes('order]');
+            const isBlitzOrder = skillLC.includes('blitz order');
             const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
 
-            if (isOrder && inHand && isMyTurn) {
+            // Normal orders can be played in main phase of my turn.
+            // Blitz orders can be played during guard phase of opponent's turn.
+            const canPlayNormal = isOrder && !isBlitzOrder && inHand && isMyTurn;
+            const canPlayBlitz = isBlitzOrder && inHand && isWaitingForGuard;
+
+            if (canPlayNormal || canPlayBlitz) {
                 playOrderBtn.classList.remove('hidden');
                 playOrderBtn.onclick = async () => {
                     await playOrder(effectiveCard);
@@ -9574,7 +9638,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert(`Alchemagic! Bind "${alchCard.dataset.name}" จากดรอปโซน - เอฟเฟกต์ถูกรวมเข้าด้วยกัน!`);
                         
                         // Activate the bound card's skill too
+                        window.currentlyResolvingAlchemagic = true;
                         await activateCardSkill(alchCard);
+                        window.currentlyResolvingAlchemagic = false;
                     }
                 }
             }
@@ -9583,7 +9649,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Note: For now activateCardSkill triggers costs. If isFree, we should ideally bypass CB/SB.
         if (isFree) effectiveCard.dataset.playOrderFree = "true";
 
+        if (isAlchemagic) window.currentlyResolvingAlchemagic = true;
         const skillResult = await activateCardSkill(effectiveCard);
+        if (isAlchemagic) window.currentlyResolvingAlchemagic = false;
 
         if (isFree) effectiveCard.dataset.playOrderFree = "false";
 
@@ -11097,7 +11165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else return false;
         }
 
-        // --- Fine Drink of Abolishment for Sins [Normal Order] ---
+        // --- Fine Drink of Abolishment for Sins [Blitz Order] ---
         if (name.includes('Fine Drink of Abolishment')) {
             if (await vgConfirm("Fine Drink: [SB1] → จั่ว 1 ใบ + เลือกยูนิท 1 ใบ พลัง +5000 ต่อ Order ชื่อต่างกันในดรอป+ไบนด์?")) {
                 if (await paySoulBlast(1)) {
@@ -11242,6 +11310,65 @@ document.addEventListener('DOMContentLoaded', () => {
                     return true;
                 } else return false;
             } else return false;
+        }
+
+        // --- Dragontree Wretch, Bist Aiyatvas [ACT](RC)[1/turn] ---
+        if (name.includes('Bist Aiyatvas') && isRC) {
+            const vgCard = document.querySelector('.my-side .circle.vc .card');
+            const vgGrade = vgCard ? parseInt(vgCard.dataset.grade || "0") : 0;
+            if (vgGrade >= 3) {
+                if (await vgConfirm("Bist Aiyatvas: [ACT](RC) [CB1 & SB1] นำนอร์มอลออเดอร์ 1 ใบจากดรอปขึ้นมือ?")) {
+                    let costPaid = false;
+                    if (payCounterBlast(1)) {
+                        if (await paySoulBlast(1)) {
+                            costPaid = true;
+                        } else {
+                            counterCharge(1);
+                            alert("จ่าย CB สำเร็จแต่ไม่มีโซลพอจ่าย SB! ยกเลิกความสามารถ");
+                        }
+                    }
+                    if (costPaid) {
+                        const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
+                            const sk = (c.dataset.skill || '').toLowerCase();
+                            return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
+                        });
+                        if (normalOrdersInDrop.length > 0) {
+                            openViewer("นำออเดอร์ 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
+                                name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ''
+                            })));
+                            await new Promise(resolve => {
+                                const addOrderPick = (e) => {
+                                    const picked = e.target.closest('.card');
+                                    if (picked && picked.parentElement === viewerGrid) {
+                                        const selectedId = picked.dataset.originalId || picked.id;
+                                        const actual = normalOrdersInDrop.find(c => c.id === selectedId);
+                                        if (actual) {
+                                            playerHand.appendChild(actual);
+                                            sendMoveData(actual);
+                                            updateHandSpacing();
+                                            updateDropCount();
+                                            alert(`นำ ${actual.dataset.name} ขึ้นมือสำเร็จ!`);
+                                        }
+                                        viewerGrid.removeEventListener('click', addOrderPick);
+                                        zoneViewer.classList.add('hidden');
+                                        resolve();
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', addOrderPick);
+                                closeViewerBtn.onclick = () => {
+                                    viewerGrid.removeEventListener('click', addOrderPick);
+                                    zoneViewer.classList.add('hidden');
+                                    resolve();
+                                };
+                            });
+                        } else {
+                            alert("ไม่มีนอร์มอลออเดอร์ในดรอปโซน!");
+                        }
+                        effectiveCard.dataset.actUsed = "true";
+                        return true;
+                    } else return false;
+                } else return false;
+            }
         }
 
         // --- Teasing Spiritualist, Zorga Masques [ACT](VC)[1/turn] ---
