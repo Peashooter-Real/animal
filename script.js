@@ -1030,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         mainDeck: [
             ...Array(4).fill({ name: 'Teasing Spiritualist, Zorga Masques', grade: 3, power: 13000, persona: true, skill: '[CONT]: การ์ดนี้สามารถไรด์ได้จากเกรด 3 ที่มี "Zorga" ในชื่อเท่านั้น\n[CONT](VC): เมื่อคุณจะเล่นนอร์มอลออเดอร์ คุณสามารถ Bind นอร์มอลออเดอร์จากดรอปโซน และทำ Alchemagic\n[CONT](VC): ถ้าคุณทำ Alchemagic ในเทิร์นนี้ ยูนิทแถวหน้าทั้งหมดของคุณได้รับพลัง +10000\n[ACT](VC)[1/turn]: [COST][นำการ์ดที่มี "Zorga" ในชื่อที่ต่างจากยูนิทนี้ 1 ใบจากมือ โซล หรือดรอปออกจากเกม] เลือกการ์ด 1 ใบจากดรอปโซน ถ้าเป็นยูนิทการ์ดให้คอลลง (RC) ถ้าเป็นนอร์มอลออเดอร์ให้ขึ้นมือ' }),
-            ...Array(3).fill({ name: 'Roaming Prison Dragon', grade: 3, power: 13000, skill: '[AUTO](Drop): เมื่อคุณเล่นนอร์มอลออเดอร์ คุณอาจคอลการ์ดนี้ลง (RC) ถ้าคอลการ์ดนี้แล้ว เลือกทำอย่างใดอย่างหนึ่งต่อไปนี้ ถ้าเป็น Alchemagic ให้ทำทั้งหมดแทน\n・ยูนิทนี้ได้รับพลัง +10000 จนจบเทิร์น\n・ยูนิทนี้ได้รับ Critical +1 จนจบเทิร์น' }),
+            ...Array(3).fill({ name: 'Roaming Prison Dragon', grade: 3, power: 5000, skill: '[AUTO](Drop): เมื่อคุณเล่นนอร์มอลออเดอร์ คุณอาจคอลการ์ดนี้ลง (RC) ถ้าคอลการ์ดนี้แล้ว เลือกทำอย่างใดอย่างหนึ่งต่อไปนี้ ถ้าเป็น Alchemagic ให้ทำทั้งหมดแทน\n・ยูนิทนี้ได้รับพลัง +10000 จนจบเทิร์น\n・ยูนิทนี้ได้รับ Critical +1 จนจบเทิร์น' }),
             ...Array(2).fill({ name: 'Clouded Miasma', grade: 3, power: 0, skill: '[Normal Order] เล่นด้วย [COST][Counter-Blast 1]!\nเลือกการ์ดเกรด 3 หรือต่ำกว่า 1 ใบจากดรอปโซนของคุณ คอลลง (RC) ถ้าเป็นส่วนหนึ่งของ Alchemagic เลือกแวนการ์ดของคุณ 1 ใบ ได้รับ "[CONT](VC): ยูนิทแถวหน้าทั้งหมดของคุณได้รับพลัง +5000" จนจบเทิร์น' }),
             ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, skill: '[Normal Order]\n[ACT]: ดู 5 ใบ เลือกการ์ดที่มี Dragontree หรือ Masques 1 ใบขึ้นมือ จากนั้นสับกอง\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
             ...Array(3).fill({ name: 'Shadowcloak', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากมือ ค้นหา Order 1 ใบจากกองเปิดเผย ถ้าดรอปไม่มีชื่อเดียวกันให้ทิ้งใบที่เปิด สับกอง\\n[AUTO](RC): เมื่อเล่น Order [SB1] พลัง +5000 ถ้า Alchemagic เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ' }),
@@ -6856,15 +6856,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
                 'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
                 'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied',
-                'greedonSoulBonusApplied', 'purelightPower', 'purelightCrit', 'aquasBuffApplied',
-                'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff'
+                'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff', 'headhunterBonusApplied', 'asagiBonusApplied'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
             // Reset power and critical to base values
-            c.dataset.power = c.dataset.basePower;
-            c.dataset.critical = c.dataset.baseCritical;
-            syncPowerDisplay(c);
+            card.dataset.power = card.dataset.basePower || "10000";
+            card.dataset.critical = card.dataset.baseCritical || "1";
+            
+            // Specifically clear internal state buffs from dataset
+            delete card.dataset.turnEndBuffActive;
+            delete card.dataset.turnEndBuffPower;
+            delete card.dataset.turnEndCritBuff;
+            
+            syncPowerDisplay(card);
         });
     }
 
@@ -7353,6 +7358,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.alchemagicUsedThisTurn = false;
             window.cloudedMiasmaBuff = false;
             window.alchemagicCbDiscountAmount = 0;
+            window.currentlyResolvingAlchemagic = false;
 
             // State expiration check
             if (currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -8431,21 +8437,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset "Until end of turn" flags
         window.promptedEndTurn = false;
         window.rodeFromG3ThisTurn = false;
+        window.alchemagicUsedThisTurn = false;
+        window.cloudedMiasmaBuff = false;
+        window.currentlyResolvingAlchemagic = false;
+        
         resetMyUnits();
 
         window.otStoicheiaActive = false;
         window.killshroudDebuffActive = false;
         document.querySelectorAll('.my-side .circle .card').forEach(c => {
-            if (c.dataset.turnEndBuffActive === "true") {
-                c.dataset.turnEndBuffActive = "false";
-            }
-            if (c.dataset.avantStandReady === "true") {
-                c.dataset.avantStandReady = "false";
-            }
-            if (c.dataset.deathWindsAttackTrigger === "true") {
-                c.dataset.deathWindsAttackTrigger = "false";
-            }
+            // Force reset any custom attributes that apply bonuses
+            delete c.dataset.turnEndBuffActive;
+            delete c.dataset.turnEndBuffPower;
+            delete c.dataset.turnEndCritBuff;
+            delete c.dataset.zorgaMasquesFrontBuff;
+            delete c.dataset.cloudedMiasmaBuff;
+            
             applyStaticBonuses(c);
+            syncPowerDisplay(c);
         });
 
         await updatePhaseUI(false);
