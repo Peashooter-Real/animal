@@ -726,7 +726,31 @@ document.addEventListener('DOMContentLoaded', () => {
         'Aurora Battle Princess, Grenade Marieda': 'seraph_art/grenade_marieda.png',
         'Blitz Staff, Muna': 'seraph_art/muna.png',
         'Aurora Battle Princess, Lifle Royar': 'seraph_art/lifle_royar.png',
-        'Front Trigger (Brandt Gate)': 'avantgarda/brandt_front.png'
+        'Front Trigger (Brandt Gate)': 'avantgarda/brandt_front.png',
+        
+        // Stoicheia - Zorga Masques
+        'Sylvan Horned Beast, Lotte': 'picture/grade0_magnolia.jpg',
+        'Sylvan Horned Beast, Charis': 'picture/grade1_magnolia.jpg',
+        'Black Tears Husk Dragon': 'picture/zorga_husks.jpg',
+        'Mysterious Rain Spiritualist, Zorga': 'picture/zorga_original.jpg',
+        'Teasing Spiritualist, Zorga Masques': 'picture/zorga_masques.jpg',
+        'Roaming Prison Dragon': 'picture/roaming_prison.jpg',
+        'Clouded Miasma': 'picture/spirit.jpg',
+        'Masque of Hydragrum': 'picture/hydragrum.jpg',
+        'Shadowcloak': 'picture/shadowcloak.jpg',
+        'Gather Upon Me, Ye Wandering Souls': 'picture/gather_souls.jpg',
+        'Fine Drink of Abolishment for Sins': 'picture/drink_abolishment.jpg',
+        'Dragontree Wretch, Depth Iweleth': 'picture/depth_iweleth.jpg',
+        'Tearful Malice': 'picture/tearful_malice.jpg',
+        'Keel Severing': 'picture/keel_severing.jpg',
+        'Rogue Headhunter': 'picture/rogue_headhunter.jpg',
+        'Dragontree Wretch, Bist Aiyatvas': 'picture/bist_aiyatvas.jpg',
+        'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
+        'Draw Trigger (Stoicheia)': 'picture/stoicheia_draw.png',
+        'Heal Trigger (Stoicheia)': 'picture/stoicheia_heal.png',
+        'Source Dragon Deity, Blessfavor': 'greedon/mucca.png',
+        'Custodial Dragon (Perfect Guard)': 'picture/custodial_dragon.png',
+        'In the Dim Darkness, the Frozen Resentment': 'picture/dark.jpg'
     };
 
     // --- Deck Definitions ---
@@ -994,6 +1018,35 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(2).fill({ name: 'Draw Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
             ...Array(4).fill({ name: 'Heal Trigger (Brandt Gate)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
             { name: 'Star Dragon Deity of Infinitude, Eldobreath', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
+        ].sort(() => 0.5 - Math.random())
+    };
+
+    const zorgaMasquesDeck = {
+        rideDeck: [
+            { name: 'Sylvan Horned Beast, Lotte', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Sylvan Horned Beast, Charis', grade: 1, power: 8000, shield: 5000, skill: '[ACT](VC)[1/turn]: [คอสต์][Soul-Blast 1] จั่วการ์ด 2 ใบ จากนั้นเลือกการ์ดออเดอร์จากบนมือคุณสูงสุด 1 ใบเพื่อทิ้ง หากไม่ได้ทิ้งด้วยผลนี้ เลือกทิ้งการ์ด 2 ใบจากบนมือคุณ\n[CONT](RC): ถ้าคุณใช้งานออเดอร์ในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +2000' },
+            { name: 'Black Tears Husk Dragon', grade: 2, power: 10000, shield: 5000, skill: '' },
+            { name: 'Mysterious Rain Spiritualist, Zorga', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): เมื่อคุณจะเล่นนอร์มอลออเดอร์ คุณสามารถ Bind นอร์มอลออเดอร์ที่มีชื่อต่างกันจากดรอปโซน และทำ Alchemagic (รวมคอสต์เข้าด้วยกัน และเพิ่มเอฟเฟกต์ต่อท้าย!)\n[ACT](VC)[1/turn]: [COST][Counter-Blast 1] เลือกการ์ด 1 ใบจากดรอปโซนของคุณ คอลลง (RC)' }
+        ],
+        mainDeck: [
+            ...Array(4).fill({ name: 'Teasing Spiritualist, Zorga Masques', grade: 3, power: 13000, persona: true, skill: '[CONT]: การ์ดนี้สามารถไรด์ได้จากเกรด 3 ที่มี "Zorga" ในชื่อเท่านั้น\n[CONT](VC): เมื่อคุณจะเล่นนอร์มอลออเดอร์ คุณสามารถ Bind นอร์มอลออเดอร์จากดรอปโซน และทำ Alchemagic\n[CONT](VC): ถ้าคุณทำ Alchemagic ในเทิร์นนี้ ยูนิทแถวหน้าทั้งหมดของคุณได้รับพลัง +10000\n[ACT](VC)[1/turn]: [COST][นำการ์ดที่มี "Zorga" ในชื่อที่ต่างจากยูนิทนี้ 1 ใบจากมือ โซล หรือดรอปออกจากเกม] เลือกการ์ด 1 ใบจากดรอปโซน ถ้าเป็นยูนิทการ์ดให้คอลลง (RC) ถ้าเป็นนอร์มอลออเดอร์ให้ขึ้นมือ' }),
+            ...Array(3).fill({ name: 'Roaming Prison Dragon', grade: 3, power: 13000, skill: '[AUTO](Drop): เมื่อคุณเล่นนอร์มอลออเดอร์ คุณอาจคอลการ์ดนี้ลง (RC) ถ้าคอลการ์ดนี้แล้ว เลือกทำอย่างใดอย่างหนึ่งต่อไปนี้ ถ้าเป็น Alchemagic ให้ทำทั้งหมดแทน\n・ยูนิทนี้ได้รับพลัง +10000 จนจบเทิร์น\n・ยูนิทนี้ได้รับ Critical +1 จนจบเทิร์น' }),
+            ...Array(2).fill({ name: 'Clouded Miasma', grade: 3, power: 0, skill: '[Normal Order] เล่นด้วย [COST][Counter-Blast 1]!\nเลือกการ์ดเกรด 3 หรือต่ำกว่า 1 ใบจากดรอปโซนของคุณ คอลลง (RC) ถ้าเป็นส่วนหนึ่งของ Alchemagic เลือกแวนการ์ดของคุณ 1 ใบ ได้รับ "[CONT](VC): ยูนิทแถวหน้าทั้งหมดของคุณได้รับพลัง +5000" จนจบเทิร์น' }),
+            ...Array(2).fill({ name: 'Masque of Hydragrum', grade: 3, power: 0, skill: '[Normal Order]\n[ACT]: ดู 5 ใบ เลือกการ์ดที่มี Dragontree หรือ Masques 1 ใบขึ้นมือ จากนั้นสับกอง\n[ACT](Drop): หากแวนการ์ดเกรด 3 และไม่มี Masques ในชื่อ [COST][Reveal เกรด 3 Masques จากบนมือ] ไรด์การ์ดที่ Reveal ในสถานะ [Stand] หากไรด์และคู่แข่งเกรด 3+ และยังไม่ได้ทำ Persona Ride ในเทิร์นนี้ ให้ทำ Persona Ride' }),
+            ...Array(3).fill({ name: 'Shadowcloak', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) จากมือ ค้นหา Order 1 ใบจากกองเปิดเผย ถ้าดรอปไม่มีชื่อเดียวกันให้ทิ้งใบที่เปิด สับกอง\\n[AUTO](RC): เมื่อเล่น Order [SB1] พลัง +5000 ถ้า Alchemagic เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ' }),
+            ...Array(1).fill({ name: 'Gather Upon Me, Ye Wandering Souls', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][ทิ้ง Order 1 ใบจากมือ]! แวนการ์ดได้รับ Drive +1 จนจบเทิร์น' }),
+            ...Array(1).fill({ name: 'Fine Drink of Abolishment for Sins', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][SB1]! จั่ว 1 ใบ เลือกยูนิท 1 ใบ +5000 ต่อ Order ชื่อต่างกันในดรอป+ไบนด์รวม จนจบแบทเทิล' }),
+            ...Array(3).fill({ name: 'Dragontree Wretch, Depth Iweleth', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [CB1 & SB1] เลือก RC ที่ไม่มี Dragontree Marker วาง Marker ค้นหา Masque of Hydragrum 1 ใบขึ้นมือ สับกอง' }),
+            ...Array(1).fill({ name: 'Tearful Malice', grade: 2, power: 0, skill: '[Normal Order] เล่นด้วย [COST][รีไทร์เรียร์การ์ด 2 ใบ]! จั่ว 1 ใบ นำการ์ดนี้เข้าโซล Counter-Charge 1' }),
+            ...Array(1).fill({ name: 'Keel Severing', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](Drop): เมื่อ Zorga Masques บน (VC) โจมตี ถ้าไม่มี Keel Severing บน (RC) [CB1 & รีไทร์เรียร์การ์ด 1 ใบ] คอลการ์ดนี้ลง RC ที่มี Dragontree Marker' }),
+            ...Array(4).fill({ name: 'Custodial Dragon (Perfect Guard)', grade: 1, power: 8000, shield: 0, isPG: true, skill: '[Sentinel] (Perfect Guard)' }),
+            ...Array(2).fill({ name: 'Rogue Headhunter', grade: 1, power: 8000, shield: 5000, skill: '' }),
+            ...Array(2).fill({ name: 'In the Dim Darkness, the Frozen Resentment', grade: 1, power: 0, skill: '[Order]: [SB1] ดูการ์ด 3 ใบจากบนสุดของกอง เลือก 1 ใบเพื่อทิ้ง สับกอง จากนั้นเลือกการ์ดเกรดไม่เกินแวนการ์ด 1 ใบจากดรอปโซนคอลลง (RC)' }),
+            ...Array(1).fill({ name: 'Dragontree Wretch, Bist Aiyatvas', grade: 1, power: 8000, shield: 5000, skill: '' }),
+            ...Array(8).fill({ name: 'Critical Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Critical' }),
+            ...Array(3).fill({ name: 'Draw Trigger (Stoicheia)', grade: 0, power: 5000, shield: 5000, trigger: 'Draw' }),
+            ...Array(4).fill({ name: 'Heal Trigger (Stoicheia)', grade: 0, power: 5000, shield: 15000, trigger: 'Heal' }),
+            { name: 'Source Dragon Deity, Blessfavor', grade: 0, power: 5000, shield: 50000, trigger: 'Over', overPower: '100 Million' }
         ].sort(() => 0.5 - Math.random())
     };
 
@@ -4108,6 +4161,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // --- Zorga Masques Ride Constraint ---
+                if (card.dataset.name.includes("Zorga Masques")) {
+                    if (vanguardGrade !== 3 || !vanguard.dataset.name.includes("Zorga")) {
+                        alert("Zorga Masques สามารถไรด์ทับได้เฉพาะเกรด 3 ที่ติดชื่อ 'Zorga' เท่านั้น!");
+                        return false;
+                    }
+                }
+
                 if (cardGrade !== vanguardGrade + 1 && !isSameGradeAllowed && !(cardGrade === 4 && vanguardGrade === 3)) {
                     alert(`ไม่สามารถไรด์เกรด ${cardGrade} ทับเกรด ${vanguardGrade} ได้!`);
                     return false;
@@ -4304,6 +4365,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 card.unitSoul = [];
             }
+            
+            const isWaywardDrop = isFromHand && card.dataset.name && card.dataset.name.includes("Wayward Therapy Angel");
+            if (isWaywardDrop) {
+                card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                handleWaywardDiscard(card); // Don't await, let it prompt independently
+                return true;
+            }
+
             zone.appendChild(card);
             card.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
             sendMoveData(card);
@@ -4333,6 +4402,36 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (card.dataset.asagiBonusApplied === "true") {
                 card.dataset.power = (parseInt(card.dataset.power || card.dataset.basePower || "0") - 5000).toString();
                 card.dataset.asagiBonusApplied = "false";
+            }
+        }
+
+        // --- Zorga Masques [CONT](VC): If Alchemagic this turn, front row +10000 ---
+        if (isFrontRow && isMyTurn && window.alchemagicUsedThisTurn) {
+            const vgCard2 = document.querySelector('.my-side .circle.vc .card');
+            const vgName = vgCard2 ? (vgCard2.dataset.name || '') : '';
+            if (vgName.includes('Zorga Masques')) {
+                if (card.dataset.zorgaMasquesFrontBuff !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
+                    card.dataset.zorgaMasquesFrontBuff = "true";
+                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 10000).toString();
+                    card.dataset.turnEndBuffActive = "true";
+                    syncPowerDisplay(card);
+                }
+            }
+        }
+
+        // --- Clouded Miasma Alchemagic Buff [CONT](VC): front row +5000 ---
+        if (isFrontRow && isMyTurn && window.cloudedMiasmaBuff) {
+            const vgCard3 = document.querySelector('.my-side .circle.vc .card');
+            const vgName3 = vgCard3 ? (vgCard3.dataset.name || '') : '';
+            if (vgName3.includes('Zorga')) {
+                if (card.dataset.cloudedMiasmaBuff !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                    card.dataset.cloudedMiasmaBuff = "true";
+                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                    card.dataset.turnEndBuffActive = "true";
+                    syncPowerDisplay(card);
+                }
             }
         }
 
@@ -5350,6 +5449,136 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+
+        // --- Shadowcloak [AUTO]: Placed on RC from hand → search deck for Order ---
+        if (name.includes('Shadowcloak') && isRC && isFromHand) {
+            if (await vgConfirm("Shadowcloak: [AUTO] เมื่อวางจากมือ → ค้นหา Order 1 ใบจากกอง เปิดเผย ถ้าดรอปไม่มีชื่อเดียวกันให้ทิ้ง สับกอง?")) {
+                const ordersInDeck = deckPool.filter(c => 
+                    c.skill && c.skill.toLowerCase().includes('order')
+                );
+                if (ordersInDeck.length > 0) {
+                    openViewer("เลือก Order 1 ใบจากกอง", ordersInDeck);
+                    await new Promise(resolve => {
+                        const pickSel = (ev) => {
+                            const picked = ev.target.closest('.card');
+                            if (picked && picked.parentElement === viewerGrid) {
+                                const selectedId = picked.dataset.originalId;
+                                const idx = deckPool.findIndex(c => c.id === selectedId);
+                                if (idx !== -1) {
+                                    const pickedData = deckPool.splice(idx, 1)[0];
+                                    const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
+                                    const hasSameInDrop = dropCards.some(c => c.dataset.name === pickedData.name);
+                                    
+                                    if (hasSameInDrop) {
+                                        // Drop already has same name → add to hand
+                                        const el = createCardElement(pickedData);
+                                        playerHand.appendChild(el);
+                                        sendMoveData(el);
+                                        updateHandSpacing();
+                                        alert(`${pickedData.name} ดรอปมีชื่อเดียวกันแล้ว → นำขึ้นมือ!`);
+                                    } else {
+                                        // Drop doesn't have same name → discard it
+                                        const el = createCardElement(pickedData);
+                                        const dropZone = document.querySelector('.my-side .drop-zone');
+                                        dropZone.appendChild(el);
+                                        sendMoveData(el);
+                                        updateDropCount();
+                                        alert(`${pickedData.name} ดรอปไม่มีชื่อเดียวกัน → ทิ้งลงดรอป!`);
+                                    }
+                                }
+                                viewerGrid.removeEventListener('click', pickSel);
+                                zoneViewer.classList.add('hidden');
+                                deckPool.sort(() => 0.5 - Math.random());
+                                updateDeckCounter();
+                                resolve();
+                            }
+                        };
+                        viewerGrid.addEventListener('click', pickSel);
+                        closeViewerBtn.onclick = () => {
+                            viewerGrid.removeEventListener('click', pickSel);
+                            zoneViewer.classList.add('hidden');
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                            resolve();
+                        };
+                    });
+                } else {
+                    alert("ไม่พบ Order ในกอง!");
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                }
+            }
+        }
+
+        // --- Dragontree Wretch, Depth Iweleth [AUTO]: Placed on RC ---
+        if (name.includes('Depth Iweleth') && isRC) {
+            if (await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
+                let costPaid = false;
+                if (payCounterBlast(1)) {
+                    if (await paySoulBlast(1)) {
+                        costPaid = true;
+                    } else {
+                        counterCharge(1);
+                        alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
+                    }
+                }
+                if (costPaid) {
+                    alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker");
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resolveM => {
+                        const rcListener = (ev) => {
+                            const circle = ev.target.closest('.my-side .circle.rc');
+                            if (circle) {
+                                ev.stopPropagation();
+                                if (circle.dataset.dragontreeMarker === "true") {
+                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                    return;
+                                }
+                                circle.dataset.dragontreeMarker = "true";
+                                circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', rcListener, true);
+                                alert("วาง Dragontree Marker สำเร็จ!");
+                                resolveM();
+                            }
+                        };
+                        document.addEventListener('click', rcListener, true);
+                    });
+
+                    const masques = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
+                    if (masques.length > 0) {
+                        openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masques);
+                        await new Promise(resS => {
+                            const addH = (e) => {
+                                const clicked = e.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    const cName = clicked.dataset.name;
+                                    const idx = deckPool.findIndex(c => c.name === cName);
+                                    if (idx !== -1) {
+                                        const pickedData = deckPool.splice(idx, 1)[0];
+                                        const newEl = createCardElement(pickedData);
+                                        playerHand.appendChild(newEl);
+                                        sendMoveData(newEl);
+                                        updateHandSpacing();
+                                        alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                    }
+                                    viewerGrid.removeEventListener('click', addH);
+                                    zoneViewer.classList.add('hidden');
+                                    resS();
+                                }
+                            };
+                            viewerGrid.addEventListener('click', addH);
+                            closeViewerBtn.onclick = () => { viewerGrid.removeEventListener('click', addH); zoneViewer.classList.add('hidden'); resS(); };
+                        });
+                    } else {
+                        alert("ไม่พบ Masque of Hydragrum ในกอง");
+                    }
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                    updateAllStaticBonuses();
+                }
+            }
+        }
         // --- Desire Devil, Mucca [AUTO]: Removed ---
         if (name.includes('Jamil') && isRC) {
             const currentVG = document.querySelector('.my-side .circle.vc .card');
@@ -5924,6 +6153,81 @@ document.addEventListener('DOMContentLoaded', () => {
         viewerGrid.addEventListener('click', selectionHandler);
     }
 
+    async function handleWaywardDiscard(target) {
+        const isWayward = target.dataset.name && target.dataset.name.includes('Wayward Therapy Angel');
+        const vg = document.querySelector('.my-side .circle.vc .card');
+        const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
+        const dropZone = document.querySelector('.my-side .drop-zone');
+
+        // Always put it in the drop first
+        dropZone.appendChild(target);
+        sendMoveData(target);
+        if (typeof updateHandCount === 'function') updateHandCount();
+        if (typeof updateDropCount === 'function') updateDropCount();
+
+        if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
+            if (await vgConfirm("Wayward Therapy Angel: [AUTO] ถูกทิ้งจากมือ! [SB1] คอลลง แถวหลัง (RC)?")) {
+                if (await paySoulBlast(1)) {
+                    // Remove from drop zone
+                    target.remove();
+
+                    // Find empty back row RC
+                    const backRows = ['rc_back_left', 'rc_back_center', 'rc_back_right'];
+                    const emptyBackRow = backRows.find(z => {
+                        const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
+                        return circle && !circle.querySelector('.card:not(.opponent-card)');
+                    });
+
+                    if (emptyBackRow) {
+                        const circle = document.querySelector(`.my-side .circle[data-zone="${emptyBackRow}"]`);
+                        circle.appendChild(target);
+                        target.classList.remove('rest');
+                        applyStaticBonuses(target);
+                        sendMoveData(target);
+                        if (typeof updateDropCount === 'function') updateDropCount();
+                        alert(`Wayward Therapy Angel: คอลลงแถวหลัง ${emptyBackRow} สำเร็จ!`);
+                        if (typeof checkOnPlaceAbilities === 'function') await checkOnPlaceAbilities(target);
+                    } else {
+                        // Let player choose which back row to override
+                        alert("เลือกช่องแถวหลังเพื่อวาง Wayward Therapy Angel");
+                        document.body.classList.add('targeting-mode');
+                        await new Promise(callRes => {
+                            const callListener = async (ev) => {
+                                const targetCircle = ev.target.closest('.my-side .circle.rc');
+                                if (targetCircle) {
+                                    const circleZone = targetCircle.dataset.zone || "";
+                                    if (circleZone.includes('back')) {
+                                        ev.stopPropagation();
+                                        const existing = targetCircle.querySelector('.card:not(.opponent-card)');
+                                        if (existing) {
+                                            const drop = document.querySelector('.my-side .drop-zone');
+                                            drop.appendChild(existing);
+                                            existing.classList.remove('rest');
+                                            sendMoveData(existing);
+                                        }
+                                        targetCircle.appendChild(target);
+                                        target.classList.remove('rest');
+                                        applyStaticBonuses(target);
+                                        sendMoveData(target);
+                                        if (typeof updateDropCount === 'function') updateDropCount();
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', callListener, true);
+                                        alert(`Wayward Therapy Angel: คอลลงแถวหลังสำเร็จ!`);
+                                        if (typeof checkOnPlaceAbilities === 'function') await checkOnPlaceAbilities(target);
+                                        callRes();
+                                    } else {
+                                        alert("เลือกได้เฉพาะช่องแถวหลังเท่านั้น!");
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', callListener, true);
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     async function payDiscard(count = 1) {
         if (isAIMode && !isMyTurn) {
             if (aiHand.length < count) return false;
@@ -5958,83 +6262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.stopPropagation();
                     const dropZone = document.querySelector('.my-side .drop-zone');
 
-                    // --- Wayward Therapy Angel AUTO: When discarded during your turn, if VG G3+, [SB1] call to back row RC ---
-                    const isWayward = target.dataset.name && target.dataset.name.includes('Wayward Therapy Angel');
-                    const vg = document.querySelector('.my-side .circle.vc .card');
-                    const vgGrade = vg ? parseInt(vg.dataset.grade || "0") : 0;
-
-                    if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
-                        // First move to drop, then ask if they want to activate
-                        dropZone.appendChild(target);
-                        sendMoveData(target);
-                        updateHandCount();
-                        updateDropCount();
-
-                        if (await vgConfirm("Wayward Therapy Angel: [AUTO] ถูกทิ้งจากมือ! [SB1] คอลลง แถวหลัง (RC)?")) {
-                            if (await paySoulBlast(1)) {
-                                // Remove from drop zone
-                                target.remove();
-
-                                // Find empty back row RC
-                                const backRows = ['rc_back_left', 'rc_back_center', 'rc_back_right'];
-                                const emptyBackRow = backRows.find(z => {
-                                    const circle = document.querySelector(`.my-side .circle[data-zone="${z}"]`);
-                                    return circle && !circle.querySelector('.card:not(.opponent-card)');
-                                });
-
-                                if (emptyBackRow) {
-                                    const circle = document.querySelector(`.my-side .circle[data-zone="${emptyBackRow}"]`);
-                                    circle.appendChild(target);
-                                    target.classList.remove('rest');
-                                    applyStaticBonuses(target);
-                                    sendMoveData(target);
-                                    updateDropCount();
-                                    alert(`Wayward Therapy Angel: คอลลงแถวหลัง ${emptyBackRow} สำเร็จ!`);
-                                    await checkOnPlaceAbilities(target);
-                                } else {
-                                    // Let player choose which back row to override
-                                    alert("เลือกช่องแถวหลังเพื่อวาง Wayward Therapy Angel");
-                                    document.body.classList.add('targeting-mode');
-                                    await new Promise(callRes => {
-                                        const callListener = async (ev) => {
-                                            const targetCircle = ev.target.closest('.my-side .circle.rc');
-                                            if (targetCircle) {
-                                                const circleZone = targetCircle.dataset.zone || "";
-                                                if (circleZone.includes('back')) {
-                                                    ev.stopPropagation();
-                                                    const existing = targetCircle.querySelector('.card:not(.opponent-card)');
-                                                    if (existing) {
-                                                        const drop = document.querySelector('.my-side .drop-zone');
-                                                        drop.appendChild(existing);
-                                                        existing.classList.remove('rest');
-                                                        sendMoveData(existing);
-                                                    }
-                                                    targetCircle.appendChild(target);
-                                                    target.classList.remove('rest');
-                                                    applyStaticBonuses(target);
-                                                    sendMoveData(target);
-                                                    updateDropCount();
-                                                    document.body.classList.remove('targeting-mode');
-                                                    document.removeEventListener('click', callListener, true);
-                                                    alert(`Wayward Therapy Angel: คอลลงแถวหลังสำเร็จ!`);
-                                                    await checkOnPlaceAbilities(target);
-                                                    callRes();
-                                                } else {
-                                                    alert("เลือกได้เฉพาะช่องแถวหลังเท่านั้น!");
-                                                }
-                                            }
-                                        };
-                                        document.addEventListener('click', callListener, true);
-                                    });
-                                }
-                            }
-                        }
-                    } else {
-                        dropZone.appendChild(target);
-                        sendMoveData(target);
-                        updateHandCount();
-                        updateDropCount();
-                    }
+                    // Wait for Wayward Therapy Angel resolution or normal discard
+                    await handleWaywardDiscard(target);
 
                     let discardInc = 1;
                     const vgCardLocal = document.querySelector('.my-side .circle.vc .card');
@@ -6438,7 +6667,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
                 'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
                 'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied',
-                'greedonSoulBonusApplied', 'purelightPower', 'purelightCrit', 'aquasBuffApplied'
+                'greedonSoulBonusApplied', 'purelightPower', 'purelightCrit', 'aquasBuffApplied',
+                'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -6931,6 +7161,8 @@ document.addEventListener('DOMContentLoaded', () => {
             strategyPutToOrderZoneThisTurn = false;
             window.avantRestandUsedThisTurn = false;
             window.richterRideBackUsedThisTurn = false;
+            window.alchemagicUsedThisTurn = false;
+            window.cloudedMiasmaBuff = false;
 
             // State expiration check
             if (currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -8089,7 +8321,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lobbyContent = document.querySelector('.lobby-content');
                     if (lobbyContent) lobbyContent.classList.add('effect-match-found');
 
-                    const deckNameLookup = { bruce: 'bruce', magnolia: 'magnolia', nirvana: 'nirvana', majesty: 'majesty', youthberk: 'youthberk', avantgarda: 'avantgarda', overlord: 'overlord' };
+                    const deckNameLookup = { bruce: 'bruce', magnolia: 'magnolia', nirvana: 'nirvana', majesty: 'majesty', youthberk: 'youthberk', avantgarda: 'avantgarda', overlord: 'overlord', zorga: 'zorga' };
                     let currentDeckName = 'bruce';
                     if (currentDeck === magnoliaDeck) currentDeckName = 'magnolia';
                     else if (currentDeck === nirvanaJhevaDeck) currentDeckName = 'nirvana';
@@ -8098,6 +8330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (currentDeck === avantgardaDeck) currentDeckName = 'avantgarda';
                     else if (currentDeck === overlordDeck) currentDeckName = 'overlord';
                     else if (currentDeck === seraphDeck) currentDeckName = 'seraph';
+                    else if (currentDeck === zorgaMasquesDeck) currentDeckName = 'zorga';
 
                     // Start game immediately to avoid losing messages during the 1s delay
                     setupConnection();
@@ -8165,10 +8398,11 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (pDeckKey === 'youthberk') currentDeck = youthberkDeck;
         else if (pDeckKey === 'avantgarda') currentDeck = avantgardaDeck;
         else if (pDeckKey === 'majesty') currentDeck = majestyDeck;
-        else if (pDeckKey === 'nirvana') currentDeck = nirvanaDeck;
+        else if (pDeckKey === 'nirvana') currentDeck = nirvanaJhevaDeck;
         else if (pDeckKey === 'overlord') currentDeck = overlordDeck;
         else if (pDeckKey === 'greedon') currentDeck = greedonDeck;
         else if (pDeckKey === 'seraph') currentDeck = seraphDeck;
+        else if (pDeckKey === 'zorga') currentDeck = zorgaMasquesDeck;
 
         // Initialize AI state
         let aiFullDeck;
@@ -8176,11 +8410,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (aDeckKey === 'magnolia') aiFullDeck = magnoliaDeck;
         else if (aDeckKey === 'youthberk') aiFullDeck = youthberkDeck;
         else if (aDeckKey === 'avantgarda') aiFullDeck = avantgardaDeck;
-        else if (aDeckKey === 'nirvana') aiFullDeck = nirvanaDeck;
+        else if (aDeckKey === 'nirvana') aiFullDeck = nirvanaJhevaDeck;
         else if (aDeckKey === 'majesty') aiFullDeck = majestyDeck;
         else if (aDeckKey === 'overlord') aiFullDeck = overlordDeck;
         else if (aDeckKey === 'greedon') aiFullDeck = greedonDeck;
         else if (aDeckKey === 'seraph') aiFullDeck = seraphDeck;
+        else if (aDeckKey === 'zorga') aiFullDeck = zorgaMasquesDeck;
 
         aiRideDeck = [...aiFullDeck.rideDeck];
         aiDeck = [...aiFullDeck.mainDeck].sort(() => 0.5 - Math.random());
@@ -9194,9 +9429,70 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmPlay = await vgConfirm(`Play Order: ${effectiveCard.dataset.name}?`);
         if (!confirmPlay) return;
 
+        // --- Alchemagic System (Zorga / Zorga Masques) ---
+        let isAlchemagic = false;
+        const vgForAlch = document.querySelector('.my-side .circle.vc .card');
+        const vgNameAlch = vgForAlch ? (vgForAlch.dataset.name || '') : '';
+        const isZorgaVG = vgNameAlch.includes('Zorga');
+        
+        if (isZorgaVG && !isSetOrder && !isBlitzOrder) {
+            // Check for normal orders in drop zone with different name
+            const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
+            const normalOrdersInDrop = dropCards.filter(c => {
+                const sk = (c.dataset.skill || '').toLowerCase();
+                const isNormalOrder = sk.includes('order') && !sk.includes('set order') && !sk.includes('blitz order');
+                const isDifferentName = c.dataset.name !== effectiveCard.dataset.name;
+                // Zorga Masques: can bind any normal order from drop
+                // Zorga (base): must bind a different-named normal order
+                if (vgNameAlch.includes('Zorga Masques')) {
+                    return isNormalOrder;
+                }
+                return isNormalOrder && isDifferentName;
+            });
+
+            if (normalOrdersInDrop.length > 0) {
+                const wantAlch = await vgConfirm(`Alchemagic: Bind นอร์มอลออเดอร์ 1 ใบจากดรอปโซนเพื่อรวมเอฟเฟกต์?`);
+                if (wantAlch) {
+                    openViewer("เลือก Normal Order จากดรอปเพื่อ Alchemagic", normalOrdersInDrop.map(c => ({
+                        name: c.dataset.name, grade: c.dataset.grade, power: c.dataset.power,
+                        shield: c.dataset.shield, skill: c.dataset.skill, id: c.id,
+                        imageUrl: c.querySelector('img')?.src || ''
+                    })));
+                    
+                    const alchCard = await new Promise(resolve => {
+                        const alchPick = (e) => {
+                            const picked = e.target.closest('.card');
+                            if (picked && picked.parentElement === viewerGrid) {
+                                const selectedId = picked.dataset.originalId || picked.id;
+                                const actual = normalOrdersInDrop.find(c => c.id === selectedId);
+                                if (actual) {
+                                    viewerGrid.removeEventListener('click', alchPick);
+                                    zoneViewer.classList.add('hidden');
+                                    resolve(actual);
+                                }
+                            }
+                        };
+                        viewerGrid.addEventListener('click', alchPick);
+                    });
+
+                    if (alchCard) {
+                        // Bind the card from drop
+                        bindPool.push(alchCard);
+                        alchCard.remove();
+                        updateDropCount();
+                        sendData({ type: 'syncBindCount', count: bindPool.length });
+                        isAlchemagic = true;
+                        window.alchemagicUsedThisTurn = true;
+                        alert(`Alchemagic! Bind "${alchCard.dataset.name}" จากดรอปโซน - เอฟเฟกต์ถูกรวมเข้าด้วยกัน!`);
+                        
+                        // Activate the bound card's skill too
+                        await activateCardSkill(alchCard);
+                    }
+                }
+            }
+        }
+
         // Note: For now activateCardSkill triggers costs. If isFree, we should ideally bypass CB/SB.
-        // For simplicity with Habitable Zone, we'll assume the prompt says "without paying its cost".
-        // In full implementation, activateCardSkill needs to take an 'isFree' parameter.
         if (isFree) effectiveCard.dataset.playOrderFree = "true";
 
         const skillResult = await activateCardSkill(effectiveCard);
@@ -9205,12 +9501,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (skillResult === false) return;
 
+        // --- Apply Alchemagic CONT bonuses after skill resolution ---
+        if (isAlchemagic) {
+            updateAllStaticBonuses();
+        }
+
         if (isSetOrder) {
             const orderZone = document.querySelector('.my-side .order-zone');
             if (orderZone) {
-                // Remove existing strategy if you want only one set order active?
-                // In Vanguard, you can have multiple. But often for strategies you might swap.
-                // Re-playing same strategy replaces? Let's keep multiple for now as per rules.
                 orderZone.appendChild(effectiveCard);
                 sendMoveData(effectiveCard);
                 updateHandCount();
@@ -9220,8 +9518,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     strategyPutToOrderZoneThisTurn = true;
                 }
                 ordersPlayedCount++;
-                sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
+                sendData({ type: 'strategyActivated', active: true });
                 alert(`Played Set Order: ${effectiveCard.dataset.name}`);
+                // Roaming Prison Dragon trigger
+                await triggerRoamingPrisonDragon(isAlchemagic);
+                // Shadowcloak trigger
+                await triggerShadowcloakOnOrder(isAlchemagic);
                 return;
             }
         }
@@ -9236,11 +9538,136 @@ document.addEventListener('DOMContentLoaded', () => {
             orderPlayedThisTurn = true;
             strategyActivatedThisTurn = true;
             ordersPlayedCount++;
-            sendData({ type: 'strategyActivated', active: true }); // Sync strategy activation
+            sendData({ type: 'strategyActivated', active: true });
             alert(`Played Order: ${effectiveCard.dataset.name}`);
+            // Roaming Prison Dragon trigger
+            await triggerRoamingPrisonDragon(isAlchemagic);
+            // Shadowcloak trigger
+            await triggerShadowcloakOnOrder(isAlchemagic);
         }
     }
 
+    // --- Roaming Prison Dragon [AUTO](Drop) ---
+    async function triggerRoamingPrisonDragon(isAlchemagic) {
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        const roamingInDrop = Array.from(dropZone.querySelectorAll('.card')).filter(c => 
+            c.dataset.name === 'Roaming Prison Dragon'
+        );
+        
+        for (const roaming of roamingInDrop) {
+            const wantCall = await vgConfirm(`Roaming Prison Dragon: [AUTO](Drop) เมื่อเล่น Order → คอลตัวเองลง (RC)?`);
+            if (!wantCall) continue;
+
+            // Call to RC
+            alert("เลือก RC เพื่อวาง Roaming Prison Dragon");
+            document.body.classList.add('targeting-mode');
+            await new Promise(resolve => {
+                const rcHandler = (ev) => {
+                    const circle = ev.target.closest('.my-side .circle.rc');
+                    if (circle) {
+                        ev.stopPropagation();
+                        const existing = circle.querySelector('.card:not(.opponent-card)');
+                        if (existing) {
+                            dropZone.appendChild(existing);
+                            existing.classList.remove('rest');
+                            existing.style.transform = 'none';
+                            sendMoveData(existing);
+                        }
+                        circle.appendChild(roaming);
+                        roaming.classList.remove('rest');
+                        roaming.style.transform = 'none';
+
+                        if (isAlchemagic) {
+                            // Alchemagic: ทำทั้ง 2 อย่าง (+10000 และ Crit+1)
+                            roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
+                            roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
+                            roaming.dataset.turnEndBuffActive = "true";
+                            const baseCrit = parseInt(roaming.dataset.critical || "1");
+                            roaming.dataset.critical = (baseCrit + 1).toString();
+                            roaming.dataset.turnEndCritBuff = "true";
+                            alert(`Roaming Prison Dragon: Alchemagic! พลัง +10000 & Critical +1!`);
+                        } else {
+                            // ไม่ใช่ Alchemagic: เลือกอย่างใดอย่างหนึ่ง
+                            const choice = confirm("Roaming Prison Dragon:\nOK = พลัง +10000\nCancel = Critical +1");
+                            if (choice) {
+                                roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
+                                roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
+                                roaming.dataset.turnEndBuffActive = "true";
+                                alert("Roaming Prison Dragon: พลัง +10000!");
+                            } else {
+                                const baseCrit = parseInt(roaming.dataset.critical || "1");
+                                roaming.dataset.critical = (baseCrit + 1).toString();
+                                roaming.dataset.turnEndCritBuff = "true";
+                                alert("Roaming Prison Dragon: Critical +1!");
+                            }
+                        }
+
+                        applyStaticBonuses(roaming);
+                        syncPowerDisplay(roaming);
+                        sendMoveData(roaming);
+                        updateDropCount();
+                        document.body.classList.remove('targeting-mode');
+                        document.removeEventListener('click', rcHandler, true);
+                        resolve();
+                    }
+                };
+                document.addEventListener('click', rcHandler, true);
+            });
+        }
+    }
+
+    // --- Shadowcloak [AUTO](RC): When you play an order ---
+    async function triggerShadowcloakOnOrder(isAlchemagic) {
+        const shadowcloaks = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c =>
+            c.dataset.name === 'Shadowcloak' && !c.classList.contains('opponent-card')
+        );
+
+        for (const sc of shadowcloaks) {
+            const wantUse = await vgConfirm(`Shadowcloak: [AUTO](RC) เมื่อเล่น Order [SB1] พลัง +5000?${isAlchemagic ? '\n(Alchemagic: เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ!)' : ''}`);
+            if (!wantUse) continue;
+
+            if (await paySoulBlast(1)) {
+                sc.dataset.power = (parseInt(sc.dataset.power) + 5000).toString();
+                sc.dataset.turnEndBuffPower = (parseInt(sc.dataset.turnEndBuffPower || "0") + 5000).toString();
+                sc.dataset.turnEndBuffActive = "true";
+                syncPowerDisplay(sc);
+                sendMoveData(sc);
+                alert("Shadowcloak: พลัง +5000!");
+
+                if (isAlchemagic) {
+                    const otherRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c =>
+                        c !== sc && !c.classList.contains('opponent-card')
+                    );
+                    if (otherRGs.length > 0) {
+                        const wantReturn = await vgConfirm("Shadowcloak (Alchemagic): เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ?");
+                        if (wantReturn) {
+                            alert("คลิกเลือกเรียร์การ์ดที่ต้องการกลับมือ");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolve => {
+                                const retHandler = (ev) => {
+                                    const target = ev.target.closest('.my-side .circle.rc .card');
+                                    if (target && target !== sc && !target.classList.contains('opponent-card')) {
+                                        ev.stopPropagation();
+                                        playerHand.appendChild(target);
+                                        target.classList.remove('rest');
+                                        target.style.transform = 'none';
+                                        sendMoveData(target);
+                                        updateHandSpacing();
+                                        updateHandCount();
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', retHandler, true);
+                                        alert(`${target.dataset.name} กลับมือแล้ว!`);
+                                        resolve();
+                                    }
+                                };
+                                document.addEventListener('click', retHandler, true);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     async function activateCardSkill(card) {
         const originalId = card.dataset.originalId;
@@ -10514,6 +10941,198 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
+        }
+
+        // --- Clouded Miasma [Normal Order] ---
+        if (name.includes('Clouded Miasma')) {
+            if (await vgConfirm("Clouded Miasma: [CB1] เลือกการ์ดเกรด 3 หรือต่ำกว่าจากดรอปโซน คอลลง (RC)?\n(Alchemagic: แวนการ์ดให้แถวหน้า +5000)")) {
+                if (payCounterBlast(1)) {
+                    promptCallFromDrop(1, (c) => {
+                        return parseInt(c.dataset.grade) <= 3 && !c.dataset.skill?.toLowerCase().includes('order');
+                    }, 0, () => {
+                        // If part of Alchemagic, grant front row +5000
+                        if (window.alchemagicUsedThisTurn) {
+                            window.cloudedMiasmaBuff = true;
+                            updateAllStaticBonuses();
+                            alert("Clouded Miasma (Alchemagic): ยูนิทแถวหน้าทั้งหมดได้รับพลัง +5000!");
+                        }
+                    });
+                    return true;
+                } else return false;
+            } else return false;
+        }
+
+        // --- Masque of Hydragrum [Normal Order] ---
+        if (name.includes('Masque of Hydragrum')) {
+            if (await vgConfirm("Masque of Hydragrum: ดู 5 ใบจากบนสุดกอง เลือก Dragontree/Masques 1 ใบขึ้นมือ?")) {
+                const top5 = deckPool.slice(0, 5);
+                const targets = top5.filter(c => 
+                    c.name.toLowerCase().includes('dragontree') || c.name.toLowerCase().includes('masques')
+                );
+                if (targets.length > 0) {
+                    openViewer("เลือก Dragontree/Masques 1 ใบ", targets);
+                    const hSel = (ev) => {
+                        const picked = ev.target.closest('.card');
+                        if (picked && picked.parentElement === viewerGrid) {
+                            const selectedId = picked.dataset.originalId;
+                            const tIdx = deckPool.findIndex(c => c.id === selectedId);
+                            if (tIdx !== -1) {
+                                const cardData = deckPool.splice(tIdx, 1)[0];
+                                const el = createCardElement(cardData);
+                                playerHand.appendChild(el);
+                                sendMoveData(el);
+                                updateHandSpacing();
+                                updateDeckCounter();
+                                alert(`นำ ${cardData.name} ขึ้นมือแล้ว!`);
+                            }
+                            viewerGrid.removeEventListener('click', hSel);
+                            zoneViewer.classList.add('hidden');
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                        }
+                    };
+                    viewerGrid.addEventListener('click', hSel);
+                } else {
+                    alert("ไม่พบ Dragontree/Masques ใน 5 ใบแรก!");
+                    deckPool.sort(() => 0.5 - Math.random());
+                    updateDeckCounter();
+                }
+                return true;
+            } else return false;
+        }
+
+        // --- Mysterious Rain Spiritualist, Zorga [ACT](VC)[1/turn] ---
+        if (name === 'Mysterious Rain Spiritualist, Zorga' && isVC) {
+            if (await vgConfirm("Zorga: [ACT](VC) [CB1] เลือกการ์ด 1 ใบจากดรอปโซน คอลลง (RC)?")) {
+                if (payCounterBlast(1)) {
+                    effectiveCard.dataset.actUsed = "true";
+                    promptCallFromDrop(1, null, 0);
+                    return true;
+                } else return false;
+            } else return false;
+        }
+
+        // --- Teasing Spiritualist, Zorga Masques [ACT](VC)[1/turn] ---
+        if (name.includes('Zorga Masques') && isVC) {
+            if (await vgConfirm('Zorga Masques: [ACT](VC) [นำ Zorga ชื่ออื่นออกจากเกม] → เลือกจากดรอป: ยูนิท→RC / ออเดอร์→มือ?')) {
+                // Find Zorga candidates (different name from this unit)
+                const zorgaCandidates = [];
+                Array.from(playerHand.querySelectorAll('.card')).forEach(c => {
+                    if (c.dataset.name.includes('Zorga') && !c.dataset.name.includes('Masques')) zorgaCandidates.push({ node: c, zone: 'hand' });
+                });
+                soulPool.forEach(c => {
+                    if (c.dataset.name.includes('Zorga') && !c.dataset.name.includes('Masques')) zorgaCandidates.push({ node: c, zone: 'soul' });
+                });
+                Array.from(document.querySelectorAll('.my-side .drop-zone .card')).forEach(c => {
+                    if (c.dataset.name.includes('Zorga') && !c.dataset.name.includes('Masques')) zorgaCandidates.push({ node: c, zone: 'drop' });
+                });
+
+                if (zorgaCandidates.length === 0) {
+                    alert("ไม่พบการ์ด 'Zorga' ชื่ออื่นในมือ, โซล หรือดรอปโซน!");
+                    return false;
+                }
+
+                openViewer("เลือก Zorga 1 ใบเพื่อนำออกจากเกม", zorgaCandidates.map(c => ({
+                    name: c.node.dataset.name, id: c.node.id, imageUrl: c.node.dataset.imageUrl || '', zone: c.zone
+                })));
+
+                await new Promise(resolveCost => {
+                    const costSel = (e) => {
+                        const tgt = e.target.closest('.card');
+                        if (tgt && tgt.parentElement === viewerGrid) {
+                            const ref = zorgaCandidates.find(c => c.node.id === (tgt.dataset.originalId || tgt.id));
+                            if (ref) {
+                                viewerGrid.removeEventListener('click', costSel);
+                                zoneViewer.classList.add('hidden');
+
+                                if (ref.zone === 'soul') {
+                                    const actualIdx = soulPool.indexOf(ref.node);
+                                    if (actualIdx !== -1) soulPool.splice(actualIdx, 1);
+                                }
+                                ref.node.remove();
+                                updateSoulUI();
+                                updateDropCount();
+                                sendMoveData(ref.node, 'remove');
+
+                                effectiveCard.dataset.actUsed = "true";
+
+                                // Choose from drop: unit → RC, order → hand
+                                const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
+                                if (dropCards.length === 0) {
+                                    alert("ดรอปโซนว่าง!");
+                                    resolveCost();
+                                    return;
+                                }
+
+                                openViewer("เลือกการ์ดจากดรอปโซน (ยูนิท→RC, ออเดอร์→มือ)", dropCards.map(c => ({
+                                    name: c.dataset.name, grade: c.dataset.grade, power: c.dataset.power,
+                                    shield: c.dataset.shield, skill: c.dataset.skill, id: c.id,
+                                    imageUrl: c.querySelector('img')?.src || ''
+                                })));
+
+                                const targetSel = async (ev) => {
+                                    const picked = ev.target.closest('.card');
+                                    if (picked && picked.parentElement === viewerGrid) {
+                                        const selectedId = picked.dataset.originalId || picked.id;
+                                        const actual = dropCards.find(c => c.id === selectedId);
+                                        if (actual) {
+                                            viewerGrid.removeEventListener('click', targetSel);
+                                            zoneViewer.classList.add('hidden');
+
+                                            const skillTxt = (actual.dataset.skill || '').toLowerCase();
+                                            const isOrder = skillTxt.includes('order');
+
+                                            if (isOrder) {
+                                                // Normal order → hand
+                                                playerHand.appendChild(actual);
+                                                sendMoveData(actual);
+                                                updateHandSpacing();
+                                                updateDropCount();
+                                                alert(`${actual.dataset.name} (ออเดอร์) ขึ้นมือแล้ว!`);
+                                            } else {
+                                                // Unit → RC
+                                                alert("เลือก RC เพื่อวางการ์ด");
+                                                document.body.classList.add('targeting-mode');
+                                                await new Promise(rcResolve => {
+                                                    const rcH = (rcEv) => {
+                                                        const circle = rcEv.target.closest('.my-side .circle.rc');
+                                                        if (circle) {
+                                                            rcEv.stopPropagation();
+                                                            const existing = circle.querySelector('.card:not(.opponent-card)');
+                                                            if (existing) {
+                                                                const dz = document.querySelector('.my-side .drop-zone');
+                                                                dz.appendChild(existing);
+                                                                existing.classList.remove('rest');
+                                                                sendMoveData(existing);
+                                                            }
+                                                            circle.appendChild(actual);
+                                                            actual.classList.remove('rest');
+                                                            actual.style.transform = 'none';
+                                                            applyStaticBonuses(actual);
+                                                            syncPowerDisplay(actual);
+                                                            sendMoveData(actual);
+                                                            updateDropCount();
+                                                            document.body.classList.remove('targeting-mode');
+                                                            document.removeEventListener('click', rcH, true);
+                                                            alert(`${actual.dataset.name} คอลลง (RC) แล้ว!`);
+                                                            rcResolve();
+                                                        }
+                                                    };
+                                                    document.addEventListener('click', rcH, true);
+                                                });
+                                            }
+                                            resolveCost();
+                                        }
+                                    }
+                                };
+                                viewerGrid.addEventListener('click', targetSel);
+                            }
+                        }
+                    };
+                    viewerGrid.addEventListener('click', costSel);
+                });
+                return true;
+            } else return false;
         }
 
     }
@@ -12340,6 +12959,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (deckChoice === 'overlord') currentDeck = overlordDeck;
         else if (deckChoice === 'greedon') currentDeck = greedonDeck;
         else if (deckChoice === 'seraph') currentDeck = seraphDeck;
+        else if (deckChoice === 'zorga') currentDeck = zorgaMasquesDeck;
 
         if (role === 'host') {
             initPeer(customId);
