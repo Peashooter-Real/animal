@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rideDeck: [
             { name: 'Sylvan Horned Beast, Lotte', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
             { name: 'Sylvan Horned Beast, Charis', grade: 1, power: 8000, shield: 5000, skill: '[ACT](VC)[1/turn]: [คอสต์][Soul-Blast 1] จั่วการ์ด 2 ใบ จากนั้นเลือกการ์ดออเดอร์จากบนมือคุณสูงสุด 1 ใบเพื่อทิ้ง หากไม่ได้ทิ้งด้วยผลนี้ เลือกทิ้งการ์ด 2 ใบจากบนมือคุณ\n[CONT](RC): ถ้าคุณใช้งานออเดอร์ในเทิร์นนี้ ยูนิทนี้ได้รับพลัง +2000' },
-            { name: 'Black Tears Husk Dragon', grade: 2, power: 10000, shield: 5000, skill: '' },
+            { name: 'Black Tears Husk Dragon', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกนำมาวางบน (VC) เลือกนำ Normal Order จากดรอปโซนของคุณไม่เกิน 1 ใบ นำขึ้นมือ' },
             { name: 'Mysterious Rain Spiritualist, Zorga', grade: 3, power: 13000, persona: true, skill: '[CONT](VC): เมื่อคุณจะเล่นนอร์มอลออเดอร์ คุณสามารถ Bind นอร์มอลออเดอร์ที่มีชื่อต่างกันจากดรอปโซน และทำ Alchemagic (รวมคอสต์เข้าด้วยกัน และเพิ่มเอฟเฟกต์ต่อท้าย!)\n[ACT](VC)[1/turn]: [COST][Counter-Blast 1] เลือกการ์ด 1 ใบจากดรอปโซนของคุณ คอลลง (RC)' }
         ],
         mainDeck: [
@@ -4430,6 +4430,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             applyStaticBonuses(nextRideCard);
                             sendMoveData(nextRideCard);
                             handleRideAbilities(nextRideCard, discardedCard);
+                            checkOnPlaceAbilities(nextRideCard); // Ensure [AUTO] on VC triggers correctly
                             alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
 
                             // Move to Main Phase after ride
