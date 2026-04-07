@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
         'Front Trigger (Dark States)': 'picture/bruce_front.png',
         'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
-        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png',
+        'Hades Dragon Deity, Gallmageveld': 'picture/gallmageveld_dragon.png',
 
         // Magnolia Deck
         'Sylvan Horned Beast, Lotte': 'picture/grade0_magnolia.jpg',
@@ -588,6 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sylvan Horned Beast, Gabregg': 'picture/gabregg.jpg',
         'Sylvan Horned Beast, Bojalcorn': 'picture/bojalcorn.jpg',
         'Spiritual Body Condensation': 'picture/spirit.jpg',
+        'Source Dragon Deity, Blessfavor': 'zorga_art/blessfavor.png',
         'In the Dim Darkness, the Frozen Resentment': 'zorga_art/dark.jpg',
 
         // Triggers - Stoicheia (Magnolia)
@@ -670,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Knight of Plowing, Dolbraig': 'youthberk/dolbraig.png',
         'Knight of Rendering Flash, Cairbre': 'youthberk/cairbre.png',
         'Witch of Accumulation, Sequana': 'youthberk/sequana.png',
-        'Wayward Therapy Angel': 'youthberk/wayward.png',
+        'Wayward Therapy Angel': 'youthberk/wayward_new.png',
 
         // Dragon Empire - Dragonic Overlord the End
         'Lizard Runner, Undeux': 'overlord/undeux.png',
@@ -708,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Draw Trigger (Dark States)': 'picture/bruce_draw.png',
         'Front Trigger (Dark States)': 'picture/bruce_front.png',
         'Heal Trigger (Dark States)': 'picture/bruce_heal.png',
-        'Hades Dragon Deity, Gallmageveld': 'picture/bruce_over.png',
+        'Hades Dragon Deity, Gallmageveld': 'picture/gallmageveld_dragon.png',
 
         // Brandt Gate - Prison (Seraph Snow)
         'Aurora Battle Princess, Ruby Red': 'seraph_art/ruby_red.png',
@@ -748,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
         'Draw Trigger (Stoicheia)': 'picture/stoicheia_draw.png',
         'Heal Trigger (Stoicheia)': 'picture/stoicheia_heal.png',
-        'Source Dragon Deity, Blessfavor': 'greedon/mucca.png',
+        'Source Dragon Deity, Blessfavor': 'zorga_art/blessfavor.png',
         'Custodial Dragon (Perfect Guard)': 'picture/custodial_dragon.png',
         'In the Dim Darkness, the Frozen Resentment': 'zorga_art/dark.jpg'
     };
@@ -5329,6 +5330,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // ============================================
+    // UNIVERSAL ABILITY QUEUE SYSTEM
+    // Lets player choose resolution order when
+    // multiple abilities trigger simultaneously.
+    // ============================================
+    async function resolveAbilityQueue(queue) {
+        if (!queue || queue.length === 0) return;
+
+        // If only 1 ability, resolve it directly without showing the picker UI
+        if (queue.length === 1) {
+            await new Promise(done => queue[0].resolve(done));
+            return;
+        }
+
+        // Multiple abilities: let player choose order
+        const remaining = [...queue];
+
+        while (remaining.length > 0) {
+            if (remaining.length === 1) {
+                // Only one left, resolve automatically
+                await new Promise(done => remaining[0].resolve(done));
+                remaining.splice(0, 1);
+                break;
+            }
+
+            // Show the ability queue picker UI
+            const chosen = await showAbilityQueuePicker(remaining);
+            if (chosen !== null && chosen >= 0 && chosen < remaining.length) {
+                const ability = remaining.splice(chosen, 1)[0];
+                await new Promise(done => ability.resolve(done));
+            } else {
+                // If somehow nothing was chosen, resolve first by default
+                const ability = remaining.splice(0, 1)[0];
+                await new Promise(done => ability.resolve(done));
+            }
+        }
+    }
+
+    function showAbilityQueuePicker(abilities) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'ability-queue-overlay';
+
+            const panel = document.createElement('div');
+            panel.className = 'ability-queue-panel';
+
+            const title = document.createElement('div');
+            title.className = 'ability-queue-title';
+            title.textContent = `⚡ เลือกสกิลที่จะใช้ก่อน (${abilities.length} สกิลรอดำเนินการ)`;
+
+            const list = document.createElement('div');
+            list.className = 'ability-queue-list';
+
+            abilities.forEach((ability, index) => {
+                const item = document.createElement('div');
+                item.className = 'ability-queue-item';
+
+                const number = document.createElement('div');
+                number.className = 'ability-queue-number';
+                number.textContent = index + 1;
+
+                const info = document.createElement('div');
+                info.className = 'ability-queue-info';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'ability-queue-name';
+                nameEl.textContent = ability.name;
+
+                const descEl = document.createElement('div');
+                descEl.className = 'ability-queue-desc';
+                descEl.textContent = ability.description || '';
+
+                info.appendChild(nameEl);
+                info.appendChild(descEl);
+                item.appendChild(number);
+                item.appendChild(info);
+
+                item.addEventListener('click', () => {
+                    overlay.remove();
+                    resolve(index);
+                });
+
+                list.appendChild(item);
+            });
+
+            panel.appendChild(title);
+            panel.appendChild(list);
+            overlay.appendChild(panel);
+            document.body.appendChild(overlay);
+        });
+    }
+
     async function processInletPulse(units) {
         const queue = units.map(unit => {
             return {
@@ -6158,79 +6251,83 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function promptCallFromDrop(count, filterFn, powerBonus = 0, onComplete = null) {
-        const dropZone = document.querySelector('.my-side .drop-zone');
-        const eligibleCards = Array.from(dropZone.querySelectorAll('.card')).filter(c => {
-            if (c.classList.contains('opponent-card')) return false;
-            if (filterFn && !filterFn(c)) return false;
-            return true;
-        });
+        return new Promise(resolveAll => {
+            const dropZone = document.querySelector('.my-side .drop-zone');
+            const eligibleCards = Array.from(dropZone.querySelectorAll('.card')).filter(c => {
+                if (c.classList.contains('opponent-card')) return false;
+                if (filterFn && !filterFn(c)) return false;
+                return true;
+            });
 
-        if (eligibleCards.length === 0) {
-            alert("ไม่พบการ์ดที่ตรงเงื่อนไขในดรอปโซน!");
-            if (onComplete) onComplete();
-            return;
-        }
-
-        openViewer("เลือกการ์ดจากดรอปโซนเพื่อคอล", eligibleCards.map(c => ({
-            name: c.dataset.name,
-            grade: c.dataset.grade,
-            power: c.dataset.power,
-            shield: c.dataset.shield,
-            skill: c.dataset.skill,
-            id: c.id,
-            imageUrl: c.querySelector('img')?.src || ''
-        })));
-
-        const pickHandler = (e) => {
-            const clicked = e.target.closest('.card');
-            if (clicked && clicked.parentElement === viewerGrid) {
-                const selectedId = clicked.dataset.originalId || clicked.id;
-                const actual = eligibleCards.find(c => c.id === selectedId);
-                if (actual) {
-                    viewerGrid.removeEventListener('click', pickHandler);
-                    zoneViewer.classList.add('hidden');
-
-                    // Prompt for RC selection
-                    alert("เลือก RC เพื่อวางการ์ด");
-                    document.body.classList.add('targeting-mode');
-                    const rcHandler = (ev) => {
-                        const circle = ev.target.closest('.my-side .circle.rc');
-                        if (circle) {
-                            ev.stopPropagation();
-                            // Replace existing card if any
-                            const existing = circle.querySelector('.card:not(.opponent-card)');
-                            if (existing) {
-                                dropZone.appendChild(existing);
-                                existing.classList.remove('rest');
-                                existing.style.transform = 'none';
-                                sendMoveData(existing);
-                            }
-                            circle.appendChild(actual);
-                            actual.classList.remove('rest');
-                            actual.style.transform = 'none';
-
-                            if (powerBonus > 0) {
-                                actual.dataset.power = (parseInt(actual.dataset.power) + powerBonus).toString();
-                                actual.dataset.turnEndBuffPower = (parseInt(actual.dataset.turnEndBuffPower || "0") + powerBonus).toString();
-                                actual.dataset.turnEndBuffActive = "true";
-                                alert(`${actual.dataset.name}: พลัง +${powerBonus}!`);
-                            }
-
-                            applyStaticBonuses(actual);
-                            syncPowerDisplay(actual);
-                            sendMoveData(actual);
-                            updateDropCount();
-                            document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', rcHandler, true);
-
-                            if (onComplete) onComplete();
-                        }
-                    };
-                    document.addEventListener('click', rcHandler, true);
-                }
+            if (eligibleCards.length === 0) {
+                alert("ไม่พบการ์ดที่ตรงเงื่อนไขในดรอปโซน!");
+                if (onComplete) onComplete();
+                resolveAll();
+                return;
             }
-        };
-        viewerGrid.addEventListener('click', pickHandler);
+
+            openViewer("เลือกการ์ดจากดรอปโซนเพื่อคอล", eligibleCards.map(c => ({
+                name: c.dataset.name,
+                grade: c.dataset.grade,
+                power: c.dataset.power,
+                shield: c.dataset.shield,
+                skill: c.dataset.skill,
+                id: c.id,
+                imageUrl: c.querySelector('img')?.src || ''
+            })));
+
+            const pickHandler = (e) => {
+                const clicked = e.target.closest('.card');
+                if (clicked && clicked.parentElement === viewerGrid) {
+                    const selectedId = clicked.dataset.originalId || clicked.id;
+                    const actual = eligibleCards.find(c => c.id === selectedId);
+                    if (actual) {
+                        viewerGrid.removeEventListener('click', pickHandler);
+                        zoneViewer.classList.add('hidden');
+
+                        // Prompt for RC selection
+                        alert("เลือก RC เพื่อวางการ์ด");
+                        document.body.classList.add('targeting-mode');
+                        const rcHandler = async (ev) => {
+                            const circle = ev.target.closest('.my-side .circle.rc');
+                            if (circle) {
+                                ev.stopPropagation();
+                                // Replace existing card if any
+                                const existing = circle.querySelector('.card:not(.opponent-card)');
+                                if (existing) {
+                                    dropZone.appendChild(existing);
+                                    existing.classList.remove('rest');
+                                    existing.style.transform = 'none';
+                                    sendMoveData(existing);
+                                }
+                                circle.appendChild(actual);
+                                actual.classList.remove('rest');
+                                actual.style.transform = 'none';
+
+                                if (powerBonus > 0) {
+                                    actual.dataset.power = (parseInt(actual.dataset.power) + powerBonus).toString();
+                                    actual.dataset.turnEndBuffPower = (parseInt(actual.dataset.turnEndBuffPower || "0") + powerBonus).toString();
+                                    actual.dataset.turnEndBuffActive = "true";
+                                    alert(`${actual.dataset.name}: พลัง +${powerBonus}!`);
+                                }
+
+                                applyStaticBonuses(actual);
+                                syncPowerDisplay(actual);
+                                sendMoveData(actual);
+                                updateDropCount();
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', rcHandler, true);
+
+                                if (onComplete) await onComplete();
+                                resolveAll();
+                            }
+                        };
+                        document.addEventListener('click', rcHandler, true);
+                    }
+                }
+            };
+            viewerGrid.addEventListener('click', pickHandler);
+        });
     }
 
     async function paySoulBlast(cost) {
@@ -9688,7 +9785,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         sendData({ type: 'syncBindCount', count: bindPool.length });
                         isAlchemagic = true;
                         window.alchemagicUsedThisTurn = true;
-                        alert(`Alchemagic! Bind "${alchCard.dataset.name}" จากดรอปโซน - เอฟเฟกต์ถูกรวมเข้าด้วยกัน!`);
+                        
+                        // Play Alchemagic fusion animation
+                        await playAlchemagicAnimation(effectiveCard, alchCard);
                         
                         // Activate the bound card's skill too
                         window.currentlyResolvingAlchemagic = true;
@@ -9729,10 +9828,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ordersPlayedCount++;
                 sendData({ type: 'strategyActivated', active: true });
                 alert(`Played Set Order: ${effectiveCard.dataset.name}`);
-                // Roaming Prison Dragon trigger
-                await triggerRoamingPrisonDragon(isAlchemagic);
-                // Shadowcloak trigger
-                await triggerShadowcloakOnOrder(isAlchemagic);
+                // Collect and resolve order triggers in queue
+                await collectAndResolveOrderTriggers(effectiveCard, isAlchemagic);
                 return;
             }
         }
@@ -9749,14 +9846,257 @@ document.addEventListener('DOMContentLoaded', () => {
             ordersPlayedCount++;
             sendData({ type: 'strategyActivated', active: true });
             alert(`Played Order: ${effectiveCard.dataset.name}`);
-            // Roaming Prison Dragon trigger
-            await triggerRoamingPrisonDragon(isAlchemagic);
-            // Shadowcloak trigger
-            await triggerShadowcloakOnOrder(isAlchemagic);
+            // Collect and resolve order triggers in queue
+            await collectAndResolveOrderTriggers(effectiveCard, isAlchemagic);
         }
     }
 
-    // --- Roaming Prison Dragon [AUTO](Drop) ---
+    // --- Alchemagic Fusion Animation ---
+    function playAlchemagicAnimation(mainOrder, boundOrder) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'alchemagic-overlay';
+
+            const container = document.createElement('div');
+            container.className = 'alch-container';
+
+            // Left card (main order)
+            const leftCard = document.createElement('div');
+            leftCard.className = 'alch-card-left';
+            const leftImg = mainOrder.querySelector('img');
+            if (leftImg) {
+                const limg = document.createElement('img');
+                limg.src = leftImg.src;
+                leftCard.appendChild(limg);
+            } else {
+                leftCard.textContent = mainOrder.dataset.name;
+            }
+
+            // Right card (bound order)
+            const rightCard = document.createElement('div');
+            rightCard.className = 'alch-card-right';
+            const rightImg = boundOrder.querySelector('img');
+            if (rightImg) {
+                const rimg = document.createElement('img');
+                rimg.src = rightImg.src;
+                rightCard.appendChild(rimg);
+            } else {
+                rightCard.textContent = boundOrder.dataset.name;
+            }
+
+            // Fusion burst
+            const burst = document.createElement('div');
+            burst.className = 'alch-fusion-burst';
+
+            // Text
+            const text = document.createElement('div');
+            text.className = 'alch-text';
+            text.textContent = '⚗ ALCHEMAGIC ⚗';
+
+            // Particles
+            const particles = document.createElement('div');
+            particles.className = 'alch-particles';
+            const colors = ['#00e5ff', '#ff2a6d', '#ffffff', '#a855f7', '#05d9e8'];
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'alch-particle';
+                const angle = (Math.PI * 2 * i) / 20;
+                const dist = 60 + Math.random() * 80;
+                p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+                p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDelay = `${0.4 + Math.random() * 0.3}s`;
+                particles.appendChild(p);
+            }
+
+            container.appendChild(leftCard);
+            container.appendChild(rightCard);
+            container.appendChild(burst);
+            container.appendChild(text);
+            container.appendChild(particles);
+            overlay.appendChild(container);
+            document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                overlay.remove();
+                resolve();
+            }, 2500);
+        });
+    }
+
+    // --- Collect & Resolve Order Triggers in Queue ---
+    async function collectAndResolveOrderTriggers(effectiveCard, isAlchemagic) {
+        const orderQueue = [];
+        const orderName = effectiveCard ? (effectiveCard.dataset.name || effectiveCard.name || "") : "";
+
+        // Check for Roaming Prison Dragons in drop
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        const roamingInDrop = Array.from(dropZone.querySelectorAll('.card')).filter(c =>
+            c.dataset.name === 'Roaming Prison Dragon' && !c.classList.contains('opponent-card')
+        );
+        for (const roaming of roamingInDrop) {
+            orderQueue.push({
+                name: `Roaming Prison Dragon`,
+                description: `[AUTO](Drop) เมื่อเล่น Order → คอลตัวเองลง (RC)${isAlchemagic ? ' + พลัง+10000 & Crit+1' : ''}`,
+                resolve: async (done) => {
+                    await executeSingleRoamingPrison(roaming, isAlchemagic);
+                    if (done) done();
+                }
+            });
+        }
+
+        // Check for Shadowcloaks on RC
+        const shadowcloaks = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c =>
+            c.dataset.name === 'Shadowcloak' && !c.classList.contains('opponent-card')
+        );
+        for (const sc of shadowcloaks) {
+            orderQueue.push({
+                name: `Shadowcloak`,
+                description: `[AUTO](RC) เมื่อเล่น Order [SB1] พลัง +5000${isAlchemagic ? ' + เลือกเรียร์การ์ด 1 ใบกลับมือ' : ''}`,
+                resolve: async (done) => {
+                    await executeSingleShadowcloak(sc, isAlchemagic);
+                    if (done) done();
+                }
+            });
+        }
+
+        // Check for Hanada Halfway on RC (Avantgarda deck)
+        if (orderName.includes("Strategy")) {
+            const rcCards = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'));
+            const hanadas = rcCards.filter(c => c.dataset.name && c.dataset.name.includes('Hanada Halfway'));
+            for (const hd of hanadas) {
+                orderQueue.push({
+                    name: `Hanada Halfway`,
+                    description: `[AUTO](RC) เมื่อวาง Strategy ลง Order Zone → พลัง+2000`,
+                    resolve: async (done) => {
+                        const wantUse = await vgConfirm("Hanada Halfway: [AUTO](RC) เมื่อวาง Strategy ลง Order Zone ยูนิทนี้ได้รับพลัง+2000?");
+                        if (wantUse) {
+                            hd.dataset.power = (parseInt(hd.dataset.power) + 2000).toString();
+                            hd.dataset.turnEndBuffPower = (parseInt(hd.dataset.turnEndBuffPower || "0") + 2000).toString();
+                            hd.dataset.turnEndBuffActive = "true";
+                            syncPowerDisplay(hd);
+                            alert("Hanada Halfway: พลัง +2000!");
+                        }
+                        if (done) done();
+                    }
+                });
+            }
+        }
+
+        if (orderQueue.length === 0) return;
+
+        // Use the existing resolveAbilityQueue for proper sequential resolution
+        await resolveAbilityQueue(orderQueue);
+    }
+
+    // --- Single Roaming Prison Dragon execution ---
+    async function executeSingleRoamingPrison(roaming, isAlchemagic) {
+        const wantCall = await vgConfirm(`Roaming Prison Dragon: [AUTO](Drop) เมื่อเล่น Order → คอลตัวเองลง (RC)?`);
+        if (!wantCall) return;
+
+        const dropZone = document.querySelector('.my-side .drop-zone');
+        alert("เลือก RC เพื่อวาง Roaming Prison Dragon");
+        document.body.classList.add('targeting-mode');
+        await new Promise(resolve => {
+            const rcHandler = (ev) => {
+                const circle = ev.target.closest('.my-side .circle.rc');
+                if (circle) {
+                    ev.stopPropagation();
+                    const existing = circle.querySelector('.card:not(.opponent-card)');
+                    if (existing) {
+                        dropZone.appendChild(existing);
+                        existing.classList.remove('rest');
+                        existing.style.transform = 'none';
+                        sendMoveData(existing);
+                    }
+                    circle.appendChild(roaming);
+                    roaming.classList.remove('rest');
+                    roaming.style.transform = 'none';
+
+                    if (isAlchemagic) {
+                        roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
+                        roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
+                        roaming.dataset.turnEndBuffActive = "true";
+                        const baseCrit = parseInt(roaming.dataset.critical || "1");
+                        roaming.dataset.critical = (baseCrit + 1).toString();
+                        roaming.dataset.turnEndCritBuff = "true";
+                        alert(`Roaming Prison Dragon: Alchemagic! พลัง +10000 & Critical +1!`);
+                    } else {
+                        const choice = confirm("Roaming Prison Dragon:\nOK = พลัง +10000\nCancel = Critical +1");
+                        if (choice) {
+                            roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
+                            roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
+                            roaming.dataset.turnEndBuffActive = "true";
+                            alert("Roaming Prison Dragon: พลัง +10000!");
+                        } else {
+                            const baseCrit = parseInt(roaming.dataset.critical || "1");
+                            roaming.dataset.critical = (baseCrit + 1).toString();
+                            roaming.dataset.turnEndCritBuff = "true";
+                            alert("Roaming Prison Dragon: Critical +1!");
+                        }
+                    }
+
+                    applyStaticBonuses(roaming);
+                    syncPowerDisplay(roaming);
+                    sendMoveData(roaming);
+                    updateDropCount();
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', rcHandler, true);
+                    resolve();
+                }
+            };
+            document.addEventListener('click', rcHandler, true);
+        });
+    }
+
+    // --- Single Shadowcloak execution ---
+    async function executeSingleShadowcloak(sc, isAlchemagic) {
+        const wantUse = await vgConfirm(`Shadowcloak: [AUTO](RC) เมื่อเล่น Order [SB1] พลัง +5000?${isAlchemagic ? '\n(Alchemagic: เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ!)' : ''}`);
+        if (!wantUse) return;
+
+        if (await paySoulBlast(1)) {
+            sc.dataset.power = (parseInt(sc.dataset.power) + 5000).toString();
+            sc.dataset.turnEndBuffPower = (parseInt(sc.dataset.turnEndBuffPower || "0") + 5000).toString();
+            sc.dataset.turnEndBuffActive = "true";
+            syncPowerDisplay(sc);
+            sendMoveData(sc);
+            alert("Shadowcloak: พลัง +5000!");
+
+            if (isAlchemagic) {
+                const otherRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c =>
+                    c !== sc && !c.classList.contains('opponent-card')
+                );
+                if (otherRGs.length > 0) {
+                    const wantReturn = await vgConfirm("Shadowcloak (Alchemagic): เลือกเรียร์การ์ดอื่น 1 ใบกลับมือ?");
+                    if (wantReturn) {
+                        alert("คลิกเลือกเรียร์การ์ดที่ต้องการกลับมือ");
+                        document.body.classList.add('targeting-mode');
+                        await new Promise(resolve => {
+                            const retHandler = (ev) => {
+                                const target = ev.target.closest('.my-side .circle.rc .card');
+                                if (target && target !== sc && !target.classList.contains('opponent-card')) {
+                                    ev.stopPropagation();
+                                    playerHand.appendChild(target);
+                                    target.classList.remove('rest');
+                                    target.style.transform = 'none';
+                                    sendMoveData(target);
+                                    updateHandSpacing();
+                                    updateHandCount();
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', retHandler, true);
+                                    alert(`${target.dataset.name} กลับมือแล้ว!`);
+                                    resolve();
+                                }
+                            };
+                            document.addEventListener('click', retHandler, true);
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // --- Roaming Prison Dragon [AUTO](Drop) --- (Legacy - kept for direct calls if any)
     async function triggerRoamingPrisonDragon(isAlchemagic) {
         const dropZone = document.querySelector('.my-side .drop-zone');
         const roamingInDrop = Array.from(dropZone.querySelectorAll('.card')).filter(c => 
@@ -11136,7 +11476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     updateDropCount();
                                     zoneViewer.classList.add('hidden');
                                     alert("Discarded card and shuffled deck. Now choose a card to call from drop.");
-                                    promptCallFromDrop(1, (c) => {
+                                    await promptCallFromDrop(1, (c) => {
                                         const vg = document.querySelector('.my-side .circle.vc .card');
                                         const vgGrade = vg ? parseInt(vg.dataset.grade) : 0;
                                         return parseInt(c.dataset.grade) <= vgGrade;
