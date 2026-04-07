@@ -6119,10 +6119,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     function updateAllStaticBonuses() {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
             applyStaticBonuses(c);
-            syncPowerDisplay(c); // Ensure power display and sendMoveData for opponent sync
+            syncPowerDisplay(c); 
         });
     }
 
@@ -6798,16 +6799,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Placeholder for checkBruceBattleAbility, assuming it exists elsewhere or will be added.
     // Bruce Final Burst Trigger
-    async function checkBruceBattleAbility() {
-        if (isFinalRush && !isFinalBurst) {
-            if (await vgConfirm("Bruce: เข้าสู่ Final Burst?")) {
-                isFinalBurst = true;
-                alert("Bruce: FINAL BURST activated!");
-                updateFinalRushStaticBonuses(true);
-                sendData({ type: 'bruceStatus', isFinalRush: true, isFinalBurst: true });
-            }
-        }
-    }
+
 
     function updateFinalRushStaticBonuses(apply) {
         document.querySelectorAll('.my-side .circle .card:not(.opponent-card)').forEach(card => {
@@ -6816,9 +6808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Alias so that updateAllStaticBonuses() works (called in Stand Phase reset)
-    function updateAllStaticBonuses() {
-        updateFinalRushStaticBonuses(true);
-    }
+
 
     // Show a modal to let the player pick which column to restand (left / center / right)
     function showColumnSelection(callback) {
@@ -7289,6 +7279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.isFirstPlayer = true;
             isMyTurn = true;
             setTimeout(() => startMulligan(), 2500);
+            sendData({ type: 'rpsResultSync', isFirst: false }); 
         } else {
             result = "lose";
             resultText.textContent = "YOU LOSE! YOU GO SECOND.";
@@ -7296,6 +7287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.isFirstPlayer = false;
             isMyTurn = false;
             setTimeout(() => startMulligan(), 2500);
+            sendData({ type: 'rpsResultSync', isFirst: true });
         }
     }
 
@@ -7379,8 +7371,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         // Determine if it's my turn
-        // Determine if it's my turn: First player starts (Odd turns), Second player follows (Even turns)
-        isMyTurn = (currentTurn % 2 !== 0 && isFirstPlayer) || (currentTurn % 2 === 0 && !isFirstPlayer);
+        // First player starts (Odd turns), Second player follows (Even turns)
+        const turnNum = parseInt(currentTurn);
+        isMyTurn = (turnNum % 2 !== 0 && isFirstPlayer) || (turnNum % 2 === 0 && !isFirstPlayer);
+        window.isFirstPlayer = isFirstPlayer; // Keep global in sync
+
+        console.log(`Phase Update: Turn=${turnNum}, Phase=${currentPhaseIndex}, isFirst=${isFirstPlayer}, myTurn=${isMyTurn}`);
 
         // Reset power/critical ONLY at the start of YOUR turn's stand phase
         if (isMyTurn && currentPhaseIndex === 0) { // Stand phase
@@ -12104,13 +12100,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPhaseIndex = data.phaseIndex;
                 updatePhaseUI(false);
                 break;
+            case 'rpsResultSync':
+                console.log("RPS Sync Received. I am first:", data.isFirst);
+                isFirstPlayer = data.isFirst;
+                window.isFirstPlayer = data.isFirst;
+                break;
             case 'nextTurn':
-                currentTurn = data.currentTurn;
+                console.log("Next Turn Packet Received:", data.currentTurn);
+                currentTurn = parseInt(data.currentTurn);
                 currentPhaseIndex = 0;
                 strategyActivatedThisTurn = false;
                 shockStrategyActive = false;
                 strategyActivatedCount = 0;
                 window.promptedEndTurn = false;
+                isWaitingForGuard = false;
+                currentAttackResolving = false;
                 updatePhaseUI(false);
                 break;
             case 'gameOver':
@@ -14384,5 +14388,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(popup);
         setTimeout(() => popup.remove(), 4000);
     }
+    initPowerObserver();
 });
 window.addEventListener('error', function(event) { alert('ERROR: ' + event.message + ' at ' + event.filename + ':' + event.lineno); }); window.addEventListener('unhandledrejection', function(event) { alert('UNHANDLED REJECTION: ' + (event.reason && event.reason.stack ? event.reason.stack : event.reason)); });
