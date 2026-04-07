@@ -588,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sylvan Horned Beast, Gabregg': 'picture/gabregg.jpg',
         'Sylvan Horned Beast, Bojalcorn': 'picture/bojalcorn.jpg',
         'Spiritual Body Condensation': 'picture/spirit.jpg',
-        'In the Dim Darkness, the Frozen Resentment': 'picture/dark.jpg',
+        'In the Dim Darkness, the Frozen Resentment': 'zorga_art/dark.jpg',
 
         // Triggers - Stoicheia (Magnolia)
         'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
@@ -731,26 +731,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Stoicheia - Zorga Masques
         'Sylvan Horned Beast, Lotte': 'picture/grade0_magnolia.jpg',
         'Sylvan Horned Beast, Charis': 'picture/grade1_magnolia.jpg',
-        'Black Tears Husk Dragon': 'picture/zorga_husks.jpg',
-        'Mysterious Rain Spiritualist, Zorga': 'picture/zorga_original.jpg',
-        'Teasing Spiritualist, Zorga Masques': 'picture/zorga_masques.jpg',
-        'Roaming Prison Dragon': 'picture/roaming_prison.jpg',
-        'Clouded Miasma': 'picture/spirit.jpg',
-        'Masque of Hydragrum': 'picture/hydragrum.jpg',
-        'Shadowcloak': 'picture/shadowcloak.jpg',
-        'Gather Upon Me, Ye Wandering Souls': 'picture/gather_souls.jpg',
-        'Fine Drink of Abolishment for Sins': 'picture/drink_abolishment.jpg',
-        'Dragontree Wretch, Depth Iweleth': 'picture/depth_iweleth.jpg',
-        'Tearful Malice': 'picture/tearful_malice.jpg',
-        'Keel Severing': 'picture/keel_severing.jpg',
-        'Rogue Headhunter': 'picture/rogue_headhunter.jpg',
-        'Dragontree Wretch, Bist Aiyatvas': 'picture/bist_aiyatvas.jpg',
+        'Black Tears Husk Dragon': 'zorga_art/zorga_husks.jpg',
+        'Mysterious Rain Spiritualist, Zorga': 'zorga_art/zorga_original.jpg',
+        'Teasing Spiritualist, Zorga Masques': 'zorga_art/zorga_masques.jpg',
+        'Roaming Prison Dragon': 'zorga_art/roaming_prison.jpg',
+        'Clouded Miasma': 'zorga_art/spirit.jpg',
+        'Masque of Hydragrum': 'zorga_art/hydragrum.jpg',
+        'Shadowcloak': 'zorga_art/shadowcloak.jpg',
+        'Gather Upon Me, Ye Wandering Souls': 'zorga_art/gather_souls.jpg',
+        'Fine Drink of Abolishment for Sins': 'zorga_art/drink_abolishment.jpg',
+        'Dragontree Wretch, Depth Iweleth': 'zorga_art/depth_iweleth.jpg',
+        'Tearful Malice': 'zorga_art/tearful_malice.jpg',
+        'Keel Severing': 'zorga_art/keel_severing.jpg',
+        'Rogue Headhunter': 'zorga_art/rogue_headhunter.jpg',
+        'Dragontree Wretch, Bist Aiyatvas': 'zorga_art/bist_aiyatvas.jpg',
         'Critical Trigger (Stoicheia)': 'picture/stoicheia_crit.png',
         'Draw Trigger (Stoicheia)': 'picture/stoicheia_draw.png',
         'Heal Trigger (Stoicheia)': 'picture/stoicheia_heal.png',
         'Source Dragon Deity, Blessfavor': 'greedon/mucca.png',
         'Custodial Dragon (Perfect Guard)': 'picture/custodial_dragon.png',
-        'In the Dim Darkness, the Frozen Resentment': 'picture/dark.jpg'
+        'In the Dim Darkness, the Frozen Resentment': 'zorga_art/dark.jpg'
     };
 
     // --- Deck Definitions ---
