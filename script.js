@@ -3904,6 +3904,94 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 500);
             }
 
+            // --- Keel Severing [AUTO](Drop): When Zorga Masques attacks ---
+            if (isVanguardAttacker && attackerNameFull.includes('Zorga Masques')) {
+                const keelOnRC = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).some(c => c.dataset.name === 'Keel Severing');
+                const keelInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).find(c => c.dataset.name === 'Keel Severing');
+                const dragontreeRCs = Array.from(document.querySelectorAll('.my-side .circle.rc')).filter(c => c.dataset.dragontreeMarker === "true");
+
+                if (!keelOnRC && keelInDrop && dragontreeRCs.length > 0) {
+                    if (await vgConfirm("Keel Severing: [AUTO](Drop) Zorga Masques โจมตี! [CB1 & รีไทร์ RG 1 ใบ] → คอล Keel Severing ลง RC ที่มี Dragontree Marker?")) {
+                        const myRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'));
+                        if (myRGs.length > 0 && payCounterBlast(1)) {
+                            alert("เลือกเรียร์การ์ด 1 ใบเพื่อรีไทร์ (คอสต์)");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolve => {
+                                const retH = (ev) => {
+                                    const tgt = ev.target.closest('.my-side .circle.rc .card');
+                                    if (tgt && !tgt.classList.contains('opponent-card')) {
+                                        ev.stopPropagation();
+                                        const dz = document.querySelector('.my-side .drop-zone');
+                                        dz.appendChild(tgt);
+                                        tgt.classList.remove('rest');
+                                        tgt.style.transform = 'none';
+                                        sendMoveData(tgt);
+                                        updateDropCount();
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', retH, true);
+                                        resolve();
+                                    }
+                                };
+                                document.addEventListener('click', retH, true);
+                            });
+
+                            // Call Keel Severing to a RC with Dragontree marker
+                            const availableDTRCs = Array.from(document.querySelectorAll('.my-side .circle.rc')).filter(c => c.dataset.dragontreeMarker === "true");
+                            if (availableDTRCs.length > 0) {
+                                if (availableDTRCs.length === 1) {
+                                    const circle = availableDTRCs[0];
+                                    const existing = circle.querySelector('.card:not(.opponent-card)');
+                                    if (existing) {
+                                        const dz = document.querySelector('.my-side .drop-zone');
+                                        dz.appendChild(existing);
+                                        existing.classList.remove('rest');
+                                        sendMoveData(existing);
+                                    }
+                                    circle.appendChild(keelInDrop);
+                                    keelInDrop.classList.remove('rest');
+                                    keelInDrop.style.transform = 'none';
+                                    applyStaticBonuses(keelInDrop);
+                                    syncPowerDisplay(keelInDrop);
+                                    sendMoveData(keelInDrop);
+                                    updateDropCount();
+                                    alert("Keel Severing คอลลง RC (Dragontree Marker) สำเร็จ!");
+                                } else {
+                                    alert("เลือก RC ที่มี Dragontree Marker เพื่อวาง Keel Severing");
+                                    document.body.classList.add('targeting-mode');
+                                    await new Promise(resolve => {
+                                        const rcH = (ev) => {
+                                            const circle = ev.target.closest('.my-side .circle.rc');
+                                            if (circle && circle.dataset.dragontreeMarker === "true") {
+                                                ev.stopPropagation();
+                                                const existing = circle.querySelector('.card:not(.opponent-card)');
+                                                if (existing) {
+                                                    const dz = document.querySelector('.my-side .drop-zone');
+                                                    dz.appendChild(existing);
+                                                    existing.classList.remove('rest');
+                                                    sendMoveData(existing);
+                                                }
+                                                circle.appendChild(keelInDrop);
+                                                keelInDrop.classList.remove('rest');
+                                                keelInDrop.style.transform = 'none';
+                                                applyStaticBonuses(keelInDrop);
+                                                syncPowerDisplay(keelInDrop);
+                                                sendMoveData(keelInDrop);
+                                                updateDropCount();
+                                                document.body.classList.remove('targeting-mode');
+                                                document.removeEventListener('click', rcH, true);
+                                                alert("Keel Severing คอลลง RC (Dragontree Marker) สำเร็จ!");
+                                                resolve();
+                                            }
+                                        };
+                                        document.addEventListener('click', rcH, true);
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             sendData({
                 type: 'declareAttack',
                 ...attackData
@@ -10959,6 +11047,150 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     return true;
                 } else return false;
+            } else return false;
+        }
+
+        // --- Gather Upon Me, Ye Wandering Souls [Normal Order] ---
+        if (name.includes('Gather Upon Me')) {
+            if (await vgConfirm("Gather Upon Me: [COST][ทิ้ง Order 1 ใบจากมือ] → แวนการ์ดได้รับ Drive +1 จนจบเทิร์น?")) {
+                // Find order cards in hand
+                const ordersInHand = Array.from(playerHand.querySelectorAll('.card')).filter(c => {
+                    const sk = (c.dataset.skill || '').toLowerCase();
+                    return sk.includes('order') && c !== effectiveCard;
+                });
+                if (ordersInHand.length === 0) {
+                    alert("ไม่มี Order บนมือเพื่อจ่ายคอสต์!");
+                    return false;
+                }
+                alert("เลือก Order 1 ใบจากมือเพื่อทิ้ง (คอสต์)");
+                document.body.classList.add('targeting-mode');
+                await new Promise(resolve => {
+                    const discHandler = (ev) => {
+                        const target = ev.target.closest('.card');
+                        if (target && target.parentElement === playerHand && target !== effectiveCard) {
+                            const sk = (target.dataset.skill || '').toLowerCase();
+                            if (sk.includes('order')) {
+                                ev.stopPropagation();
+                                const dropZone = document.querySelector('.my-side .drop-zone');
+                                dropZone.appendChild(target);
+                                sendMoveData(target);
+                                updateHandCount();
+                                updateDropCount();
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', discHandler, true);
+                                alert(`ทิ้ง ${target.dataset.name} เป็นคอสต์แล้ว!`);
+                                resolve();
+                            }
+                        }
+                    };
+                    document.addEventListener('click', discHandler, true);
+                });
+
+                // Give VG drive +1
+                const vgCard = document.querySelector('.my-side .circle.vc .card');
+                if (vgCard) {
+                    const currentDrive = parseInt(vgCard.dataset.drive || "2");
+                    vgCard.dataset.drive = (currentDrive + 1).toString();
+                    alert(`แวนการ์ดได้รับ Drive +1! (Drive = ${vgCard.dataset.drive})`);
+                }
+                return true;
+            } else return false;
+        }
+
+        // --- Fine Drink of Abolishment for Sins [Normal Order] ---
+        if (name.includes('Fine Drink of Abolishment')) {
+            if (await vgConfirm("Fine Drink: [SB1] → จั่ว 1 ใบ + เลือกยูนิท 1 ใบ พลัง +5000 ต่อ Order ชื่อต่างกันในดรอป+ไบนด์?")) {
+                if (await paySoulBlast(1)) {
+                    drawCard(true);
+
+                    // Count unique order names in drop + bind
+                    const orderNames = new Set();
+                    Array.from(document.querySelectorAll('.my-side .drop-zone .card')).forEach(c => {
+                        const sk = (c.dataset.skill || '').toLowerCase();
+                        if (sk.includes('order')) orderNames.add(c.dataset.name);
+                    });
+                    bindPool.forEach(c => {
+                        const sk = (c.dataset?.skill || c.skill || '').toLowerCase();
+                        const cName = c.dataset?.name || c.name || '';
+                        if (sk.includes('order')) orderNames.add(cName);
+                    });
+
+                    const buffAmount = orderNames.size * 5000;
+                    if (buffAmount > 0) {
+                        alert(`Order ชื่อต่างกัน ${orderNames.size} ชื่อ → +${buffAmount}! คลิกเลือกยูนิทที่จะ Buff`);
+                        document.body.classList.add('targeting-mode');
+                        await new Promise(resolve => {
+                            const buffHandler = (ev) => {
+                                const target = ev.target.closest('.my-side .circle .card');
+                                if (target && !target.classList.contains('opponent-card')) {
+                                    ev.stopPropagation();
+                                    target.dataset.power = (parseInt(target.dataset.power) + buffAmount).toString();
+                                    target.dataset.turnEndBuffPower = (parseInt(target.dataset.turnEndBuffPower || "0") + buffAmount).toString();
+                                    target.dataset.turnEndBuffActive = "true";
+                                    syncPowerDisplay(target);
+                                    sendMoveData(target);
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', buffHandler, true);
+                                    alert(`${target.dataset.name}: พลัง +${buffAmount}!`);
+                                    resolve();
+                                }
+                            };
+                            document.addEventListener('click', buffHandler, true);
+                        });
+                    } else {
+                        alert("ไม่มี Order ในดรอป/ไบนด์!");
+                    }
+                    return true;
+                } else return false;
+            } else return false;
+        }
+
+        // --- Tearful Malice [Normal Order] ---
+        if (name.includes('Tearful Malice')) {
+            if (await vgConfirm("Tearful Malice: [COST][รีไทร์เรียร์การ์ด 2 ใบ] → จั่ว 1 ใบ, นำการ์ดนี้เข้าโซล, Counter-Charge 1?")) {
+                const myRGs = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)'));
+                if (myRGs.length < 2) {
+                    alert("เรียร์การ์ดไม่พอ 2 ใบเพื่อจ่ายคอสต์!");
+                    return false;
+                }
+                alert("เลือกเรียร์การ์ด 2 ใบเพื่อรีไทร์ (คอสต์)");
+                let retiredCount = 0;
+                document.body.classList.add('targeting-mode');
+                await new Promise(resolve => {
+                    const retireHandler = (ev) => {
+                        const target = ev.target.closest('.my-side .circle.rc .card');
+                        if (target && !target.classList.contains('opponent-card')) {
+                            ev.stopPropagation();
+                            const dropZone = document.querySelector('.my-side .drop-zone');
+                            dropZone.appendChild(target);
+                            target.classList.remove('rest');
+                            target.style.transform = 'none';
+                            sendMoveData(target);
+                            updateDropCount();
+                            retiredCount++;
+                            if (retiredCount >= 2) {
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', retireHandler, true);
+                                resolve();
+                            } else {
+                                alert(`รีไทร์ ${retiredCount}/2 สำเร็จ เลือกใบถัดไป`);
+                            }
+                        }
+                    };
+                    document.addEventListener('click', retireHandler, true);
+                });
+
+                drawCard(true);
+                // Put this card into soul instead of drop
+                soulPool.push(effectiveCard);
+                sendMoveData(effectiveCard);
+                updateSoulUI();
+                // Counter-Charge 1
+                counterCharge(1);
+                alert("Tearful Malice: จั่ว 1, เข้าโซล, Counter-Charge 1!");
+                // Return special value to prevent normal order drop
+                effectiveCard.dataset.tearfulMaliceUsed = "true";
+                return true;
             } else return false;
         }
 
