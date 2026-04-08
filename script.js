@@ -8459,8 +8459,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phases[currentPhaseIndex] !== 'end') {
             currentPhaseIndex = phases.indexOf('end');
             await updatePhaseUI(true);
-            console.log("Moved to End Phase. Click again to pass turn.");
-            return; // MUST stay in End phase first to let abilities trigger
         }
 
         // Allow end turn if in End phase even if flags are stuck, or if user forces it
