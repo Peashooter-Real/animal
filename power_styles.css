@@ -1,0 +1,47 @@
+.hidden {
+  display: none !important;
+}
+
+/* Power Breakdown Panel */
+.power-breakdown-panel {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: left;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.breakdown-source {
+  color: #ccc;
+  font-size: 0.85rem;
+}
+
+.breakdown-amount {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.amount-positive { color: #05ffa1; text-shadow: 0 0 5px rgba(5, 255, 161, 0.4); }
+.amount-negative { color: #ff2a6d; text-shadow: 0 0 5px rgba(255, 42, 109, 0.4); }
+.amount-base { color: var(--accent-cyan); text-shadow: 0 0 5px rgba(0, 229, 255, 0.4); }
+
+.breakdown-total {
+    background: rgba(255,255,255,0.05);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-top: 15px;
+}

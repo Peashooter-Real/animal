@@ -418,7 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
             aiSetupOverlay.classList.remove('hidden');
         };
     }
-
     if (confirmAIStartBtn) {
         confirmAIStartBtn.onclick = () => {
             aiSetupOverlay.classList.add('hidden');
@@ -429,6 +428,117 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // --- Helper: Power & Critical Breakdown Calculation ---
+    function getPowerBreakdown(card) {
+        if (!card) return { base: 0, breakdown: [], total: 0, critBase: 0, critBreakdown: [], critTotal: 0 };
+        
+        const base = parseInt(card.dataset.basePower || "0");
+        const total = parseInt(card.dataset.power || "0");
+        const critBase = parseInt(card.dataset.baseCritical || "1");
+        const critTotal = parseInt(card.dataset.critical || "1");
+        
+        const breakdown = [];
+        const critBreakdown = [];
+
+        // 1. Specific Source Trackers (New System)
+        if (card.dataset.triggerPower && parseInt(card.dataset.triggerPower) !== 0) {
+            breakdown.push({ source: 'Trigger (ทริกเกอร์)', amount: parseInt(card.dataset.triggerPower) });
+        }
+        
+        // 2. Dynamic Attribute Prefixes (Naming specific sources)
+        // This dynamically picks up any dataset matching skillBonus_*, orderBonus_*, triggerBonus_*
+        for (const [key, value] of Object.entries(card.dataset)) {
+            const amount = parseInt(value);
+            if (amount === 0 || isNaN(amount)) continue;
+
+            if (key.startsWith('skillBonus_')) {
+                const source = key.replace('skillBonus_', '').replace(/([A-Z])/g, ' $1').trim();
+                breakdown.push({ source: `Skill: ${source}`, amount });
+            } else if (key.startsWith('orderBonus_')) {
+                const source = key.replace('orderBonus_', '').replace(/([A-Z])/g, ' $1').trim();
+                breakdown.push({ source: `Order: ${source}`, amount });
+            } else if (key.startsWith('triggerBonus_')) {
+                const source = key.replace('triggerBonus_', '').replace(/([A-Z])/g, ' $1').trim();
+                breakdown.push({ source: `Trigger: ${source}`, amount });
+            } else if (key.startsWith('critBonus_')) {
+                const source = key.split('_').slice(1).join(' ').replace(/([A-Z])/g, ' $1').trim();
+                critBreakdown.push({ source: source, amount });
+            }
+        }
+
+        // 3. Legacy/Static Skill Flags (Migrating to prefixes if possible, but keep fallback)
+        const flags = [
+            { flag: 'headhunterBonusApplied', name: 'Self: Rogue Headhunter', val: 5000 },
+            { flag: 'asagiBonusApplied', name: 'Self: Asagi Milestone', val: 5000 },
+            { flag: 'seraphBuffApplied', name: 'Self: Seraph Snow', val: 10000 },
+            { flag: 'munaBuffApplied', name: 'Self: Muna', val: 5000 },
+            { flag: 'lifleBuffApplied', name: 'Self: Lifle Royal', val: 5000 },
+            { flag: 'zorgaMasquesFrontBuff', name: 'Skill: Zorga Masques (CONT)', val: 10000 },
+            { flag: 'cloudedMiasmaBuff', name: 'Order: Clouded Miasma (CONT)', val: 5000 },
+            { flag: 'personaBuffed', name: 'Persona Ride', val: 10000 },
+            { flag: 'stoodByEffect', name: 'Skill: Restood Buff', val: 5000 },
+            { flag: 'frBonusApplied', name: 'Final Rush Bonus', val: 10000 },
+            { flag: 'meganBuffed', name: 'Skill: Megan Buff', val: 10000 },
+            { flag: 'burstBonusApplied', name: 'Skill: Final Burst', val: 5000 },
+            { flag: 'julianUsed', name: 'Skill: Julian Buff', val: 5000 },
+            { flag: 'elderBuffed', name: 'Skill: Elder Buff', val: 5000 },
+            { flag: 'findanisBonusApplied', name: 'Self: Findanis', val: 5000 },
+            { flag: 'bjBuffApplied', name: 'Skill: Bojalcorn Buff', val: 5000 },
+            { flag: 'baurPwrAdded', name: 'Self: Baur Skill', val: 10000 },
+            { flag: 'stefanieBuffed', name: 'Skill: Stefanie Buff', val: 5000 },
+            { flag: 'avantSkillPowerBuffed', name: 'Self: Avantgarda Skill', val: 5000 },
+            { flag: 'darkBonusApplied', name: 'Self: Darkness', val: 5000 },
+            { flag: 'majestyBonusApplied', name: 'Self: Majesty Bonus', val: 2000 },
+            { flag: 'maronBonusApplied', name: 'Skill: Maron Buff', val: 5000 },
+            { flag: 'purelightBuffApplied', name: 'Self: Seraph Purelight', val: 10000 }
+        ];
+
+        flags.forEach(f => {
+            if (card.dataset[f.flag] === "true") {
+                // Only add if not already handled by prefixes to avoid double counting
+                const hasPrefix = breakdown.some(b => b.source.includes(f.name.replace('Self: ', '').replace('Skill: ', '')));
+                if (!hasPrefix) {
+                    breakdown.push({ source: f.name, amount: f.val });
+                }
+            }
+        });
+
+        // 4. Dynamic End Turn Buffs
+        if (card.dataset.turnEndBuffActive === "true" && card.dataset.turnEndBuffPower) {
+            const val = parseInt(card.dataset.turnEndBuffPower);
+            if (val > 0) {
+                let docPower = 0;
+                breakdown.forEach(b => docPower += b.amount);
+                const remaining = total - (base + docPower);
+                
+                if (remaining > 500) { // Tiny threshold for rounding or manual tweaks
+                     breakdown.push({ source: 'Temporary Buff (Expires End of Turn)', amount: remaining });
+                }
+            }
+        }
+        
+        // Crit specific flags
+        if (card.dataset.edenCritApplied === "true") critBreakdown.push({ source: 'Self: Eden Skill', amount: 1 });
+        if (card.dataset.shockCritApplied === "true") critBreakdown.push({ source: 'Order: Strategy Buff', amount: 1 });
+        if (card.dataset.turnEndCritBuff === "true") critBreakdown.push({ source: 'Skill Effect (Ends this turn)', amount: 1 });
+
+        // 5. Calculate Residue (Unknown/Manual)
+        let docPowerTotal = 0;
+        breakdown.forEach(b => docPowerTotal += b.amount);
+        const pResidue = total - (base + docPowerTotal);
+        if (Math.abs(pResidue) > 10) { // Ignore minor mismatches
+            breakdown.push({ source: 'Other/Manual/Mismatch', amount: pResidue });
+        }
+
+        let docCritTotal = 0;
+        critBreakdown.forEach(b => docCritTotal += b.amount);
+        const cResidue = critTotal - (critBase + docCritTotal);
+        if (cResidue !== 0) {
+            critBreakdown.push({ source: 'Other/Manual/Mismatch', amount: cResidue });
+        }
+
+        return { base, breakdown, total, critBase, critBreakdown, critTotal };
+    }
     // --- State Variables ---
     let cardIdCounter = 0;
     let draggedCard = null;
@@ -437,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTurn = 1;
     let isFirstPlayer = true; // Host defaults to true, Guest will set to false
     window.isFirstPlayer = true; // Global mirror for easier debugging
+
     const phases = ['stand', 'draw', 'ride', 'main', 'battle', 'end'];
     let currentPhaseIndex = 0;
     let hasRiddenThisTurn = false;
@@ -518,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isOpponentFinalBurst = false;
     let turnAttackCount = 0;
     let orderPlayedThisTurn = false;
+    window.alchemagicUsedThisTurn = false;
     let ordersPlayedCount = 0;
     let maxOrdersPerTurn = 1;
     let nextSetOrderFree = false;
@@ -2991,6 +3103,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.my-side .front-row .circle .card:not(.opponent-card)').forEach(unit => {
                 let currentPower = parseInt(unit.dataset.power);
                 unit.dataset.power = currentPower + powerIncrease;
+                
+                // Track trigger power specifically
+                unit.dataset.triggerPower = (parseInt(unit.dataset.triggerPower || "0") + powerIncrease).toString();
 
                 const powerSpan = unit.querySelector('.card-power');
                 if (powerSpan) {
@@ -3907,6 +4022,22 @@ document.addEventListener('DOMContentLoaded', () => {
                                     syncPowerDisplay(keelInDrop);
                                     sendMoveData(keelInDrop);
                                     updateDropCount();
+                                    // --- Dragontree Marker [CONT]: ONLY ON OWN TURN ---
+        if (isMyTurn && circle && circle.classList.contains('has-dragontree-marker')) {
+            if (keelInDrop.dataset.dragontreeBuffApplied !== "true") {
+                const bonus = 5000;
+                keelInDrop.dataset.power = (parseInt(keelInDrop.dataset.power) + bonus).toString();
+                keelInDrop.dataset.dragontreeBuffApplied = "true";
+                keelInDrop.dataset.skillBonus_DragontreeMarker = bonus;
+                syncPowerDisplay(keelInDrop);
+            }
+        } else if ((!isMyTurn || !circle || !circle.classList.contains('has-dragontree-marker')) && keelInDrop.dataset.dragontreeBuffApplied === "true") {
+            const bonus = 5000;
+            keelInDrop.dataset.power = (parseInt(keelInDrop.dataset.power) - bonus).toString();
+            keelInDrop.dataset.dragontreeBuffApplied = "false";
+            delete keelInDrop.dataset.skillBonus_DragontreeMarker;
+            syncPowerDisplay(keelInDrop);
+        }
                                     alert("Keel Severing คอลลง RC (Dragontree Marker) สำเร็จ!");
                                 } else {
                                     alert("เลือก RC ที่มี Dragontree Marker เพื่อวาง Keel Severing");
@@ -4429,7 +4560,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!card) return;
         const name = card.dataset.name || "";
         const parent = card.parentElement;
-        const zone = parent ? parent.dataset.zone : "";
+        const zone = parent ? (parent.dataset.zone || "") : "";
+        
+        // --- FIX: Include VC in Front Row check for Zorga/Clouded Miasma ---
         const isFrontRow = zone && (zone.startsWith('rc_front_') || zone === 'vc');
 
         // Shock Strategy check removed (Legacy)
@@ -4465,14 +4598,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const vgCard2 = document.querySelector('.my-side .circle.vc .card');
             const vgName = vgCard2 ? (vgCard2.dataset.name || '') : '';
             if (vgName.includes('Zorga Masques')) {
-                if (card.dataset.zorgaMasquesFrontBuff !== "true") {
-                    card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
-                    card.dataset.zorgaMasquesFrontBuff = "true";
-                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 10000).toString();
-                    card.dataset.turnEndBuffActive = "true";
-                    syncPowerDisplay(card);
-                }
+                card.dataset.skillBonus_ZorgaMasquesPower = "10000";
+            } else {
+                delete card.dataset.skillBonus_ZorgaMasquesPower;
             }
+        } else {
+            delete card.dataset.skillBonus_ZorgaMasquesPower;
         }
 
         // --- Clouded Miasma Alchemagic Buff [CONT](VC): front row +5000 ---
@@ -4480,14 +4611,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const vgCard3 = document.querySelector('.my-side .circle.vc .card');
             const vgName3 = vgCard3 ? (vgCard3.dataset.name || '') : '';
             if (vgName3.includes('Zorga')) {
-                if (card.dataset.cloudedMiasmaBuff !== "true") {
-                    card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
-                    card.dataset.cloudedMiasmaBuff = "true";
-                    card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
-                    card.dataset.turnEndBuffActive = "true";
-                    syncPowerDisplay(card);
-                }
+                card.dataset.orderBonus_CloudedMiasmaPower = "5000";
+            } else {
+                delete card.dataset.orderBonus_CloudedMiasmaPower;
             }
+        } else {
+            delete card.dataset.orderBonus_CloudedMiasmaPower;
+        }
+
+        // --- Dragontree Marker [CONT](RC): +5000 during your turn ---
+        if (zone.startsWith('rc') && parent.dataset.dragontreeMarker === "true" && isMyTurn) {
+            if (card.dataset.dtMarkerBuffApplied !== "true") {
+                const bonus = 5000;
+                card.dataset.power = (parseInt(card.dataset.power) + bonus).toString();
+                card.dataset.dtMarkerBuffApplied = "true";
+                card.dataset.skillBonus_DragontreeMarker = bonus;
+                syncPowerDisplay(card);
+            }
+        } else if (card.dataset.dtMarkerBuffApplied === "true") {
+            const bonus = 5000;
+            card.dataset.power = (parseInt(card.dataset.power) - bonus).toString();
+            card.dataset.dtMarkerBuffApplied = "false";
+            delete card.dataset.skillBonus_DragontreeMarker;
+            syncPowerDisplay(card);
         }
 
         // --- Seraph Snow [CONT](VC) ---
@@ -4495,21 +4641,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
             const meetsCondition = isMyTurn && (imprisonedCount >= 1);
             if (meetsCondition) {
-                if (card.dataset.seraphBuffApplied !== "true") {
-                    card.dataset.power = (parseInt(card.dataset.power) + 10000).toString();
-                    card.dataset.seraphBuffApplied = "true";
-                    syncPowerDisplay(card);
-                }
+                card.dataset.skillBonus_SeraphSnow = "10000";
                 if (imprisonedCount >= 3) {
                     card.dataset.drive = "3";
                 } else {
                     delete card.dataset.drive;
                 }
-            } else if (card.dataset.seraphBuffApplied === "true") {
-                // Return to base if buff was applied but conditions no longer met
-                card.dataset.power = (parseInt(card.dataset.power) - 10000).toString();
-                card.dataset.seraphBuffApplied = "false";
-                syncPowerDisplay(card);
+            } else {
+                delete card.dataset.skillBonus_SeraphSnow;
                 delete card.dataset.drive;
             }
         }
@@ -6895,7 +7034,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'doteStandUsed', 'onHitTargetUsed', 'doteSoulBonusApplied', 'nehalemCONTApplied',
                 'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
                 'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied',
-                'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff', 'headhunterBonusApplied', 'asagiBonusApplied'
+                'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff', 'headhunterBonusApplied', 'asagiBonusApplied',
+                'triggerPower', 'triggerCrit', 'orderPower', 'orderCrit', 'skillPower', 'skillCrit'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -9286,6 +9426,80 @@ document.addEventListener('DOMContentLoaded', () => {
         skillCardShield.textContent = `Shield: ${effectiveCard.dataset.shield}`;
         skillText.textContent = effectiveCard.dataset.skill;
 
+        // --- NEW: Power Breakdown System ---
+        const breakdownPanel = document.getElementById('power-breakdown');
+        const breakdownList = document.getElementById('breakdown-list');
+        const breakdownTotalVal = document.getElementById('breakdown-total-val');
+
+        // Show breakdown only for cards on the field or in guardian circle
+        const isOnField = effectiveCard.parentElement && (
+            effectiveCard.parentElement.classList.contains('circle') || 
+            effectiveCard.parentElement.classList.contains('guardian-circle')
+        );
+        
+        if (breakdownPanel && breakdownList && breakdownTotalVal) {
+            if (isOnField) {
+                breakdownPanel.classList.remove('hidden');
+                const data = getPowerBreakdown(effectiveCard);
+                
+                breakdownList.innerHTML = '';
+                
+                // --- Power Section ---
+                const pHeader = document.createElement('li');
+                pHeader.style.cssText = 'color: #aaa; font-size: 0.75rem; margin-top: 5px; margin-bottom: 5px; text-decoration: underline;';
+                pHeader.textContent = 'POWER ADJUSTMENTS';
+                breakdownList.appendChild(pHeader);
+
+                // 1. Base Power
+                const baseItem = document.createElement('li');
+                baseItem.className = 'breakdown-item';
+                baseItem.innerHTML = `<span class="breakdown-source">⚔️ พลังพื้นฐาน (Base)</span> <span class="breakdown-amount amount-base">${data.base}</span>`;
+                breakdownList.appendChild(baseItem);
+                
+                // 2. Individual Bonuses
+                data.breakdown.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'breakdown-item';
+                    const sign = item.amount >= 0 ? '+' : '';
+                    const colorClass = item.amount >= 0 ? 'amount-positive' : 'amount-negative';
+                    li.innerHTML = `<span class="breakdown-source">${item.source}</span> <span class="breakdown-amount ${colorClass}">${sign}${item.amount}</span>`;
+                    breakdownList.appendChild(li);
+                });
+                
+                // --- Critical Section ---
+                const cHeader = document.createElement('li');
+                cHeader.style.cssText = 'color: #aaa; font-size: 0.75rem; margin-top: 15px; margin-bottom: 5px; text-decoration: underline;';
+                cHeader.textContent = 'CRITICAL ADJUSTMENTS';
+                breakdownList.appendChild(cHeader);
+
+                // 1. Base Critical
+                const baseCritItem = document.createElement('li');
+                baseCritItem.className = 'breakdown-item';
+                baseCritItem.innerHTML = `<span class="breakdown-source">★ คริติคอลพื้นฐาน (Base)</span> <span class="breakdown-amount" style="color: #fff;">${data.critBase}</span>`;
+                breakdownList.appendChild(baseCritItem);
+
+                // 2. Critical Bonuses
+                data.critBreakdown.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'breakdown-item';
+                    const sign = item.amount >= 0 ? '+' : '';
+                    const colorClass = item.amount >= 0 ? 'amount-positive' : 'amount-negative';
+                    li.innerHTML = `<span class="breakdown-source">${item.source}</span> <span class="breakdown-amount ${colorClass}" style="color: gold;">${sign}${item.amount}</span>`;
+                    breakdownList.appendChild(li);
+                });
+
+                breakdownTotalVal.innerHTML = `
+                    <span>TOTAL:</span>
+                    <span style="display: flex; gap: 10px;">
+                        <span class="${data.total > data.base ? 'amount-positive' : (data.total < data.base ? 'amount-negative' : 'amount-base')}">⚔️ ${data.total}</span>
+                        <span style="color: gold;">★ ${data.critTotal}</span>
+                    </span>
+                `;
+            } else {
+                breakdownPanel.classList.add('hidden');
+            }
+        }
+
         // Apply background image to modal
         const modal = skillViewer.querySelector('.skill-modal');
         if (modal) {
@@ -9762,6 +9976,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Play Alchemagic fusion animation
                         await playAlchemagicAnimation(effectiveCard, alchCard);
                         
+                        // SYNC: Tell opponent to play animation too
+                        sendData({ 
+                            type: 'alchemagicAnim', 
+                            mainOrder: { name: effectiveCard.dataset.name, imageUrl: effectiveCard.querySelector('img')?.src || '' },
+                            boundOrder: { name: alchCard.dataset.name, imageUrl: alchCard.querySelector('img')?.src || '' }
+                        });
+                        
                         // Activate the bound card's skill too
                         window.currentlyResolvingAlchemagic = true;
                         await activateCardSkill(alchCard);
@@ -9801,8 +10022,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ordersPlayedCount++;
                 sendData({ type: 'strategyActivated', active: true });
                 alert(`Played Set Order: ${effectiveCard.dataset.name}`);
-                // Collect and resolve order triggers in queue
-                await collectAndResolveOrderTriggers(effectiveCard, isAlchemagic);
+            // Collect and resolve order triggers in queue
+            await collectAndResolveOrderTriggers(effectiveCard, isAlchemagic);
                 return;
             }
         }
@@ -9987,29 +10208,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     roaming.style.transform = 'none';
 
                     if (isAlchemagic) {
-                        roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
-                        roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
-                        roaming.dataset.turnEndBuffActive = "true";
-                        const baseCrit = parseInt(roaming.dataset.critical || "1");
-                        roaming.dataset.critical = (baseCrit + 1).toString();
+                        roaming.dataset.skillBonus_RoamingPrison = "10000";
                         roaming.dataset.turnEndCritBuff = "true";
                         alert(`Roaming Prison Dragon: Alchemagic! พลัง +10000 & Critical +1!`);
                     } else {
                         const choice = confirm("Roaming Prison Dragon:\nOK = พลัง +10000\nCancel = Critical +1");
                         if (choice) {
-                            roaming.dataset.power = (parseInt(roaming.dataset.power) + 10000).toString();
-                            roaming.dataset.turnEndBuffPower = (parseInt(roaming.dataset.turnEndBuffPower || "0") + 10000).toString();
-                            roaming.dataset.turnEndBuffActive = "true";
+                            roaming.dataset.skillBonus_RoamingPrison = "10000";
                             alert("Roaming Prison Dragon: พลัง +10000!");
                         } else {
-                            const baseCrit = parseInt(roaming.dataset.critical || "1");
-                            roaming.dataset.critical = (baseCrit + 1).toString();
                             roaming.dataset.turnEndCritBuff = "true";
                             alert("Roaming Prison Dragon: Critical +1!");
                         }
                     }
 
-                    applyStaticBonuses(roaming);
                     syncPowerDisplay(roaming);
                     sendMoveData(roaming);
                     updateDropCount();
@@ -11881,6 +12093,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         switch (data.type) {
+            case 'alchemagicAnim':
+                {
+                    // Play fusion animation for the opponent's action
+                    const dummyMain = { dataset: { name: data.mainOrder.name }, querySelector: () => ({ src: data.mainOrder.imageUrl }) };
+                    const dummyBound = { dataset: { name: data.boundOrder.name }, querySelector: () => ({ src: data.boundOrder.imageUrl }) };
+                    playAlchemagicAnimation(dummyMain, dummyBound); 
+                }
+                break;
             case 'syncCounts':
                 if (oppHandCountNum) oppHandCountNum.textContent = data.hand;
                 if (oppDeckCountNum) oppDeckCountNum.textContent = data.deck;

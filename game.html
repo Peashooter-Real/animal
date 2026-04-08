@@ -7,6 +7,7 @@
     <title>Vanguard overDress Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="power_styles.css">
 </head>
 
 <body>
@@ -396,6 +397,20 @@
                 <div id="skill-text" class="skill-description">
                     Skill text goes here...
                 </div>
+
+                <div id="power-breakdown" class="power-breakdown-panel hidden">
+                    <h3 style="color: var(--accent-cyan); font-size: 1rem; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
+                        ⚡ รายละเอียดพลัง (Power Breakdown)
+                    </h3>
+                    <ul id="breakdown-list" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+                        <!-- Breakdown items will be injected here -->
+                    </ul>
+                    <div class="breakdown-total" style="margin-top: 10px; font-weight: bold; color: #fff; padding-top: 5px; border-top: 1px dashed rgba(255,255,255,0.2); display: flex; justify-content: space-between;">
+                        <span>รวมพลังปัจจุบัน:</span>
+                        <span id="breakdown-total-val" style="color: var(--accent-cyan);">0</span>
+                    </div>
+                </div>
+
                 <div class="skill-actions"
                     style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
                     <button id="activate-skill-btn" class="glass-btn primary-btn hidden">ใช้งานสกิล [ACT]</button>
