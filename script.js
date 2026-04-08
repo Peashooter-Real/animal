@@ -10203,8 +10203,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropZone = document.querySelector('.my-side .drop-zone');
         alert("เลือก RC เพื่อวาง Roaming Prison Dragon");
         document.body.classList.add('targeting-mode');
-        await new Promise(resolve => {
+        if (await new Promise(resolve => {
             const rcHandler = (ev) => {
+                if (ev.type === 'targeting-timeout') {
+                    document.removeEventListener('click', rcHandler, true);
+                    document.removeEventListener('targeting-timeout', rcHandler);
+                    resolve(false);
+                    return;
+                }
                 const circle = ev.target.closest('.my-side .circle.rc');
                 if (circle) {
                     ev.stopPropagation();
@@ -10239,11 +10245,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateDropCount();
                     document.body.classList.remove('targeting-mode');
                     document.removeEventListener('click', rcHandler, true);
-                    resolve();
+                    document.removeEventListener('targeting-timeout', rcHandler);
+                    resolve(true);
                 }
             };
             document.addEventListener('click', rcHandler, true);
-        });
+            document.addEventListener('targeting-timeout', rcHandler);
+        }) === false) return;
     }
 
     // --- Single Shadowcloak execution ---
@@ -10268,8 +10276,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (wantReturn) {
                         alert("คลิกเลือกเรียร์การ์ดที่ต้องการกลับมือ");
                         document.body.classList.add('targeting-mode');
-                        await new Promise(resolve => {
+                        if (await new Promise(resolve => {
                             const retHandler = (ev) => {
+                                if (ev.type === 'targeting-timeout') {
+                                    document.removeEventListener('click', retHandler, true);
+                                    document.removeEventListener('targeting-timeout', retHandler);
+                                    resolve(false);
+                                    return;
+                                }
                                 const target = ev.target.closest('.my-side .circle.rc .card');
                                 if (target && target !== sc && !target.classList.contains('opponent-card')) {
                                     ev.stopPropagation();
@@ -10281,12 +10295,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                     updateHandCount();
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', retHandler, true);
+                                    document.removeEventListener('targeting-timeout', retHandler);
                                     alert(`${target.dataset.name} กลับมือแล้ว!`);
-                                    resolve();
+                                    resolve(true);
                                 }
                             };
                             document.addEventListener('click', retHandler, true);
-                        });
+                            document.addEventListener('targeting-timeout', retHandler);
+                        }) === false) return;
                     }
                 }
             }
@@ -10478,6 +10494,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.classList.add('targeting-mode');
                     await new Promise(resolve => {
                         const targetListener = (e) => {
+                            if (e.type === 'targeting-timeout') {
+                                document.removeEventListener('click', targetListener, true);
+                                document.removeEventListener('targeting-timeout', targetListener);
+                                resolve(false);
+                                return;
+                            }
                             const target = e.target.closest(`${oppSideClass} .circle.rc .card`);
                             if (target) {
                                 e.stopPropagation();
@@ -10485,8 +10507,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sendData({ type: 'forceImprisonSpecific', targetId: targetId });
                                 const myOrderZone = document.querySelector('.my-side .order-zone');
                                 if (myOrderZone) {
-                                    myOrderZone.appendChild(target);
-                                    target.classList.add('imprisoned-card');
+                                     myOrderZone.appendChild(target);
+                                     target.classList.add('imprisoned-card');
                                 }
                                 updateCountsUI();
                                 updateAllStaticBonuses();
@@ -10494,18 +10516,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (imprisoned >= maxTargets) {
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', targetListener, true);
-                                    resolve();
+                                    document.removeEventListener('targeting-timeout', targetListener);
+                                    resolve(true);
                                 } else {
                                     alert(`ขังใบที่ ${imprisoned} สำเร็จ! เลือกใบถัดไป (หรือคลิกที่อื่นเพื่อจบ)`);
                                 }
                             } else if (e.target.closest('.action-btn') || e.target.closest('.menu-container')) {
                                 document.body.classList.remove('targeting-mode');
                                 document.removeEventListener('click', targetListener, true);
-                                resolve();
+                                document.removeEventListener('targeting-timeout', targetListener);
+                                resolve(true);
                             }
                         };
                         document.addEventListener('click', targetListener, true);
-                    });
+                        document.addEventListener('targeting-timeout', targetListener);
+                    }) === false) return false;
                     return true;
                 }
             }
@@ -13548,8 +13573,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert(`เลือกเรียร์การ์ด ${count} ใบ เพื่อให้โจมตีจากแถวหลังได้และพลัง +5000`);
                         for (let i = 0; i < count; i++) {
                             document.body.classList.add('targeting-mode');
-                            await new Promise(resolve => {
+                            if (await new Promise(resolve => {
                                 const choiceListener = (e) => {
+                                    if (e.type === 'targeting-timeout') {
+                                        document.removeEventListener('click', choiceListener, true);
+                                        document.removeEventListener('targeting-timeout', choiceListener);
+                                        resolve(false);
+                                        return;
+                                    }
                                     const target = e.target.closest('.circle.rc .card:not(.opponent-card)');
                                     if (target) {
                                         e.stopPropagation();
@@ -13560,11 +13591,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                         alert(`ยูนิท ${target.dataset.name} สามารถโจมตีจากแถวหลังได้แล้ว!`);
                                         document.body.classList.remove('targeting-mode');
                                         document.removeEventListener('click', choiceListener, true);
-                                        resolve();
+                                        document.removeEventListener('targeting-timeout', choiceListener);
+                                        resolve(true);
                                     }
                                 };
                                 document.addEventListener('click', choiceListener, true);
-                            });
+                                document.addEventListener('targeting-timeout', choiceListener);
+                            }) === false) return;
                         }
                     }
                 }
@@ -14718,7 +14751,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof pendingPowerIncrease !== 'undefined') pendingPowerIncrease = 0;
         if (typeof pendingCriticalIncrease !== 'undefined') pendingCriticalIncrease = 0;
         
-        alert("หมดเวลาในการเลือกเป้าหมาย! (Targeting Timeout)");
+        // Signal all active targeting listeners to abort
+        document.dispatchEvent(new CustomEvent('targeting-timeout'));
+        
+        alert("หมดเวลาในการเลือกเป้าหมาย! การใช้สกิลถูกยกเลิก (Targeting Timeout - Skill Cancelled)");
         stopTargetingTimer();
     }
 
