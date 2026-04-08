@@ -6900,15 +6900,15 @@ document.addEventListener('DOMContentLoaded', () => {
             flags.forEach(flag => delete c.dataset[flag]);
 
             // Reset power and critical to base values
-            card.dataset.power = card.dataset.basePower || "10000";
-            card.dataset.critical = card.dataset.baseCritical || "1";
+            c.dataset.power = c.dataset.basePower || "10000";
+            c.dataset.critical = c.dataset.baseCritical || "1";
             
             // Specifically clear internal state buffs from dataset
-            delete card.dataset.turnEndBuffActive;
-            delete card.dataset.turnEndBuffPower;
-            delete card.dataset.turnEndCritBuff;
+            delete c.dataset.turnEndBuffActive;
+            delete c.dataset.turnEndBuffPower;
+            delete c.dataset.turnEndCritBuff;
             
-            syncPowerDisplay(card);
+            syncPowerDisplay(c);
         });
     }
 
@@ -7467,7 +7467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Auto advance to draw after 1 second
                 setTimeout(() => {
-                    if (currentPhaseIndex === 0) { // Still in stand
+                    if (currentPhaseIndex === 0 && isMyTurn) { // Still in stand and still my turn
                         currentPhaseIndex++;
                         updatePhaseUI(true);
                     }
@@ -7481,7 +7481,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Auto advance to ride after 1 second
                 setTimeout(() => {
-                    if (currentPhaseIndex === 1) { // Still in draw
+                    if (currentPhaseIndex === 1 && isMyTurn) { // Still in draw and still my turn
                         currentPhaseIndex++;
                         updatePhaseUI(true);
                     }
@@ -12125,7 +12125,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'phaseChange':
                 console.log("Phase Change Sync Received:", data.phaseIndex, "Turn:", data.currentTurn);
-                if (data.currentTurn) currentTurn = parseInt(data.currentTurn);
+                if (data.currentTurn) {
+                    const incomingTurn = parseInt(data.currentTurn);
+                    if (incomingTurn < currentTurn) {
+                        console.log("Ignoring outdated phaseChange packet.");
+                        return;
+                    }
+                    currentTurn = incomingTurn;
+                }
                 currentPhaseIndex = data.phaseIndex;
                 updatePhaseUI(false);
                 break;
@@ -12136,7 +12143,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'nextTurn':
                 console.log("Next Turn Packet Received:", data.currentTurn);
-                currentTurn = parseInt(data.currentTurn);
+                if (data.currentTurn) {
+                    const incomingTurn = parseInt(data.currentTurn);
+                    if (incomingTurn < currentTurn) {
+                        console.log("Ignoring outdated nextTurn packet.");
+                        return;
+                    }
+                    currentTurn = incomingTurn;
+                }
                 currentPhaseIndex = 0;
                 strategyActivatedThisTurn = false;
                 shockStrategyActive = false;
