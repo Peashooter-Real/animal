@@ -9414,6 +9414,17 @@ document.addEventListener('DOMContentLoaded', () => {
         dealDamage(count); // Use the actual damage check function
     }
 
+    // --- Helper functions for Order detection ---
+    function isOrderCard(card) {
+        const skillLC = (card.dataset.skill || "").toLowerCase();
+        return skillLC.includes('order]');
+    }
+
+    function isBlitzOrder(card) {
+        const skillLC = (card.dataset.skill || "").toLowerCase();
+        return skillLC.includes('blitz order');
+    }
+
     function openSkillViewer(card) {
         if (!skillViewer) return;
 
@@ -9533,18 +9544,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const playOrderBtn = document.getElementById('play-order-btn');
         if (playOrderBtn) {
-            const skillLC = (effectiveCard.dataset.skill || "").toLowerCase();
-            const isOrder = skillLC.includes('order]');
-            const isBlitzOrder = skillLC.includes('blitz order');
+            const isOrder = isOrderCard(effectiveCard);
+            const isBlitz = isBlitzOrder(effectiveCard);
             const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
 
             // Normal orders can be played in main phase of my turn.
             // Blitz orders can be played during guard phase of opponent's turn.
-            const canPlayNormal = isOrder && !isBlitzOrder && inHand && isMyTurn;
-            const canPlayBlitz = isBlitzOrder && inHand && isWaitingForGuard;
+            const canPlayNormal = isOrder && !isBlitz && inHand && isMyTurn && phases[currentPhaseIndex] === 'main';
+            const canPlayBlitz = isBlitz && inHand && isWaitingForGuard;
 
             if (canPlayNormal || canPlayBlitz) {
                 playOrderBtn.classList.remove('hidden');
+                playOrderBtn.textContent = isBlitz ? "ใช้งาน Blitz Order (ป้องกัน)" : "ใช้งานการ์ดออร์เดอร์";
                 playOrderBtn.onclick = async () => {
                     await playOrder(effectiveCard);
                     skillViewer.classList.add('hidden');
