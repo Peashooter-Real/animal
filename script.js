@@ -10492,7 +10492,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(`คลิกเลือกเรียร์การ์ดคู่แข่งไม่เกิน ${maxTargets} ใบเพื่อนำไปขังในคุก`);
                     let imprisoned = 0;
                     document.body.classList.add('targeting-mode');
-                    await new Promise(resolve => {
+                    if (await new Promise(resolve => {
                         const targetListener = (e) => {
                             if (e.type === 'targeting-timeout') {
                                 document.removeEventListener('click', targetListener, true);
