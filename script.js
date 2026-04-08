@@ -7347,12 +7347,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function checkGameStart() {
+    async function checkGameStart() {
         if (hasConfirmedMulligan && oppConfirmedMulligan) {
             alert("Both players ready! GAME START!");
             updateHandCount();
             updateHandSpacing();
-            updatePhaseUI(false);
+            updatePhaseUI(true);
             syncCounts(); // Ensure initial counts are synced to opponent
         } else {
             if (!isAIMode) alert("Waiting for Rival to finish Mulligan...");
@@ -7373,10 +7373,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Determine if it's my turn
         // First player starts (Odd turns), Second player follows (Even turns)
         const turnNum = parseInt(currentTurn);
+        const oldMyTurn = isMyTurn;
         isMyTurn = (turnNum % 2 !== 0 && isFirstPlayer) || (turnNum % 2 === 0 && !isFirstPlayer);
+        window.isMyTurn = isMyTurn; // Global mirror for debugging
         window.isFirstPlayer = isFirstPlayer; // Keep global in sync
 
-        console.log(`Phase Update: Turn=${turnNum}, Phase=${currentPhaseIndex}, isFirst=${isFirstPlayer}, myTurn=${isMyTurn}`);
+        console.log(`[Turn Sync] Turn: ${turnNum}, Phase: ${currentPhaseIndex}, isFirstPlayer: ${isFirstPlayer}, isMyTurn: ${isMyTurn}`);
+
+        // Safety reset for attack flags if it's our turn now but wasn't before, or if we are at start of turn
+        if (isMyTurn && (currentPhaseIndex === 0 || !oldMyTurn)) {
+            isWaitingForGuard = false;
+            currentAttackResolving = false;
+            document.body.classList.remove('targeting-mode');
+        }
 
         // Reset power/critical ONLY at the start of YOUR turn's stand phase
         if (isMyTurn && currentPhaseIndex === 0) { // Stand phase
@@ -7444,6 +7453,8 @@ document.addEventListener('DOMContentLoaded', () => {
             oppSide.classList.remove('side-disabled');
             turnIndicator.textContent = `เทิร์นที่ ${currentTurn} (ตาคู่แข่ง)`;
             turnIndicator.classList.remove('pulse');
+            // If it's not our turn, we should definitely NOT be in targeting mode
+            document.body.classList.remove('targeting-mode');
         }
 
         const currentPhaseName = phases[currentPhaseIndex];
@@ -7539,7 +7550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (broadcast) {
-            sendData({ type: 'phaseChange', phaseIndex: currentPhaseIndex, isFirstPlayer: isFirstPlayer });
+            sendData({ type: 'phaseChange', phaseIndex: currentPhaseIndex, currentTurn: currentTurn, isFirstPlayer: isFirstPlayer });
         }
 
         // AI Mode Setup: Trigger AI loop if it's AI's turn
@@ -8448,6 +8459,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phases[currentPhaseIndex] !== 'end') {
             currentPhaseIndex = phases.indexOf('end');
             await updatePhaseUI(true);
+            console.log("Moved to End Phase. Click again to pass turn.");
+            return; // MUST stay in End phase first to let abilities trigger
         }
 
         // Allow end turn if in End phase even if flags are stuck, or if user forces it
@@ -8502,8 +8515,15 @@ document.addEventListener('DOMContentLoaded', () => {
             syncPowerDisplay(c);
         });
 
-        await updatePhaseUI(false);
-        sendData({ type: 'nextTurn', currentTurn: currentTurn });
+        await updatePhaseUI(true); // Broadcast that we are now in next turn's Stand phase
+        
+        console.log(`Sending Next Turn Packet: ${currentTurn}`);
+        if (conn && conn.open) {
+            sendData({ type: 'nextTurn', currentTurn: currentTurn });
+        } else {
+            console.error("Connection lost! Could not send nextTurn packet.");
+            alert("Connection error! Turn might not sync. Check connection status.");
+        }
     });
 
     // --- Multiplayer Logic ---
@@ -8697,7 +8717,14 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleAILocalData(data);
             return;
         }
-        if (conn && conn.open) conn.send(data);
+        if (conn && conn.open) {
+            conn.send(data);
+        } else {
+            console.warn(`Could not send data of type ${data.type}: connection closed.`);
+            if (data.type === 'nextTurn' || data.type === 'phaseChange') {
+                alert("การเชื่อมต่อขัดข้อง: ไม่สามารถส่งข้อมูลสถานะเกมได้ กรุณาทดลองเช็คอินเทอร์เน็ต");
+            }
+        }
     }
 
     async function handleAILocalData(data) {
@@ -11851,7 +11878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleIncomingData(data) {
+    async function handleIncomingData(data) {
         console.log('Data received:', data.type);
         const oppSide = document.querySelector('.opponent-side');
 
@@ -12097,6 +12124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 break;
             case 'phaseChange':
+                console.log("Phase Change Sync Received:", data.phaseIndex, "Turn:", data.currentTurn);
+                if (data.currentTurn) currentTurn = parseInt(data.currentTurn);
                 currentPhaseIndex = data.phaseIndex;
                 updatePhaseUI(false);
                 break;
@@ -12115,7 +12144,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.promptedEndTurn = false;
                 isWaitingForGuard = false;
                 currentAttackResolving = false;
-                updatePhaseUI(false);
+                console.log(`Applying Next Turn: ${currentTurn}`);
+                await updatePhaseUI(true); // Broadcast back to confirm we entered the next turn
                 break;
             case 'gameOver':
                 showGameOver('Win');
