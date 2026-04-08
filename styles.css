@@ -3369,3 +3369,60 @@ body.targeting-mode::after {
   color: #999;
   line-height: 1.3;
 }
+/* Targeting Timer */
+.targeting-timer-container {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid var(--accent-vanguard);
+  box-shadow: 0 0 20px rgba(255, 42, 109, 0.5);
+  animation: timer-pop 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes timer-pop {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.targeting-timer-label {
+  font-family: var(--font-cyber);
+  font-size: 0.8rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  letter-spacing: 2px;
+}
+
+.targeting-timer-val {
+  font-family: var(--font-cyber);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent-vanguard);
+  text-shadow: 0 0 10px var(--accent-vanguard);
+}
+
+.targeting-timer-bar-bg {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.targeting-timer-bar-fill {
+  height: 100%;
+  background: var(--accent-vanguard);
+  width: 100%;
+  transition: width 1s linear;
+}

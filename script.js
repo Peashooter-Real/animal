@@ -3369,6 +3369,7 @@ document.addEventListener('DOMContentLoaded', () => {
             attacker.classList.remove('attacking-glow');
             attackingCard = null;
             return;
+
         }
 
         // --- Majesty Lord Blaster Attack Skill ---
@@ -14662,5 +14663,78 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => popup.remove(), 4000);
     }
     initPowerObserver();
+
+    // --- Targeting Timer System ---
+    let targetingTimerInterval = null;
+    let targetingTimeLeft = 15;
+
+    function startTargetingTimer() {
+        stopTargetingTimer();
+        targetingTimeLeft = 15;
+        
+        let container = document.querySelector('.targeting-timer-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'targeting-timer-container';
+            container.innerHTML = `
+                <div class="targeting-timer-label">กำลังเลือกเป้าหมาย (Selecting Target)</div>
+                <div class="targeting-timer-val">15</div>
+                <div class="targeting-timer-bar-bg"><div class="targeting-timer-bar-fill"></div></div>
+            `;
+            document.body.appendChild(container);
+        }
+        
+        const valElem = container.querySelector('.targeting-timer-val');
+        const barFill = container.querySelector('.targeting-timer-bar-fill');
+        
+        valElem.textContent = targetingTimeLeft;
+        barFill.style.width = '100%';
+        barFill.style.transition = 'none';
+        setTimeout(() => { if (barFill) barFill.style.transition = 'width 1s linear'; }, 10);
+
+        targetingTimerInterval = setInterval(() => {
+            targetingTimeLeft--;
+            if (valElem) valElem.textContent = targetingTimeLeft;
+            if (barFill) barFill.style.width = `${(targetingTimeLeft / 15) * 100}%`;
+
+            if (targetingTimeLeft <= 0) {
+                cancelTargetingMode();
+            }
+        }, 1000);
+    }
+
+    function stopTargetingTimer() {
+        if (targetingTimerInterval) {
+            clearInterval(targetingTimerInterval);
+            targetingTimerInterval = null;
+        }
+        const container = document.querySelector('.targeting-timer-container');
+        if (container) container.remove();
+    }
+
+    function cancelTargetingMode() {
+        document.body.classList.remove('targeting-mode');
+        if (typeof targetingType !== 'undefined') targetingType = null;
+        if (typeof pendingPowerIncrease !== 'undefined') pendingPowerIncrease = 0;
+        if (typeof pendingCriticalIncrease !== 'undefined') pendingCriticalIncrease = 0;
+        
+        alert("หมดเวลาในการเลือกเป้าหมาย! (Targeting Timeout)");
+        stopTargetingTimer();
+    }
+
+    const targetingObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                const isTargeting = document.body.classList.contains('targeting-mode');
+                if (isTargeting) {
+                    startTargetingTimer();
+                } else {
+                    stopTargetingTimer();
+                }
+            }
+        });
+    });
+
+    targetingObserver.observe(document.body, { attributes: true });
 });
 window.addEventListener('error', function(event) { alert('ERROR: ' + event.message + ' at ' + event.filename + ':' + event.lineno); }); window.addEventListener('unhandledrejection', function(event) { alert('UNHANDLED REJECTION: ' + (event.reason && event.reason.stack ? event.reason.stack : event.reason)); });
