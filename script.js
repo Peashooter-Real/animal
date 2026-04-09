@@ -2797,7 +2797,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bindPool.push(cardData);
                 if (checkCard) checkCard.remove();
                 syncCounts();
-                sendData({ type: 'syncBindCount', count: bindPool.length });
+                syncBindZone();
 
                 isDealingDamage = false; 
                 if (checksLeft > 1) {
@@ -3075,7 +3075,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Over Trigger! เข้าสู่ Remove Zone (Bind) และประมวลผลพลัง 100M");
                     bindPool.push(cardData);
                     syncCounts();
-                    sendData({ type: 'syncBindCount', count: bindPool.length });
+                    syncBindZone();
                 } else {
                     const cardInHand = createCardElement(cardData);
                     playerHand.appendChild(cardInHand);
@@ -10148,7 +10148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         bindPool.push(alchCard);
                         alchCard.remove();
                         updateDropCount();
-                        sendData({ type: 'syncBindCount', count: bindPool.length });
+                        syncBindZone();
                         isAlchemagic = true;
                         window.alchemagicUsedThisTurn = true;
                         
@@ -11491,7 +11491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             card.dataset.inheritedAvantAct = "true";
                             applyStaticBonuses(card);
                             sendMoveData(card);
-                            sendData({ type: 'syncBindCount', count: bindPool.length });
+                            syncBindZone();
                             updateAllStaticBonuses();
                             alert("Richter: Ride สำเร็จ! และได้รับ ACT ของใบที่ Bind");
                             return;
@@ -12856,14 +12856,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 break;
             case 'syncBindCount': {
-                const bBadge = document.getElementById('opp-bind-counter');
-                if (bBadge) {
-                    bBadge.textContent = `Bind: ${data.count}`;
-                    if (data.count > 0) bBadge.classList.remove('hidden');
-                    else bBadge.classList.add('hidden');
+                if (oppBindBadge) {
+                    oppBindBadge.textContent = `Bind: ${data.count}`;
+                    if (data.count > 0) oppBindBadge.classList.remove('hidden');
+                    else oppBindBadge.classList.add('hidden');
                 }
                 const oqBind = document.getElementById('opp-quick-bind-num');
                 if (oqBind) oqBind.textContent = data.count || 0;
+                
+                if (data.cards) {
+                    window.oppBindPool = data.cards;
+                }
                 break;
             }
             case 'retireOpponentRG': // New case for Eden's skill
@@ -13650,7 +13653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     bindPool.push(fuujoCard);
                                                     updateSoulUI();
                                                     updateCountsUI();
-                                                    sendData({ type: 'syncBindCount', count: bindPool.length });
+                                                    syncBindZone();
                                                     alert("Fuujo: Bind ตัวเองเพื่อเปิดใช้งานสกิลรีไทร์");
 
                                                     const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
@@ -13827,7 +13830,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     updateAllStaticBonuses();
                                     updateSoulUI();
                                     sendMoveData(baseAvant);
-                                    sendData({ type: 'syncBindCount', count: bindPool.length });
+                                    syncBindZone();
                                     alert("Richter → Avantgarda: Ride สำเร็จ! Power +10000 / Drive -1 / Restand!");
                                 }
                             }
@@ -14965,6 +14968,33 @@ document.addEventListener('DOMContentLoaded', () => {
         openViewer(`${side === 'my' ? 'My' : "Opponent's"} Order Zone`, cards);
     };
 
+    window.viewBindZone = (side) => {
+        if (side === 'my') {
+            if (bindPool.length === 0) {
+                alert("Bind Zone ของคุณว่างเปล่า");
+                return;
+            }
+            openViewer("My Bind Zone", bindPool);
+        } else {
+            if (!window.oppBindPool || window.oppBindPool.length === 0) {
+                alert("Bind Zone ของคู่แข่งว่างเปล่า หรือข้อมูลยังไม่ซิงค์");
+                return;
+            }
+            openViewer("Opponent's Bind Zone", window.oppBindPool);
+        }
+    };
+
+    function syncBindZone() {
+        const cardsData = bindPool.map(c => ({
+            name: c.dataset.name,
+            grade: c.dataset.grade,
+            power: c.dataset.power,
+            shield: c.dataset.shield,
+            skill: c.dataset.skill,
+            imageUrl: c.querySelector('img')?.src || ''
+        }));
+        sendData({ type: 'syncBindCount', count: bindPool.length, cards: cardsData });
+    }
     async function checkRevolDressOnPlace(card) {
         const name = card.dataset.name;
         const queue = [];
