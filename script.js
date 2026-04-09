@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.vgConfirm = function (msg) {
-        if (isAIMode && !isMyTurn) return Promise.resolve(true);
+        // Auto-resolve only for AI's own actions, not when player is guarding/playing Blitz
+        if (isAIMode && !isMyTurn && !isWaitingForGuard && !isGuarding) return Promise.resolve(true);
         return new Promise(resolve => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
@@ -6563,7 +6564,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function paySoulBlast(cost) {
-        if (isAIMode && !isMyTurn) {
+        // Auto-resolve for AI only if it's actually the AI performing the action (not during guard phase where player might act)
+        if (isAIMode && !isMyTurn && !isWaitingForGuard && !isGuarding) {
             if (aiSoul.length < cost) {
                 console.log("AI Insufficient Soul for SB!");
                 return false;
@@ -7667,6 +7669,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.remove('targeting-mode');
         }
 
+        // Reset order flags at start of Stand phase for both players
+        if (currentPhaseIndex === 0) {
+            ordersPlayedCount = 0;
+            orderPlayedThisTurn = false;
+        }
+
         // Reset power/critical ONLY at the start of YOUR turn's stand phase
         if (isMyTurn && currentPhaseIndex === 0) { // Stand phase
             // Reset turn-based flags
@@ -7674,8 +7682,6 @@ document.addEventListener('DOMContentLoaded', () => {
             hasDiscardedThisTurn = false;
             hasDrawnThisTurn = false;
             turnAttackCount = 0;
-            orderPlayedThisTurn = false;
-            ordersPlayedCount = 0;
             maxOrdersPerTurn = 1;
             nextSetOrderFree = false;
             bomberDustingPowerBuff = false;
@@ -8588,6 +8594,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMoveData(target);
             }
         }
+        
+        // Reset battle power buffs (Blitz Orders) at end of battle
+        resetBattleBuffs();
+        
         // Reset guard flags after each attack resolution
         window.playerGuardShield = 0;
         window.playerGuardIsPG = false;
@@ -10188,16 +10198,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isAlchemagic) window.currentlyResolvingAlchemagic = true;
         
+        let skillResult = true;
         if (!window.skipDefaultSkillActivation) {
-            await activateCardSkill(effectiveCard);
+            skillResult = await activateCardSkill(effectiveCard);
         }
         window.skipDefaultSkillActivation = false;
 
         if (isAlchemagic) window.currentlyResolvingAlchemagic = false;
-
         if (isFree) effectiveCard.dataset.playOrderFree = "false";
 
-        if (skillResult === false) return;
+        if (skillResult === false) {
+            console.log("Skill resolution failed or cancelled. Early exit.");
+            return;
+        }
 
         // --- Apply Alchemagic CONT bonuses after skill resolution ---
         if (isAlchemagic) {
@@ -12035,7 +12048,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name.includes('Clouded Miasma')) {
             if (await vgConfirm("Clouded Miasma: [CB1] เลือกการ์ดเกรด 3 หรือต่ำกว่าจากดรอปโซน คอลลง (RC)?\n(Alchemagic: แวนการ์ดให้แถวหน้า +5000)")) {
                 if (payCounterBlast(1)) {
-                    promptCallFromDrop(1, (c) => {
+                    await promptCallFromDrop(1, (c) => {
                         return parseInt(c.dataset.grade) <= 3 && !c.dataset.skill?.toLowerCase().includes('order');
                     }, 0, () => {
                         // If part of Alchemagic, grant front row +5000
@@ -12782,6 +12795,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'damageFinished':
                 isProcessingDamage = false;
                 currentAttackResolving = false;
+                resetBattleBuffs();
                 break;
             case 'gameOver':
                 showGameOver('Win');
@@ -13334,8 +13348,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const grade = parseInt(attackData.vanguardGrade || "0");
                 let checks = attackData.driveCount !== undefined ? attackData.driveCount : (grade >= 4 ? 3 : (grade >= 3 ? 2 : 1));
                 if (attackData.tripleDrive) checks = Math.max(checks, 3);
-                if (attackData.majestyDriveBuff) checks++;
                 driveCheck(checks, attackData.totalCritical);
+                resetBattleBuffs(); // Reset buffs for attacker
             } else {
                 // Rearguard attack check vs base target power
                 const attacker = document.getElementById(attackData.attackerId);
@@ -14089,6 +14103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attackData.isPG === true || attackData.isHit === false) {
             const reason = attackData.isPG ? "Perfect Guard" : "Power check";
             alert(`Attack blocked! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
+            resetBattleBuffs();
             sendData({ type: 'damageFinished' });
             return;
         }
