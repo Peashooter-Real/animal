@@ -3393,80 +3393,101 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleMajestyAttackSkills(attacker);
         }
 
-        // --- Desire Devil, Fuujo [AUTO](Soul) & Desire Devil, Mucca [AUTO](RC) ---
-        if (attackerParentCircle.classList.contains('vc')) {
+        // --- Greedon Deck Attack Triggers (Queue System) ---
+        const attackQueue = [];
+
+        if (attackerParentCircle.classList.contains('vc') && attacker.dataset.name.includes('Greedon')) {
             // Fuujo (Soul)
             const fuujoInSoul = soulPool.find(c => (c.dataset.name || "").includes('Fuujo'));
-            if (fuujoInSoul && attacker.dataset.name.includes('Greedon')) {
-                if (await vgConfirm("Desire Devil, Fuujo: [AUTO](Soul) แวนการ์ด Greedon โจมตี [Bind การ์ดนี้] เพื่อให้คู่แข่งต้องคอลการ์ดป้องกัน 2 ใบขึ้นไปพร้อมกัน?")) {
-                    const idx = soulPool.indexOf(fuujoInSoul);
-                    soulPool.splice(idx, 1);
-                    bindPool.push(fuujoInSoul);
-                    updateSoulUI();
-                    updateCountsUI();
-                    
-                    // Mark Vanguard for guard restrict
-                    attacker.dataset.guardRestrictCount = "2";
-                    
-                    sendData({ 
-                        type: 'moveCard', 
-                        cardId: fuujoInSoul.id, 
-                        zone: 'bind',
-                        side: 'my',
-                        syncData: { guardRestrictCount: "2", attackerId: attacker.id }
-                    });
-                    
-                    alert("Fuujo: เปิดใช้งาน Guard Restrict! (คู่แข่งต้องคอล 2 ใบขึ้นไป)");
-                }
+            if (fuujoInSoul) {
+                attackQueue.push({
+                    name: 'Desire Devil, Fuujo',
+                    description: "[Bind การ์ดนี้จาก Soul] เพื่อเปิดใช้งาน Guard Restrict (ต้องคอล 2 ใบขึ้นไป)",
+                    resolve: async (done) => {
+                        if (await vgConfirm("Desire Devil, Fuujo: [AUTO](Soul) แวนการ์ด Greedon โจมตี [Bind การ์ดนี้] เพื่อให้คู่แข่งต้องคอลการ์ดป้องกัน 2 ใบขึ้นไปพร้อมกัน?")) {
+                            const idx = soulPool.indexOf(fuujoInSoul);
+                            if (idx !== -1) {
+                                soulPool.splice(idx, 1);
+                                bindPool.push(fuujoInSoul);
+                                updateSoulUI();
+                                updateCountsUI();
+                                attacker.dataset.guardRestrictCount = "2";
+                                sendData({ 
+                                    type: 'moveCard', cardId: fuujoInSoul.id, zone: 'bind', side: 'my',
+                                    syncData: { guardRestrictCount: "2", attackerId: attacker.id }
+                                });
+                                alert("Fuujo: เปิดใช้งาน Guard Restrict! (คู่แข่งต้องคอล 2 ใบขึ้นไป)");
+                            }
+                        }
+                        if (done) done();
+                    }
+                });
             }
 
             // Mousheen (Soul)
             const mousheensInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Mousheen'));
-            if (mousheensInSoul.length > 0 && attacker.dataset.name.includes('Greedon') && turnAttackCount === 1) {
-                const hasMousheenOnRC = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)')).some(c => c.dataset.name.includes('Mousheen'));
-                if (!hasMousheenOnRC) {
-                    if (await vgConfirm("Desire Devil, Mousheen: [AUTO](Soul) แวนการ์ด Greedon โจมตีครั้งที่ 2 ของเทิร์น และไม่มี Mousheen บนสนาม ต้องการคอลใบนี้ลง (RC) หรือไม่?")) {
-                        const callCard = soulPool.splice(soulPool.indexOf(mousheensInSoul[0]), 1)[0];
-                        alert("คลิกเลือกช่อง (RC) ที่ว่างอยู่เพื่อคอล Mousheen");
-                        document.body.classList.add('targeting-mode');
-                        const callListener = (e) => {
-                            const circle = e.target.closest('.my-side .circle.rc');
-                            if (circle && !circle.querySelector('.card')) {
-                                e.stopPropagation();
-                                circle.appendChild(callCard);
-                                sendMoveData(callCard);
-                                updateSoulUI();
-                                updateCountsUI();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', callListener, true);
-                                
-                                callCard.classList.remove('rest');
-                                callCard.dataset.mousheenImmune = "true";
-                                // Ensure buff is applied relative to base power
-                                const baseP = parseInt(callCard.dataset.basePower || "13000");
-                                const pwr = baseP + 5000;
-                                callCard.dataset.power = pwr.toString();
-                                callCard.dataset.turnEndBuffPower = "5000";
-                                callCard.dataset.turnEndBuffActive = "true";
-                                syncPowerDisplay(callCard);
-                                alert("คอล Mousheen สำเร็จ! ได้รับพลัง +5000 และเป็นอมตะ (Mousheen Immune) จากสกิลแวนตลอดเทิร์น");
-                                applyStaticBonuses(callCard);
-                            } else if (circle) {
-                                alert("ต้องเลือกช่อง (RC) ที่ว่างเท่านั้น!!");
-                            } else {
-                                // Prevent stuck in targeting mode if clicking something else
-                                if (confirm("คุณต้องการยกเลิกการคอล Mousheen หรือไม่?")) {
-                                    document.body.classList.remove('targeting-mode');
-                                    document.removeEventListener('click', callListener, true);
-                                    soulPool.push(callCard); // return to soul
-                                    updateSoulUI();
-                                }
-                            }
-                        };
-                        document.addEventListener('click', callListener, true);
+            const hasMousheenOnRC = Array.from(document.querySelectorAll('.my-side .circle.rc .card:not(.opponent-card)')).some(c => (c.dataset.name || "").includes('Mousheen'));
+            
+            if (mousheensInSoul.length > 0 && turnAttackCount === 1 && !hasMousheenOnRC) {
+                attackQueue.push({
+                    name: 'Desire Devil, Mousheen',
+                    description: "[AUTO](Soul) คอลลง (RC) และรับพลัง +5000",
+                    resolve: async (done) => {
+                        if (await vgConfirm("Desire Devil, Mousheen: [AUTO](Soul) แวนการ์ด Greedon โจมตีครั้งที่ 2 และไม่มี Mousheen บนสนาม ต้องการคอลใบนี้ลง (RC)?")) {
+                            const callCard = soulPool.splice(soulPool.indexOf(mousheensInSoul[0]), 1)[0];
+                            updateSoulUI();
+                            
+                            alert("เลือกช่อง (RC) ที่ว่างเพื่อคอล Mousheen (กด Esc เพื่อยกเลิก)");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolveCall => {
+                                const callListener = (e) => {
+                                    const circle = e.target.closest('.my-side .circle.rc');
+                                    if (circle && !circle.querySelector('.card')) {
+                                        e.stopPropagation();
+                                        circle.appendChild(callCard);
+                                        sendMoveData(callCard);
+                                        updateCountsUI();
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', callListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        
+                                        callCard.classList.remove('rest');
+                                        callCard.dataset.mousheenImmune = "true";
+                                        const baseP = parseInt(callCard.dataset.basePower || "13000");
+                                        callCard.dataset.power = (baseP + 5000).toString();
+                                        callCard.dataset.turnEndBuffPower = "5000";
+                                        callCard.dataset.turnEndBuffActive = "true";
+                                        syncPowerDisplay(callCard);
+                                        applyStaticBonuses(callCard);
+                                        alert("คอล Mousheen สำเร็จ!");
+                                        resolveCall();
+                                    } else if (circle) {
+                                        alert("เลือกช่องว่างเท่านั้น!");
+                                    }
+                                };
+                                const escH = (e) => {
+                                    if (e.key === 'Escape') {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', callListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        soulPool.push(callCard); // return 
+                                        updateSoulUI();
+                                        resolveCall();
+                                    }
+                                };
+                                document.addEventListener('click', callListener, true);
+                                document.addEventListener('keydown', escH);
+                            });
+                        }
+                        if (done) done();
                     }
-                }
+                });
             }
+        }
+
+
+        if (attackQueue.length > 0) {
+            await resolveAbilityQueue(attackQueue);
         }
 
         // --- Knight of Inheritance, Emmeline [AUTO](RC) Trigger ---
@@ -4645,22 +4666,6 @@ document.addEventListener('DOMContentLoaded', () => {
             delete card.dataset.orderBonus_CloudedMiasmaPower;
         }
 
-        // --- Dragontree Marker [CONT](RC): +5000 during your turn ---
-        if (zone.startsWith('rc') && parent.dataset.dragontreeMarker === "true" && isMyTurn) {
-            if (card.dataset.dtMarkerBuffApplied !== "true") {
-                const bonus = 5000;
-                card.dataset.power = (parseInt(card.dataset.power) + bonus).toString();
-                card.dataset.dtMarkerBuffApplied = "true";
-                card.dataset.skillBonus_DragontreeMarker = bonus;
-                syncPowerDisplay(card);
-            }
-        } else if (card.dataset.dtMarkerBuffApplied === "true") {
-            const bonus = 5000;
-            card.dataset.power = (parseInt(card.dataset.power) - bonus).toString();
-            card.dataset.dtMarkerBuffApplied = "false";
-            delete card.dataset.skillBonus_DragontreeMarker;
-            syncPowerDisplay(card);
-        }
 
         // --- Seraph Snow [CONT](VC) ---
         if (name.includes('Seraph Snow') && zone === 'vc') {
@@ -4796,23 +4801,25 @@ document.addEventListener('DOMContentLoaded', () => {
             syncPowerDisplay(card);
         }
 
-        // --- Greedon (Boshokku Soul Bonus) (+5000 for EACH copy in soul) ---
-        if (card.dataset.name && card.dataset.name.includes('Greedon') && zone === 'vc') {
+        // --- Greedon (Boshokku Soul Bonus) (+5000 for EACH Boshokku in soul) ---
+        if (card.dataset.name && card.dataset.name.includes('Greedon')) {
             const boshokkuInSoul = soulPool.filter(c => (c.dataset.name || "").includes('Boshokku'));
             const count = boshokkuInSoul.length;
             const damageCount = document.querySelectorAll('.my-side .damage-zone .card').length;
-            const meetsCondition = isMyTurn && count > 0 && damageCount >= 4;
+            const meetsCondition = isMyTurn && count > 0 && damageCount >= 4 && zone === 'vc';
             
+            const currentBonus = parseInt(card.dataset.greedonSoulBonusApplied || "0");
             if (meetsCondition) {
                 const totalBuff = count * 5000;
-                if (parseInt(card.dataset.greedonSoulBonusApplied || "0") !== totalBuff) {
-                    card.dataset.power = (parseInt(card.dataset.power) - parseInt(card.dataset.greedonSoulBonusApplied || "0")).toString();
-                    card.dataset.power = (parseInt(card.dataset.power) + totalBuff).toString();
+                if (currentBonus !== totalBuff) {
+                    const currentPower = parseInt(card.dataset.power || card.dataset.basePower || "0");
+                    card.dataset.power = (currentPower - currentBonus + totalBuff).toString();
                     card.dataset.greedonSoulBonusApplied = totalBuff.toString();
                     syncPowerDisplay(card);
                 }
-            } else if (parseInt(card.dataset.greedonSoulBonusApplied || "0") > 0) {
-                card.dataset.power = (parseInt(card.dataset.power) - parseInt(card.dataset.greedonSoulBonusApplied || "0")).toString();
+            } else if (currentBonus > 0) {
+                const currentPower = parseInt(card.dataset.power || card.dataset.basePower || "0");
+                card.dataset.power = Math.max(0, currentPower - currentBonus).toString();
                 card.dataset.greedonSoulBonusApplied = "0";
                 syncPowerDisplay(card);
             }
@@ -4846,16 +4853,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Dragontree Marker Buff (+5000) ---
+        // --- Dragontree Marker [CONT](RC): +5000 during your turn ---
+        // Removed: isProperVGForMarker requirement as requested
         if (zone.startsWith('rc') && parent.dataset.dragontreeMarker === "true" && isMyTurn) {
             if (card.dataset.dragontreeBuffApplied !== "true") {
                 card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
                 card.dataset.dragontreeBuffApplied = "true";
+                card.dataset.skillBonus_DragontreeMarker = "5000";
                 syncPowerDisplay(card);
             }
         } else if (card.dataset.dragontreeBuffApplied === "true") {
             card.dataset.power = (parseInt(card.dataset.power) - 5000).toString();
             card.dataset.dragontreeBuffApplied = "false";
+            delete card.dataset.skillBonus_DragontreeMarker;
             syncPowerDisplay(card);
         }
 
@@ -5592,87 +5602,109 @@ document.addEventListener('DOMContentLoaded', () => {
         const isRC = zone.startsWith('rc');
         const isFromHand = card.dataset.fromHand === "true";
         const isVC = zone === 'vc';
+        
+        const queue = [];
 
         // --- Black Tears Husk Dragon [AUTO]: Placed on VC ---
         if (name.includes('Husk Dragon') && isVC) {
-            // Mandatory [AUTO] (No cost)
-            alert("Black Tears Husk Dragon: เลือกนำ Normal Order 1 ใบจากดรอปขึ้นมือ");
-            const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
-                    const sk = (c.dataset.skill || '').toLowerCase();
-                    return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
-                });
-                if (normalOrdersInDrop.length > 0) {
-                    openViewer("นำ Normal Order 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
-                        name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ''
-                    })));
-                    await new Promise(resolve => {
-                        const addOrderPick = (e) => {
-                            const picked = e.target.closest('.card');
-                            if (picked && picked.parentElement === viewerGrid) {
-                                const selectedId = picked.dataset.originalId || picked.id;
-                                const actual = normalOrdersInDrop.find(c => c.id === selectedId);
-                                if (actual) {
-                                    playerHand.appendChild(actual);
-                                    sendMoveData(actual);
-                                    updateHandSpacing();
-                                    updateDropCount();
-                                    alert(`นำ ${actual.dataset.name} ขึ้นมือสำเร็จ!`);
+            queue.push({
+                name: 'Black Tears Husk Dragon',
+                description: "เลือกนำ Normal Order 1 ใบจากดรอปขึ้นมือ",
+                resolve: async (done) => {
+                    const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
+                        const sk = (c.dataset.skill || '').toLowerCase();
+                        return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
+                    });
+                    if (normalOrdersInDrop.length > 0) {
+                        openViewer("นำ Normal Order 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
+                            name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ''
+                        })));
+                        await new Promise(resolve => {
+                            const addOrderPick = (e) => {
+                                const picked = e.target.closest('.card');
+                                if (picked && picked.parentElement === viewerGrid) {
+                                    viewerGrid.removeEventListener('click', addOrderPick);
+                                    const selectedId = picked.dataset.originalId || picked.id;
+                                    const actual = normalOrdersInDrop.find(c => c.id === selectedId);
+                                    if (actual) {
+                                        playerHand.appendChild(actual);
+                                        sendMoveData(actual);
+                                        updateHandSpacing();
+                                        updateDropCount();
+                                        alert(`นำ ${actual.dataset.name} ขึ้นมือสำเร็จ!`);
+                                    }
+                                    zoneViewer.classList.add('hidden');
+                                    resolve();
                                 }
+                            };
+                            viewerGrid.addEventListener('click', addOrderPick);
+                            closeViewerBtn.onclick = () => {
                                 viewerGrid.removeEventListener('click', addOrderPick);
                                 zoneViewer.classList.add('hidden');
                                 resolve();
-                            }
-                        };
-                        viewerGrid.addEventListener('click', addOrderPick);
-                        closeViewerBtn.onclick = () => {
-                            viewerGrid.removeEventListener('click', addOrderPick);
-                            zoneViewer.classList.add('hidden');
-                            resolve();
-                        };
-                    });
-                } else {
-                    alert("ไม่พบ Normal Order ใน Drop Zone!");
+                            };
+                        });
+                    } else {
+                        alert("ไม่พบ Normal Order ใน Drop Zone!");
+                    }
+                    if (done) done();
                 }
-            }
+            });
+        }
         const vg = document.querySelector('.my-side .circle.vc .card');
         const vgName = (vg && vg.dataset.name) ? vg.dataset.name : "";
         const hasBlueDeathsterOrAvant = vgName.includes('Blue Deathster') || vgName.includes('Avantgarda');
 
         // --- Penetrate Aquas [AUTO]: Placed on RC ---
-
-        // --- Penetrate Aquas [AUTO]: Placed on RC ---
         if (name.includes('Penetrate Aquas') && isRC) {
-            // Mandatory [AUTO] (No cost)
-            alert("Penetrate Aquas: สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก");
-            sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
-            return true;
+            queue.push({
+                name: 'Penetrate Aquas',
+                description: "สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก",
+                resolve: async (done) => {
+                    alert("Penetrate Aquas: สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก");
+                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
+                    if (done) done();
+                }
+            });
         }
 
         // --- Accuse Makarite [AUTO]: Placed on RC from Hand ---
         if (name.includes('Accuse Makarite') && isRC && isFromHand) {
-            if (await vgConfirm("Accuse Makarite: [AUTO] เมื่อคอลจากมือ [SB1] ขังใบบนสุดของกองการ์ดคู่แข่ง?\n(ถ้านักโทษมี 2 ใบ+ จะได้พลัง +5000 จนจบเทิร์น)")) {
-                if (await paySoulBlast(1)) {
-                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'deck' });
-                    alert("ส่งคำสั่งให้คู่แข่ง นำใบบนสุดกองลงคุกแล้ว...");
-                    const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
-                    // Predict +1
-                    if (imprisonedCount + 1 >= 2) {
-                        card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
-                        card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
-                        card.dataset.turnEndBuffActive = "true";
-                        syncPowerDisplay(card);
-                        sendMoveData(card);
+            queue.push({
+                name: 'Accuse Makarite',
+                description: "[SB1] ขังใบบนสุดกองคู่แข่ง",
+                resolve: async (done) => {
+                    if (await vgConfirm("Accuse Makarite: [AUTO] เมื่อคอลจากมือ [SB1] ขังใบบนสุดของกองการ์ดคู่แข่ง?\n(ถ้านักโทษมี 2 ใบ+ จะได้พลัง +5000 จนจบเทิร์น)")) {
+                        if (await paySoulBlast(1)) {
+                            sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'deck' });
+                            alert("ส่งคำสั่งให้คู่แข่ง นำใบบนสุดกองลงคุกแล้ว...");
+                            const imprisonedCount = document.querySelectorAll('.my-side .order-zone .card.opponent-card').length;
+                            // Predict +1
+                            if (imprisonedCount + 1 >= 2) {
+                                card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
+                                card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
+                                card.dataset.turnEndBuffActive = "true";
+                                syncPowerDisplay(card);
+                                sendMoveData(card);
+                            }
+                        }
                     }
+                    if (done) done();
                 }
-            }
+            });
         }
 
         // --- Cuff Spring [AUTO]: Placed on RC ---
         if (name.includes('Cuff Spring') && isRC) {
-            // Mandatory [AUTO] (No cost)
-            alert("Cuff Spring: สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคุณได้จั่ว 1 ใบ)");
-            sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand', drawAfterMove: true });
-            return true;
+            queue.push({
+                name: 'Cuff Spring',
+                description: "สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคุณได้จั่ว 1 ใบ)",
+                resolve: async (done) => {
+                    alert("Cuff Spring: สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคุณได้จั่ว 1 ใบ)");
+                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand', drawAfterMove: true });
+                    if (done) done();
+                }
+            });
         }
 
         // --- Burning Horn Dragon [AUTO]: เมื่อวางบน (RC) [CB1] ดูท็อป 7 เพื่อหา 'Overlord' ---
@@ -5731,77 +5763,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Dragontree Wretch, Skull Chemdah [AUTO]: Placed on RC ---
         if (name.includes('Skull Chemdah') && isRC) {
-            if (await vgConfirm("Skull Chemdah: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum จากกอง 1 ใบนำขึ้นมือ?")) {
-                let costPaid = false;
-                if (payCounterBlast(1)) {
-                    if (await paySoulBlast(1)) {
-                        costPaid = true;
-                    } else {
-                        counterCharge(1); // refund
-                        alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
-                    }
-                }
-                if (costPaid) {
-                    alert("คลิกทำ Dragontree Marker! เลือกช่อง (RC) ที่ว่างเปล่าหรือช่อง (RC) ของคุณที่ยังไม่มี Dragontree marker");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolveChem => {
-                        const rcListener = (ev) => {
-                            const circle = ev.target.closest('.my-side .circle.rc');
-                            if (circle) {
-                                ev.stopPropagation();
-                                if (circle.dataset.dragontreeMarker === "true") {
-                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
-                                    return;
-                                }
-                                circle.dataset.dragontreeMarker = "true";
-                                circle.style.boxShadow = "inset 0 0 15px #f0f";
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', rcListener, true);
-                                alert("วาง Dragontree Marker สำเร็จ!");
-                                resolveChem();
+            queue.push({
+                name: 'Skull Chemdah',
+                description: "[CB1 & SB1] วาง Dragontree marker และค้นหา Masque of Hydragrum",
+                resolve: async (done) => {
+                    if (await vgConfirm("Skull Chemdah: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum จากกอง 1 ใบนำขึ้นมือ?")) {
+                        let costPaid = false;
+                        if (payCounterBlast(1)) {
+                            if (await paySoulBlast(1)) {
+                                costPaid = true;
+                            } else {
+                                counterCharge(1); // refund
+                                alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
                             }
-                        };
-                        document.addEventListener('click', rcListener, true);
-                    });
+                        }
+                        if (costPaid) {
+                            alert("คลิกทำ Dragontree Marker! เลือกช่อง (RC) ที่ว่างเปล่าหรือช่อง (RC) ของคุณที่ยังไม่มี Dragontree marker (กด Esc เพื่อยกเลิก)");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolveChem => {
+                                const rcListener = (ev) => {
+                                    const circle = ev.target.closest('.my-side .circle.rc');
+                                    if (circle) {
+                                        ev.stopPropagation();
+                                        if (circle.dataset.dragontreeMarker === "true") {
+                                            alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                            return;
+                                        }
+                                        circle.dataset.dragontreeMarker = "true";
+                                        circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                        
+                                        sendData({ type: 'placeMarker', zone: circle.dataset.zone, markerType: 'dragontree' });
+                                        updateAllStaticBonuses();
 
-                    const masquesOrder = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
-                    if (masquesOrder.length > 0) {
-                        openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masquesOrder);
-                        await new Promise(resSearch => {
-                            const addHydra = (e) => {
-                                const clicked = e.target.closest('.card');
-                                if (clicked && clicked.parentElement === viewerGrid) {
-                                    const cName = clicked.dataset.name;
-                                    const idx = deckPool.findIndex(c => c.name === cName);
-                                    if (idx !== -1) {
-                                        const pickedData = deckPool.splice(idx, 1)[0];
-                                        const newlyAdded = createCardElement(pickedData);
-                                        playerHand.appendChild(newlyAdded);
-                                        sendMoveData(newlyAdded);
-                                        if (typeof updateHandCount === 'function') updateHandCount();
-                                        updateHandSpacing();
-                                        alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        alert("วาง Dragontree Marker สำเร็จ!");
+                                        resolveChem();
                                     }
-                                    viewerGrid.removeEventListener('click', addHydra);
-                                    zoneViewer.classList.add('hidden');
-                                    resSearch();
-                                }
-                            };
-                            viewerGrid.addEventListener('click', addHydra);
-                            closeViewerBtn.onclick = () => {
-                                viewerGrid.removeEventListener('click', addHydra);
-                                zoneViewer.classList.add('hidden');
-                                resSearch();
-                            };
-                        });
-                    } else {
-                        alert("ไม่พบ Masque of Hydragrum ในกอง");
+                                };
+                                const escH = (e) => {
+                                    if (e.key === 'Escape') {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        resolveChem();
+                                    }
+                                };
+                                document.addEventListener('click', rcListener, true);
+                                document.addEventListener('keydown', escH);
+                            });
+
+                            const masquesOrder = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
+                            if (masquesOrder.length > 0) {
+                                openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masquesOrder);
+                                await new Promise(resSearch => {
+                                    const addHydra = (e) => {
+                                        const clicked = e.target.closest('.card');
+                                        if (clicked && clicked.parentElement === viewerGrid) {
+                                            const cName = clicked.dataset.name;
+                                            const idx = deckPool.findIndex(c => c.name === cName);
+                                            if (idx !== -1) {
+                                                const pickedData = deckPool.splice(idx, 1)[0];
+                                                const newlyAdded = createCardElement(pickedData);
+                                                playerHand.appendChild(newlyAdded);
+                                                sendMoveData(newlyAdded);
+                                                if (typeof updateHandCount === 'function') updateHandCount();
+                                                updateHandSpacing();
+                                                alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                            }
+                                            viewerGrid.removeEventListener('click', addHydra);
+                                            zoneViewer.classList.add('hidden');
+                                            resSearch();
+                                        }
+                                    };
+                                    viewerGrid.addEventListener('click', addHydra);
+                                    closeViewerBtn.onclick = () => {
+                                        viewerGrid.removeEventListener('click', addHydra);
+                                        zoneViewer.classList.add('hidden');
+                                        resSearch();
+                                    };
+                                });
+                            } else {
+                                alert("ไม่พบ Masque of Hydragrum ในกอง");
+                            }
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                            updateAllStaticBonuses();
+                        }
                     }
-                    deckPool.sort(() => 0.5 - Math.random());
-                    updateDeckCounter();
-                    updateAllStaticBonuses();
+                    if (done) done();
                 }
-            }
+            });
         }
 
         // --- Shadowcloak [AUTO]: Placed on RC from hand → search deck for Order ---
@@ -5866,109 +5919,168 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Rogue Headhunter [AUTO]: Placed on RC ---
         if (name.includes('Rogue Headhunter') && isRC) {
-            if (await vgConfirm("Rogue Headhunter: [AUTO] เมื่อวางบน (RC) ลดคอสต์การทำ Alchemagic ในเทิร์นนี้ลง [CB1]?")) {
-                window.alchemagicCbDiscountAmount = (window.alchemagicCbDiscountAmount || 0) + 1;
-                alert(`ลดคอสต์ Alchemagic ไป ${window.alchemagicCbDiscountAmount} CB แล้ว!`);
-            }
+            queue.push({
+                name: 'Rogue Headhunter',
+                description: "ลดคอสต์การทำ Alchemagic ในเทิร์นนี้ลง [CB1]",
+                resolve: async (done) => {
+                    if (await vgConfirm("Rogue Headhunter: [AUTO] เมื่อวางบน (RC) ลดคอสต์การทำ Alchemagic ในเทิร์นนี้ลง [CB1]?")) {
+                        window.alchemagicCbDiscountAmount = (window.alchemagicCbDiscountAmount || 0) + 1;
+                        alert("Headhunter: การใช้ Alchemagic ครั้งถัดไปของคุณจะลดการจ่าย CB ลง 1!");
+                    }
+                    if (done) done();
+                }
+            });
         }
 
         // --- Bist Aiyatvas [AUTO]: Placed on RC ---
         if (name.includes('Bist Aiyatvas') && isRC) {
-            if (await vgConfirm("Bist Aiyatvas: [AUTO] เมื่อวางบน (RC) [CB1] เลือกว่าง Dragontree marker บนช่อง (RC)?")) {
-                if (payCounterBlast(1)) {
-                    alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolveM => {
-                        const rcListener = (ev) => {
-                            const circle = ev.target.closest('.my-side .circle.rc');
-                            if (circle) {
-                                ev.stopPropagation();
-                                if (circle.dataset.dragontreeMarker === "true") {
-                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
-                                    return;
-                                }
-                                circle.dataset.dragontreeMarker = "true";
-                                circle.style.boxShadow = "inset 0 0 15px #f0f";
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', rcListener, true);
-                                alert("วาง Dragontree Marker สำเร็จ!");
-                                resolveM();
-                            }
-                        };
-                        document.addEventListener('click', rcListener, true);
-                    });
+            queue.push({
+                name: 'Bist Aiyatvas',
+                description: "[CB1] เลือกว่าง Dragontree marker บนช่อง (RC)",
+                resolve: async (done) => {
+                    const vg_Bist = document.querySelector('.my-side .circle.vc .card');
+                    const isZorgaOrDT = (vg_Bist?.dataset.name || "").includes("Zorga") || (vg_Bist?.dataset.name || "").includes("Dragontree");
+                    
+                    if (isZorgaOrDT && await vgConfirm("Bist Aiyatvas: [AUTO] เมื่อวางบน (RC) [CB1] เลือกว่าง Dragontree marker บนช่อง (RC)?")) {
+                        if (payCounterBlast(1)) {
+                            alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker (กด Esc เพื่อยกเลิก)");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolveM => {
+                                const rcListener = (ev) => {
+                                    const circle = ev.target.closest('.my-side .circle.rc');
+                                    if (circle) {
+                                        ev.stopPropagation();
+                                        if (circle.dataset.dragontreeMarker === "true") {
+                                            alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                            return;
+                                        }
+                                        circle.dataset.dragontreeMarker = "true";
+                                        circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                        
+                                        sendData({ type: 'placeMarker', zone: circle.dataset.zone, markerType: 'dragontree' });
+                                        updateAllStaticBonuses();
+
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        alert("วาง Dragontree Marker สำเร็จ!");
+                                        resolveM();
+                                    }
+                                };
+                                const escH = (e) => {
+                                    if (e.key === 'Escape') {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        resolveM();
+                                    }
+                                };
+                                document.addEventListener('click', rcListener, true);
+                                document.addEventListener('keydown', escH);
+                            });
+                        }
+                    } else if (!isZorgaOrDT) {
+                        alert("Bist Aiyatvas: ต้องมีแวนการ์ด Zorga หรือ Dragontree เพื่อใช้งานสกิลนี้!");
+                    }
+                    if (done) done();
                 }
-            }
+            });
         }
 
         // --- Dragontree Wretch, Depth Iweleth [AUTO]: Placed on RC ---
         if (name.includes('Depth Iweleth') && isRC) {
-            if (await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
-                let costPaid = false;
-                if (payCounterBlast(1)) {
-                    if (await paySoulBlast(1)) {
-                        costPaid = true;
-                    } else {
-                        counterCharge(1);
-                        alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
-                    }
-                }
-                if (costPaid) {
-                    alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolveM => {
-                        const rcListener = (ev) => {
-                            const circle = ev.target.closest('.my-side .circle.rc');
-                            if (circle) {
-                                ev.stopPropagation();
-                                if (circle.dataset.dragontreeMarker === "true") {
-                                    alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
-                                    return;
-                                }
-                                circle.dataset.dragontreeMarker = "true";
-                                circle.style.boxShadow = "inset 0 0 15px #f0f";
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', rcListener, true);
-                                alert("วาง Dragontree Marker สำเร็จ!");
-                                resolveM();
+            queue.push({
+                name: 'Depth Iweleth',
+                description: "[CB1 & SB1] วาง Dragontree marker และค้นหา Masque of Hydragrum",
+                resolve: async (done) => {
+                    const vg_Depth = document.querySelector('.my-side .circle.vc .card');
+                    const isProperVG = (vg_Depth?.dataset.name || "").includes("Dragontree") || (vg_Depth?.dataset.name || "").includes("Masque");
+                    
+                    if (isProperVG && await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
+                        let costPaid = false;
+                        if (payCounterBlast(1)) {
+                            if (await paySoulBlast(1)) {
+                                costPaid = true;
+                            } else {
+                                counterCharge(1);
+                                alert("CB จ่ายสำเร็จ แต่ไม่มี Soul พอจ่าย SB1! ยกเลิกความสามารถ");
                             }
-                        };
-                        document.addEventListener('click', rcListener, true);
-                    });
+                        }
+                        if (costPaid) {
+                            alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker (กด Esc เพื่อยกเลิก)");
+                            document.body.classList.add('targeting-mode');
+                            await new Promise(resolveM => {
+                                const rcListener = (ev) => {
+                                    const circle = ev.target.closest('.my-side .circle.rc');
+                                    if (circle) {
+                                        ev.stopPropagation();
+                                        if (circle.dataset.dragontreeMarker === "true") {
+                                            alert("ช่องนี้มี Dragontree Marker อยู่แล้ว!");
+                                            return;
+                                        }
+                                        circle.dataset.dragontreeMarker = "true";
+                                        circle.style.boxShadow = "inset 0 0 15px #f0f";
 
-                    const masques = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
-                    if (masques.length > 0) {
-                        openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masques);
-                        await new Promise(resS => {
-                            const addH = (e) => {
-                                const clicked = e.target.closest('.card');
-                                if (clicked && clicked.parentElement === viewerGrid) {
-                                    const cName = clicked.dataset.name;
-                                    const idx = deckPool.findIndex(c => c.name === cName);
-                                    if (idx !== -1) {
-                                        const pickedData = deckPool.splice(idx, 1)[0];
-                                        const newEl = createCardElement(pickedData);
-                                        playerHand.appendChild(newEl);
-                                        sendMoveData(newEl);
-                                        updateHandSpacing();
-                                        alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                        sendData({ type: 'placeMarker', zone: circle.dataset.zone, markerType: 'dragontree' });
+                                        updateAllStaticBonuses();
+
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        alert("วาง Dragontree Marker สำเร็จ!");
+                                        resolveM();
                                     }
-                                    viewerGrid.removeEventListener('click', addH);
-                                    zoneViewer.classList.add('hidden');
-                                    resS();
-                                }
-                            };
-                            viewerGrid.addEventListener('click', addH);
-                            closeViewerBtn.onclick = () => { viewerGrid.removeEventListener('click', addH); zoneViewer.classList.add('hidden'); resS(); };
-                        });
-                    } else {
-                        alert("ไม่พบ Masque of Hydragrum ในกอง");
+                                };
+                                const escH = (e) => {
+                                    if (e.key === 'Escape') {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', rcListener, true);
+                                        document.removeEventListener('keydown', escH);
+                                        resolveM();
+                                    }
+                                };
+                                document.addEventListener('click', rcListener, true);
+                                document.addEventListener('keydown', escH);
+                            });
+
+                            const masques = deckPool.filter(c => c.name.includes('Masque of Hydragrum'));
+                            if (masques.length > 0) {
+                                openViewer("นำ Masque of Hydragrum 1 ใบขึ้นมือ", masques);
+                                await new Promise(resS => {
+                                    const addH = (e) => {
+                                        const clicked = e.target.closest('.card');
+                                        if (clicked && clicked.parentElement === viewerGrid) {
+                                            const cName = clicked.dataset.name;
+                                            const idx = deckPool.findIndex(c => c.name === cName);
+                                            if (idx !== -1) {
+                                                const pickedData = deckPool.splice(idx, 1)[0];
+                                                const newEl = createCardElement(pickedData);
+                                                playerHand.appendChild(newEl);
+                                                sendMoveData(newEl);
+                                                updateHandSpacing();
+                                                alert(`นำ ${cName} ขึ้นมือแล้ว!`);
+                                            }
+                                            viewerGrid.removeEventListener('click', addH);
+                                            zoneViewer.classList.add('hidden');
+                                            resS();
+                                        }
+                                    };
+                                    viewerGrid.addEventListener('click', addH);
+                                    closeViewerBtn.onclick = () => { viewerGrid.removeEventListener('click', addH); zoneViewer.classList.add('hidden'); resS(); };
+                                });
+                            } else {
+                                alert("ไม่พบ Masque of Hydragrum ในกอง");
+                            }
+                            deckPool.sort(() => 0.5 - Math.random());
+                            updateDeckCounter();
+                            updateAllStaticBonuses();
+                        }
+                    } else if (!isProperVG) {
+                        alert("Depth Iweleth: ต้องมีแวนการ์ด Dragontree หรือ Masques เพื่อใช้งานสกิลนี้!");
                     }
-                    deckPool.sort(() => 0.5 - Math.random());
-                    updateDeckCounter();
-                    updateAllStaticBonuses();
+                    if (done) done();
                 }
-            }
+            });
         }
         // --- Desire Devil, Mucca [AUTO]: Removed ---
         if (name.includes('Jamil') && isRC) {
@@ -6245,6 +6357,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             }
+        }
+        if (queue.length > 0) {
+            await resolveAbilityQueue(queue);
         }
     }
 
@@ -7578,6 +7693,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.cloudedMiasmaBuff = false;
             window.alchemagicCbDiscountAmount = 0;
             window.currentlyResolvingAlchemagic = false;
+            updateAllStaticBonuses();
 
             // State expiration check
             if (currentTurn > finalRushTurnLimit && isFinalRush) {
@@ -9352,6 +9468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             target = standingUnits[0]; // Give to next attacker
         }
 
+
         if (target) {
             target.dataset.power = (parseInt(target.dataset.power) + 10000).toString();
             syncPowerDisplay(target);
@@ -9569,25 +9686,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const playOrderBtn = document.getElementById('play-order-btn');
-        if (playOrderBtn) {
+        const playBlitzBtn = document.getElementById('play-blitz-btn');
+        
+        if (playOrderBtn || playBlitzBtn) {
             const isOrder = isOrderCard(effectiveCard);
             const isBlitz = isBlitzOrder(effectiveCard);
             const inHand = effectiveCard.parentElement && effectiveCard.parentElement.dataset.zone === 'hand';
 
             // Normal orders can be played in main phase of my turn.
-            // Blitz orders can be played during guard phase of opponent's turn.
             const canPlayNormal = isOrder && !isBlitz && inHand && isMyTurn && phases[currentPhaseIndex] === 'main';
-            const canPlayBlitz = isBlitz && inHand && isWaitingForGuard;
+            // Blitz orders can be played during guard phase (when player is defender or AI is defender)
+            const canPlayBlitz = isBlitz && inHand && (isWaitingForGuard || isGuarding);
 
-            if (canPlayNormal || canPlayBlitz) {
-                playOrderBtn.classList.remove('hidden');
-                playOrderBtn.textContent = isBlitz ? "ใช้งาน Blitz Order (ป้องกัน)" : "ใช้งานการ์ดออร์เดอร์";
-                playOrderBtn.onclick = async () => {
-                    skillViewer.classList.add('hidden');
-                    await playOrder(effectiveCard);
-                };
-            } else {
-                playOrderBtn.classList.add('hidden');
+            if (playOrderBtn) {
+                if (canPlayNormal) {
+                    playOrderBtn.classList.remove('hidden');
+                    playOrderBtn.onclick = async () => {
+                        skillViewer.classList.add('hidden');
+                        await playOrder(effectiveCard);
+                    };
+                } else {
+                    playOrderBtn.classList.add('hidden');
+                }
+            }
+
+            if (playBlitzBtn) {
+                if (canPlayBlitz) {
+                    playBlitzBtn.classList.remove('hidden');
+                    playBlitzBtn.onclick = async () => {
+                        skillViewer.classList.add('hidden');
+                        await playOrder(effectiveCard);
+                    };
+                } else {
+                    playBlitzBtn.classList.add('hidden');
+                }
             }
         }
 
@@ -10020,10 +10152,32 @@ document.addEventListener('DOMContentLoaded', () => {
                             boundOrder: { name: alchCard.dataset.name, imageUrl: alchCard.querySelector('img')?.src || '' }
                         });
                         
-                        // Activate the bound card's skill too
-                        window.currentlyResolvingAlchemagic = true;
-                        await activateCardSkill(alchCard);
-                        window.currentlyResolvingAlchemagic = false;
+                        // Use Queue for Alchemagic resolution order
+                        const alchQueue = [
+                            {
+                                name: `${effectiveCard.dataset.name} (Played)`,
+                                description: `เปิดใช้งานเอฟเฟกต์ของการ์ดใบนี้`,
+                                resolve: async (done) => {
+                                    await activateCardSkill(effectiveCard);
+                                    if(done) done();
+                                }
+                            },
+                            {
+                                name: `${alchCard.dataset.name} (Bound)`,
+                                description: `เปิดใช้งานเอฟเฟกต์ของการ์ดใบนี้ (ผสานเวทย์)`,
+                                resolve: async (done) => {
+                                    window.currentlyResolvingAlchemagic = true;
+                                    await activateCardSkill(alchCard);
+                                    window.currentlyResolvingAlchemagic = false;
+                                    if(done) done();
+                                }
+                            }
+                        ];
+                        alert("Alchemagic: เลือกลำดับการแสดงผลของ Order สองใบนี้");
+                        await resolveAbilityQueue(alchQueue);
+                         
+                        // Skip the default activateCardSkill below since it was handled in queue
+                        window.skipDefaultSkillActivation = true;
                     }
                 }
             }
@@ -10033,7 +10187,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFree) effectiveCard.dataset.playOrderFree = "true";
 
         if (isAlchemagic) window.currentlyResolvingAlchemagic = true;
-        const skillResult = await activateCardSkill(effectiveCard);
+        
+        if (!window.skipDefaultSkillActivation) {
+            await activateCardSkill(effectiveCard);
+        }
+        window.skipDefaultSkillActivation = false;
+
         if (isAlchemagic) window.currentlyResolvingAlchemagic = false;
 
         if (isFree) effectiveCard.dataset.playOrderFree = "false";
@@ -10160,7 +10319,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const orderQueue = [];
         const orderName = effectiveCard ? (effectiveCard.dataset.name || effectiveCard.name || "") : "";
 
-        // Check for Roaming Prison Dragons in drop
         const dropZone = document.querySelector('.my-side .drop-zone');
         const roamingInDrop = Array.from(dropZone.querySelectorAll('.card')).filter(c =>
             c.dataset.name === 'Roaming Prison Dragon' && !c.classList.contains('opponent-card')
@@ -10214,6 +10372,90 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // --- Zorga [AUTO](VC): When you play a Normal Order ---
+        // Relaxed constraint: Includes base Zorga
+        const vgCard = document.querySelector('.my-side .circle.vc .card');
+        const vgName = vgCard ? (vgCard.dataset.name || "") : "";
+        if (vgName.includes('Zorga')) {
+            orderQueue.push({
+                name: 'Zorga Masques',
+                description: "[AUTO](VC) เมื่อเล่น Normal Order + Alchemagic → วาง Dragontree Marker และเก็บออเดอร์ชื่อเดียวกันจากดรอป",
+                resolve: async (done) => {
+                    // Part 1: Dragontree Marker
+                    alert("Zorga Masques: เลือกช่อง (RC) เพื่อวาง Dragontree Marker (กด Esc เพื่อยกเลิก)");
+                    document.body.classList.add('targeting-mode');
+                    await new Promise(resolveMarker => {
+                        const markerListener = (e) => {
+                            const circle = e.target.closest('.my-side .circle.rc');
+                            if (circle) {
+                                e.stopPropagation();
+                                circle.dataset.dragontreeMarker = "true";
+                                // UI indication
+                                circle.style.boxShadow = "inset 0 0 15px #f0f";
+                                
+                                sendData({ type: 'placeMarker', zone: circle.dataset.zone, markerType: 'dragontree' });
+                                updateAllStaticBonuses();
+                                
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', markerListener, true);
+                                document.removeEventListener('keydown', escH);
+                                alert("วาง Dragontree Marker สำเร็จ!");
+                                resolveMarker();
+                            }
+                        };
+                        const escH = (e) => {
+                            if (e.key === 'Escape') {
+                                document.body.classList.remove('targeting-mode');
+                                document.removeEventListener('click', markerListener, true);
+                                document.removeEventListener('keydown', escH);
+                                resolveMarker();
+                            }
+                        };
+                        document.addEventListener('click', markerListener, true);
+                        document.addEventListener('keydown', escH);
+                    });
+
+                    // Part 2: Return same name Order from Drop
+                    const sameNameInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => 
+                        c.dataset.name === orderName && !c.classList.contains('opponent-card')
+                    );
+                    if (sameNameInDrop.length > 0) {
+                        openViewer("Zorga Masques: เลือก Order ขึ้นมือ 1 ใบ", sameNameInDrop.map(c => ({
+                            name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ""
+                        })));
+                        await new Promise(resolvePick => {
+                            const pickOrder = (e) => {
+                                const picked = e.target.closest('.card');
+                                if (picked && picked.parentElement === viewerGrid) {
+                                    const selectedId = picked.dataset.originalId || picked.id;
+                                    const actual = sameNameInDrop.find(c => c.id === selectedId);
+                                    if (actual) {
+                                        playerHand.appendChild(actual);
+                                        sendMoveData(actual);
+                                        updateHandSpacing();
+                                        updateDropCount();
+                                        alert(`นำ ${actual.dataset.name} กลับขึ้นมือสำเร็จ!`);
+                                    }
+                                    viewerGrid.removeEventListener('click', pickOrder);
+                                    zoneViewer.classList.add('hidden');
+                                    resolvePick();
+                                }
+                            };
+                            viewerGrid.addEventListener('click', pickOrder);
+                            closeViewerBtn.onclick = () => {
+                                viewerGrid.removeEventListener('click', pickOrder);
+                                zoneViewer.classList.add('hidden');
+                                resolvePick();
+                            };
+                        });
+                    } else {
+                        alert("ไม่พบออเดอร์ชื่อเดียวกันใน Drop Zone!");
+                    }
+                    if (done) done();
+                }
+            });
+        }
+
         if (orderQueue.length === 0) return;
 
         // Use the existing resolveAbilityQueue for proper sequential resolution
@@ -10228,10 +10470,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropZone = document.querySelector('.my-side .drop-zone');
         alert("เลือก RC เพื่อวาง Roaming Prison Dragon");
         document.body.classList.add('targeting-mode');
-        if (await new Promise(resolve => {
+        await new Promise(resolve => {
             const rcHandler = (ev) => {
                 if (ev.type === 'targeting-timeout') {
                     document.removeEventListener('click', rcHandler, true);
+                    document.removeEventListener('keydown', escH);
                     document.removeEventListener('targeting-timeout', rcHandler);
                     resolve(false);
                     return;
@@ -10270,13 +10513,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateDropCount();
                     document.body.classList.remove('targeting-mode');
                     document.removeEventListener('click', rcHandler, true);
+                    document.removeEventListener('keydown', escH);
                     document.removeEventListener('targeting-timeout', rcHandler);
                     resolve(true);
                 }
             };
+            const escH = (e) => {
+                if (e.key === 'Escape') {
+                    document.body.classList.remove('targeting-mode');
+                    document.removeEventListener('click', rcHandler, true);
+                    document.removeEventListener('keydown', escH);
+                    resolve(false);
+                }
+            };
             document.addEventListener('click', rcHandler, true);
+            document.addEventListener('keydown', escH);
             document.addEventListener('targeting-timeout', rcHandler);
-        }) === false) return;
+        });
     }
 
     // --- Single Shadowcloak execution ---
@@ -10301,10 +10554,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (wantReturn) {
                         alert("คลิกเลือกเรียร์การ์ดที่ต้องการกลับมือ");
                         document.body.classList.add('targeting-mode');
-                        if (await new Promise(resolve => {
+                        await new Promise(resolve => {
                             const retHandler = (ev) => {
                                 if (ev.type === 'targeting-timeout') {
                                     document.removeEventListener('click', retHandler, true);
+                                    document.removeEventListener('keydown', escH);
                                     document.removeEventListener('targeting-timeout', retHandler);
                                     resolve(false);
                                     return;
@@ -10320,14 +10574,24 @@ document.addEventListener('DOMContentLoaded', () => {
                                     updateHandCount();
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', retHandler, true);
+                                    document.removeEventListener('keydown', escH);
                                     document.removeEventListener('targeting-timeout', retHandler);
                                     alert(`${target.dataset.name} กลับมือแล้ว!`);
                                     resolve(true);
                                 }
                             };
+                            const escH = (e) => {
+                                if (e.key === 'Escape') {
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', retHandler, true);
+                                    document.removeEventListener('keydown', escH);
+                                    resolve(false);
+                                }
+                            };
                             document.addEventListener('click', retHandler, true);
+                            document.addEventListener('keydown', escH);
                             document.addEventListener('targeting-timeout', retHandler);
-                        }) === false) return;
+                        });
                     }
                 }
             }
@@ -11861,8 +12125,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (target && !target.classList.contains('opponent-card')) {
                                     ev.stopPropagation();
                                     target.dataset.power = (parseInt(target.dataset.power) + buffAmount).toString();
-                                    target.dataset.turnEndBuffPower = (parseInt(target.dataset.turnEndBuffPower || "0") + buffAmount).toString();
-                                    target.dataset.turnEndBuffActive = "true";
+                                    // Use battle-length power bonus as requested
+                                    target.dataset.battleEndBuffPower = (parseInt(target.dataset.battleEndBuffPower || "0") + buffAmount).toString();
+                                    target.dataset.battleEndBuffActive = "true";
                                     syncPowerDisplay(target);
                                     sendMoveData(target);
                                     document.body.classList.remove('targeting-mode');
@@ -12522,6 +12787,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showGameOver('Win');
                 break;
             case 'declareAttack':
+                isWaitingForGuard = true;
                 showGuardDecision(data);
                 break;
             case 'guardDecision':
@@ -12861,6 +13127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (isAIMode && isMyTurn) {
                 sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
             } else {
+                isWaitingForGuard = false;
                 sendData({ type: 'guardDecision', decision: 'no-guard', attackData: attackData });
             }
             updateBattleHubUI();
@@ -12931,6 +13198,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBattleHubUI();
 
             btn.remove();
+            isWaitingForGuard = false;
+            
             if (isAIMode && !isMyTurn) {
                 window.playerGuardShield = totalShieldAdded;
                 window.playerGuardIsPG = isPGActivated;
@@ -13358,15 +13627,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                     if (cName.includes('fuujo')) {
                                         queue.push({
                                             name: 'Fuujo Soul-In Skill',
-                                            description: "เลือกยูนิทคู่แข่ง 1 ใบเพื่อรีไทร์",
+                                            description: "[Bind การ์ดนี้] เลือกยูนิทคู่แข่ง 1 ใบเพื่อรีไทร์",
                                             resolve: async (done) => {
-                                                const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
-                                                const valid = oppRGs.filter(c => !isCardResistant(c));
-                                                if (valid.length > 0) {
-                                                    // Mandatory [AUTO] (No cost)
-                                                    alert("Fuujo: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
-                                                    alert("คลิกเลือกเรียร์การ์ดคู่แข่งเพื่อรีไทร์");
-                                                    document.body.classList.add('targeting-mode');
+                                                const fuujoCard = soulPool.find(c => c.id === target.id);
+                                                if (fuujoCard) {
+                                                    // Bind this card as cost
+                                                    soulPool.splice(soulPool.indexOf(fuujoCard), 1);
+                                                    bindPool.push(fuujoCard);
+                                                    updateSoulUI();
+                                                    updateCountsUI();
+                                                    sendData({ type: 'syncBindCount', count: bindPool.length });
+                                                    alert("Fuujo: Bind ตัวเองเพื่อเปิดใช้งานสกิลรีไทร์");
+
+                                                    const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
+                                                    const valid = oppRGs.filter(c => !isCardResistant(c));
+                                                    if (valid.length > 0) {
+                                                        alert("Fuujo: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์ (คลิกที่การ์ดคู่แข่ง)");
+                                                        document.body.classList.add('targeting-mode');
                                                         await new Promise(res => {
                                                             const h = (ev) => {
                                                                 const t = ev.target.closest('.opponent-side .circle.rc .card');
@@ -13386,8 +13663,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                                                 }
                                                             };
                                                             document.addEventListener('click', h, true);
+                                                            // Provide a way to cancel if they misclick
+                                                            const cancelH = (e) => {
+                                                                if (e.key === 'Escape') {
+                                                                    document.body.classList.remove('targeting-mode');
+                                                                    document.removeEventListener('click', h, true);
+                                                                    document.removeEventListener('keydown', cancelH);
+                                                                    res();
+                                                                }
+                                                            };
+                                                            document.addEventListener('keydown', cancelH);
                                                         });
+                                                    } else {
+                                                        alert("ไม่พบเป้าหมายที่รีไทร์ได้!");
                                                     }
+                                                }
                                                 if (done) done();
                                             }
                                         });
@@ -13764,6 +14054,21 @@ document.addEventListener('DOMContentLoaded', () => {
         attacker.dataset.gabrestrict = "false";
         attacker.dataset.guardRestrictGrades = "";
         attacker.dataset.guardRestrictCount = "0";
+
+        // Reset battle power buffs (Blitz Orders)
+        resetBattleBuffs();
+    }
+
+    function resetBattleBuffs() {
+        document.querySelectorAll('.card').forEach(c => {
+            if (c.dataset.battleEndBuffPower && c.dataset.battleEndBuffPower !== "0") {
+                const bonus = parseInt(c.dataset.battleEndBuffPower);
+                c.dataset.power = (parseInt(c.dataset.power) - bonus).toString();
+                c.dataset.battleEndBuffPower = "0";
+                c.dataset.battleEndBuffActive = "false";
+                syncPowerDisplay(c);
+            }
+        });
     }
 
     function counterCharge(count) {
@@ -13833,6 +14138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error("Drop zone not found during retirement");
                         targetCard.remove();
                     }
+                    resetBattleBuffs();
                     sendData({ type: 'damageFinished' });
                 }, 500);
             } else {
