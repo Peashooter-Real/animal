@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    window.isForcedTargeting = false; // Flag for auto-select on timeout
+    window.bailoutPendingCount = 0;
+    window.freeBailout = 0;
     initPowerObserver();
 
 
@@ -392,8 +395,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (await paySoulBlast(1)) {
                 alert("จ่าย [SB1] สำเร็จ! กรุณาเลือกการ์ด 1 ใบจากในหน้าต่างนี้เพื่อประกันตัวกลับลง (RC)");
-                window.bailoutPendingCount = 1; 
+                window.bailoutPendingCount = (window.bailoutPendingCount || 0) + 1; 
+                window.freeBailout = 0;
                 document.body.classList.add('targeting-mode');
+                startTargetingTimer();
             }
         };
     }
@@ -405,10 +410,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (payCounterBlast(1)) {
-                window.freeBailout = (window.freeBailout || 0) + 1;
+                window.freeBailout = 0; // Reset free bailout (CB1 is for 2 cards)
                 alert("จ่าย [CB1] สำเร็จ! คุณสามารถประกันตัวการ์ดได้สูงสุด 2 ใบ (เลือกใบแรกจากในหน้าต่างนี้)");
-                window.bailoutPendingCount = 2;
+                window.bailoutPendingCount = (window.bailoutPendingCount || 0) + 2;
                 document.body.classList.add('targeting-mode');
+                startTargetingTimer();
             }
         };
     }
@@ -1580,36 +1586,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Kyanite Blue Ride Skill',
                 description: "เมื่อ Kyanite Blue ไรด์ทับ ค้นหา Prison จากกอง 1 ใบนำขึ้นมือ",
                 resolve: async (done) => {
-                    if (await vgConfirm("Kyanite Blue: ค้นหา Prison จากกองการ์ด 1 ใบเพื่อนำขึ้นมือ?")) {
-                        const prisonCards = deckPool.filter(c => c.name.toLowerCase().includes('prison'));
-                        if (prisonCards.length > 0) {
-                            openViewer("ค้นหา Prison 1 ใบเพื่อนำขึ้นมือ", prisonCards);
-                            await new Promise(resolve => {
-                                const pickHandler = (e) => {
-                                    const clicked = e.target.closest('.card');
-                                    if (clicked && clicked.parentElement === viewerGrid) {
-                                        const selectedName = clicked.dataset.name;
-                                        const idx = deckPool.findIndex(c => c.name === selectedName);
-                                        if (idx !== -1) {
-                                            const pickedData = deckPool.splice(idx, 1)[0];
-                                            const newlyAdded = createCardElement(pickedData);
-                                            playerHand.appendChild(newlyAdded);
-                                            sendMoveData(newlyAdded);
-                                            updateHandSpacing();
-                                            alert(`พบ Prison: ${pickedData.name}! นำขึ้นมือเรียบร้อยแล้ว!`);
-                                        }
-                                        deckPool.sort(() => 0.5 - Math.random());
-                                        updateDeckCounter();
-                                        viewerGrid.removeEventListener('click', pickHandler);
-                                        zoneViewer.classList.add('hidden');
-                                        resolve();
+                    // Mandatory [AUTO] (No cost)
+                    const prisonCards = deckPool.filter(c => c.name.toLowerCase().includes('prison'));
+                    if (prisonCards.length > 0) {
+                        openViewer("ค้นหา Prison 1 ใบเพื่อนำขึ้นมือ", prisonCards);
+                        await new Promise(resolve => {
+                            const pickHandler = (e) => {
+                                const clicked = e.target.closest('.card');
+                                if (clicked && clicked.parentElement === viewerGrid) {
+                                    const selectedName = clicked.dataset.name;
+                                    const idx = deckPool.findIndex(c => c.name === selectedName);
+                                    if (idx !== -1) {
+                                        const pickedData = deckPool.splice(idx, 1)[0];
+                                        const newlyAdded = createCardElement(pickedData);
+                                        playerHand.appendChild(newlyAdded);
+                                        sendMoveData(newlyAdded);
+                                        updateHandSpacing();
+                                        alert(`พบ Prison: ${pickedData.name}! นำขึ้นมือเรียบร้อยแล้ว!`);
                                     }
-                                };
-                                viewerGrid.addEventListener('click', pickHandler);
-                            });
-                        } else {
-                            alert("ไม่พบใบ Prison ในกองการ์ด!");
-                        }
+                                    deckPool.sort(() => 0.5 - Math.random());
+                                    updateDeckCounter();
+                                    viewerGrid.removeEventListener('click', pickHandler);
+                                    zoneViewer.classList.add('hidden');
+                                    resolve();
+                                }
+                            };
+                            viewerGrid.addEventListener('click', pickHandler);
+                        });
+                    } else {
+                        alert("ไม่พบใบ Prison ในกองการ์ด!");
                     }
                     if (done) done();
                 }
@@ -1621,10 +1626,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Risatt Pink Ride Skill',
                 description: "เมื่อ Risatt Pink ไรด์ทับ ให้คู่แข่งเลือกการ์ดในมือ 1 ใบนำไปขังในคุกของคุณ",
                 resolve: async (done) => {
-                    if (await vgConfirm("Risatt Pink: สั่งให้คู่แข่งเลือกการ์ดบนมือ 1 ใบเพื่อไปขังในคุก?")) {
-                        sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand' });
-                        alert("แจ้งเตือนไปที่คู่แข่งให้เลือกการ์ดบนมือแล้ว รอให้คู่แข่งเลือก...");
-                    }
+                    // Mandatory [AUTO] (No cost)
+                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand' });
+                    alert("Risatt Pink: สั่งให้คู่แข่งเลือกการ์ดบนมือ 1 ใบเพื่อไปขังในคุกเรียบร้อยแล้ว!");
                     if (done) done();
                 }
             });
@@ -5629,10 +5633,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Penetrate Aquas [AUTO]: Placed on RC ---
         if (name.includes('Penetrate Aquas') && isRC) {
-            if (await vgConfirm("Penetrate Aquas: [AUTO] เมื่อวางลง (RC) สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก?")) {
-                sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
-                alert("ส่งคำสั่งให้คู่แข่ง เลือกการ์ดดรอปโซนลงคุกแล้ว รอให้คู่แข่งทำรายการ...");
-            }
+            // Mandatory [AUTO] (No cost)
+            alert("Penetrate Aquas: สั่งคู่แข่งให้เลือกการ์ด 1 ใบจากดรอปโซน นำไปขังในคุก");
+            sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
+            return true;
         }
 
         // --- Accuse Makarite [AUTO]: Placed on RC from Hand ---
@@ -5656,10 +5660,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Cuff Spring [AUTO]: Placed on RC ---
         if (name.includes('Cuff Spring') && isRC) {
-            if (await vgConfirm("Cuff Spring: [AUTO] เมื่อลง (RC) สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคู่แข่งได้จั่ว 1 ใบ)?")) {
-                sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand', drawAfterMove: true });
-                alert("ส่งคำสั่งให้คู่แข่ง เลือกการ์ดบนมือลงคุกแล้ว รอให้คู่แข่งทำรายการ...");
-            }
+            // Mandatory [AUTO] (No cost)
+            alert("Cuff Spring: สั่งคู่แข่งเลือกการ์ดบนมือ 1 ใบลงคุก (หากสำเร็จคุณได้จั่ว 1 ใบ)");
+            sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'hand', drawAfterMove: true });
+            return true;
         }
 
         // --- Burning Horn Dragon [AUTO]: เมื่อวางบน (RC) [CB1] ดูท็อป 7 เพื่อหา 'Overlord' ---
@@ -10699,54 +10703,74 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Aurora Battle Princess, Grenade Marieda [AUTO] ---
         if (name.toLowerCase().includes('grenade marieda')) {
             const oppPrison = document.querySelectorAll('.opponent-side .order-zone .card.imprisoned-card');
-            if (oppPrison.length > 0 && await vgConfirm("Marieda: เลือกการ์ดในคุกคู่แข่งลงใต้กอง, คู่แข่งขัง G0 ในดรอป 1 ใบ, ใบนี้ +5000?")) {
-                alert("คลิกเลือกการ์ดในคุกคู่แข่ง 1 ใบเพื่อนำลงใต้กอง");
+            if (oppPrison.length > 0) {
+                // Mandatory [AUTO] (No cost)
+                alert("Marieda: เลือกการ์ดในคุกคู่แข่งลงใต้กอง, คู่แข่งขัง G0 ในดรอป 1 ใบ, ใบนี้ +5000");
                 document.body.classList.add('targeting-mode');
-                const moved = await new Promise(resolveSwap => {
-                    const swapListener = (e) => {
+                await new Promise(resolveMarieda => {
+                    const mariedaListener = (e) => {
                         const target = e.target.closest('.opponent-side .order-zone .card.imprisoned-card');
                         if (target) {
                             e.stopPropagation();
-                            target.remove(); // Put to bottom (just remove here for simplicity)
-                            sendData({ type: 'announce', msg: 'ขังในคุกถูกสลับลงใต้กองกองการ์ดแล้ว!' });
+                            target.classList.add('effect-retired');
+                            setTimeout(() => {
+                                target.remove();
+                                sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' });
+                                updateAllPrisonUI();
+                            }, 500);
+                            
+                            card.dataset.power = parseInt(card.dataset.power) + 5000;
+                            updateAllStaticBonuses();
                             document.body.classList.remove('targeting-mode');
-                            document.removeEventListener('click', swapListener, true);
-                            resolveSwap(true);
+                            document.removeEventListener('click', mariedaListener, true);
+                            resolveMarieda();
                         }
                     };
-                    document.addEventListener('click', swapListener, true);
+                    document.addEventListener('click', mariedaListener, true);
                 });
-
-                if (moved) {
-                    sendData({ type: 'forceImprison', min: 1, max: 1, fromZone: 'drop' }); // Simplified G0 check via prompt
-                    card.dataset.power = parseInt(card.dataset.power) + 5000;
-                    updateAllStaticBonuses();
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
-        // --- Aurora Battle Princess, Lifle Royar [ACT] ---
         if (name.toLowerCase().includes('lifle royar')) {
             if (await vgConfirm("Lifle Royar: [CB1] ขัง RC คู่แข่ง 1 ใบ และเรียกการ์ดใหม่จากบนสุดกอง 5 ใบ?")) {
                 if (payCounterBlast(1)) {
-                    // Imprison 1
-                    alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเข้าคุก");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resImp => {
-                        const impL = (e) => {
-                            const t = e.target.closest('.opponent-side .circle.rc .card');
-                            if (t) {
-                                e.stopPropagation();
-                                imprisonCard(t);
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', impL, true);
-                                resImp();
-                            }
-                        };
-                        document.addEventListener('click', impL, true);
-                    });
+                    // Imprison 1 (Optional target, but proceed regardless)
+                    const oppRGs = document.querySelectorAll('.opponent-side .circle.rc .card');
+                    if (oppRGs.length > 0) {
+                        alert("เลือกเรียร์การ์ดคู่แข่ง 1 ใบเข้าคุก");
+                        document.body.classList.add('targeting-mode');
+                        await new Promise(resImp => {
+                            const impL = (e) => {
+                                if (e.type === 'targeting-timeout') {
+                                    alert("หมดเวลา! สุ่มขังเรียร์การ์ดคู่แข่ง");
+                                    const available = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
+                                    if (available.length > 0) {
+                                        imprisonCard(available[Math.floor(Math.random() * available.length)]);
+                                    }
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', impL, true);
+                                    document.removeEventListener('targeting-timeout', impL);
+                                    resImp();
+                                    return;
+                                }
+                                const t = e.target.closest('.opponent-side .circle.rc .card');
+                                if (t) {
+                                    e.stopPropagation();
+                                    imprisonCard(t);
+                                    document.body.classList.remove('targeting-mode');
+                                    document.removeEventListener('click', impL, true);
+                                    document.removeEventListener('targeting-timeout', impL);
+                                    resImp();
+                                }
+                            };
+                            document.addEventListener('click', impL, true);
+                            document.addEventListener('targeting-timeout', impL);
+                        });
+                    } else {
+                        alert("Lifle Royar: คู่แข่งไม่มีเรียร์การ์ดให้ขัง จึงข้ามไปดู 5 ใบจากกองการ์ด");
+                    }
 
                     // Top 5 Call
                     const top5 = deckPool.slice(0, 5);
@@ -12214,6 +12238,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     await new Promise(resolve => {
                         const imprisonListener = (e) => {
                             if (e.type === 'targeting-timeout') {
+                                // AUTO-SELECT REMAINING
+                                while (impCount < data.max) {
+                                    const available = Array.from(document.querySelectorAll('#player-hand .card')).filter(c => !c.classList.contains('imprisoned-card'));
+                                    if (available.length === 0) break;
+                                    const randomCard = available[Math.floor(Math.random() * available.length)];
+                                    imprisonCard(randomCard);
+                                    impCount++;
+                                }
+                                alert("หมดเวลา! ระบบสุ่มการ์ดเข้าคุกให้คุณตามจำนวนที่เหลือ");
                                 document.removeEventListener('click', imprisonListener, true);
                                 document.removeEventListener('targeting-timeout', imprisonListener);
                                 resolve();
@@ -12255,31 +12288,57 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.body.classList.remove('targeting-mode');
                         sendData({ type: 'announce', msg: `ไม่มีการ์ดในดรอปโซนให้ขัง!` });
                     } else {
-                        const imprisonListener = (e) => {
-                            const target = e.target.closest('.my-side .drop-zone .card');
-                            if (target) {
-                                e.stopPropagation();
-                                const targetZone = document.querySelector('.opponent-side .order-zone');
-                                if (targetZone) {
-                                    targetZone.appendChild(target);
-                                    target.classList.add('imprisoned-card');
-                                    sendMoveData(target, 'order-zone');
-                                    sendData({ type: 'checkUpdateSeraph' });
-                                }
-                                
-                                impCount++;
-                                updateDropCount();
-                                updateAllStaticBonuses();
-                                updateAllPrisonUI();
-                                
-                                if (impCount >= data.max) {
-                                    document.body.classList.remove('targeting-mode');
+                        await new Promise(resolveDrop => {
+                            const imprisonListener = (e) => {
+                                if (e.type === 'targeting-timeout') {
+                                    // AUTO-SELECT REMAINING
+                                    while (impCount < data.max) {
+                                        const available = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => !c.classList.contains('imprisoned-card'));
+                                        if (available.length === 0) break;
+                                        const randomCard = available[Math.floor(Math.random() * available.length)];
+                                        const tZone = document.querySelector('.opponent-side .order-zone');
+                                        if (tZone) {
+                                            tZone.appendChild(randomCard);
+                                            randomCard.classList.add('imprisoned-card');
+                                            sendMoveData(randomCard, 'order-zone');
+                                        }
+                                        impCount++;
+                                    }
+                                    alert("หมดเวลา! ระบบสุ่มการ์ดจากดรอปเข้าคุกให้คุณ");
                                     document.removeEventListener('click', imprisonListener, true);
-                                    alert(`เลือกการ์ดขังลงคุกจากดรอปโซนครบแล้ว!`);
+                                    document.removeEventListener('targeting-timeout', imprisonListener);
+                                    resolveDrop();
+                                    return;
                                 }
-                            }
-                        };
-                        document.addEventListener('click', imprisonListener, true);
+                                const target = e.target.closest('.my-side .drop-zone .card');
+                                if (target) {
+                                    e.stopPropagation();
+                                    const targetZone = document.querySelector('.opponent-side .order-zone');
+                                    if (targetZone) {
+                                        targetZone.appendChild(target);
+                                        target.classList.add('imprisoned-card');
+                                        sendMoveData(target, 'order-zone');
+                                        sendData({ type: 'checkUpdateSeraph' });
+                                    }
+                                    
+                                    impCount++;
+                                    updateDropCount();
+                                    updateAllStaticBonuses();
+                                    updateAllPrisonUI();
+                                    
+                                    if (impCount >= data.max) {
+                                        document.body.classList.remove('targeting-mode');
+                                        document.removeEventListener('click', imprisonListener, true);
+                                        document.removeEventListener('targeting-timeout', imprisonListener);
+                                        stopTargetingTimer();
+                                        alert(`เลือกการ์ดขังลงคุกจากดรอปโซนครบแล้ว!`);
+                                        resolveDrop();
+                                    }
+                                }
+                            };
+                            document.addEventListener('click', imprisonListener, true);
+                            document.addEventListener('targeting-timeout', imprisonListener);
+                        });
                     }
                 } else if (data.fromZone === 'deck') {
                     if (deckPool.length > 0) {
@@ -12563,8 +12622,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function promptOpponentRetireRG(attackerName) {
         alert(`${attackerName}: เลือกเรียร์การ์ดของคุณ 1 ใบเพื่อรีไทร์ (Retire)`);
         document.body.classList.add('targeting-mode');
+        startTargetingTimer();
 
         const retireListener = (e) => {
+            if (e.type === 'targeting-timeout') {
+                const available = Array.from(document.querySelectorAll('.my-side .circle.rc .card')).filter(c => !isCardResistant(c));
+                if (available.length > 0) {
+                    const randomRG = available[Math.floor(Math.random() * available.length)];
+                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    if (dropZone) dropZone.appendChild(randomRG);
+                    sendMoveData(randomRG);
+                    alert("หมดเวลา! ระบบสุ่มรีไทร์เรียร์การ์ดของคุณ 1 ใบ");
+                }
+                document.body.classList.remove('targeting-mode');
+                document.removeEventListener('click', retireListener, true);
+                document.removeEventListener('targeting-timeout', retireListener);
+                stopTargetingTimer();
+                return;
+            }
             const targetRG = e.target.closest('.card:not(.opponent-card)');
             if (targetRG && targetRG.parentElement && targetRG.parentElement.classList.contains('rc')) {
                 // Check for Resist
@@ -12581,12 +12656,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateAllStaticBonuses();
                 document.body.classList.remove('targeting-mode');
                 document.removeEventListener('click', retireListener, true);
+                document.removeEventListener('targeting-timeout', retireListener);
+                stopTargetingTimer();
                 alert("รีไทร์สำเร็จ!");
             } else if (targetRG && targetRG.classList.contains('opponent-card')) {
                 alert("ต้องเลือกเรียร์การ์ดของตัวคุณเอง!");
             }
         };
         document.addEventListener('click', retireListener, true);
+        document.addEventListener('targeting-timeout', retireListener);
     }
 
     async function promptRetireColumn() {
@@ -13900,6 +13978,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Muna Trigger Check: Was it in prison? Is it going to RC?
+            const wasInPrisonMuna = card && (card.classList.contains('imprisoned-card') || (card.parentElement && card.parentElement.classList.contains('order-zone')));
+            const isGoingToRCMuna = mappedZone.startsWith('rc');
+
             // Handle Vanguard replacement or OverDress replacement clears circle first
             // Handle Vanguard replacement: ONLY clear if moving to VC AND IDs are different
             if (data.zone === 'vc') {
@@ -13940,6 +14022,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('imprisoned-card');
             }
             updateAllPrisonUI(); // Always update UI in case card moved into OR out of prison
+
+            // Trigger MY Muna if opponent unit returns to their RC from prison
+            if (wasInPrisonMuna && isGoingToRCMuna) {
+                document.querySelectorAll('.my-side .circle.rc .card').forEach(c => {
+                    if ((c.dataset.name || "").includes('Muna')) {
+                        triggerMunaSkill(c);
+                    }
+                });
+            }
 
             // Set OD / X-OD badges
             if (data.isOD || data.isXOD) {
@@ -14106,20 +14197,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendData({ type: 'checkUpdateSeraph' }); 
                     updateAllPrisonUI();
                     
-                    document.body.classList.remove('targeting-mode');
-                    document.removeEventListener('click', callListener, true);
-                    
                     if (window.bailoutPendingCount > 0) window.bailoutPendingCount--;
                     
-                    // If we have more cards to bailout (from CB1), reopen viewer if possible
-                    if (window.bailoutPendingCount > 0 || (window.freeBailout && window.freeBailout > 0)) {
-                         // Free bailout logic is handled differently, usually CB1 allows +1 more.
-                         // For now, let's just finish the current one.
+                    if (window.bailoutPendingCount <= 0) {
+                        document.body.classList.remove('targeting-mode');
+                        stopTargetingTimer();
+                        alert("ประกันตัวเสร็จสิ้น!");
+                    } else {
+                        // Still have more cards to bailout (e.g. from CB1)
+                        alert(`เหลือการ์ดที่ประกันตัวได้อีก ${window.bailoutPendingCount} ใบ!`);
+                        // Keep targeting-mode ON
+                        // Reopen Prison viewer automatically
+                        setTimeout(() => {
+                            viewPrisonZone('my');
+                        }, 500);
                     }
+
+                    document.removeEventListener('click', callListener, true);
                     resolve();
                 } else if (ev.target.closest('.close-btn') || ev.target.closest('#next-phase-btn')) {
+                     // Only allow manual cancel if it's NOT a forced bailout? 
+                     // Actually bailout is voluntary after paying cost, but user wants strictness.
                      document.body.classList.remove('targeting-mode');
                      document.removeEventListener('click', callListener, true);
+                     stopTargetingTimer();
+                     window.bailoutPendingCount = 0;
                      resolve();
                 }
             };
