@@ -1528,8 +1528,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     description: "จั่วการ์ด 1 ใบเพราะได้เริ่มคนที่สอง",
                     resolve: (done) => {
                         console.log("Starter Bonus triggered for Player 2");
-                        alert("Starter Bonus: คุณได้เริ่มเป็นคนที่สอง! จั่วการ์ด 1 ใบ");
-                        drawCard(true);
+                        if (!window.starterBonusGiven) {
+                            alert("Starter Bonus: คุณได้เริ่มเป็นคนที่สอง! จั่วการ์ด 1 ใบ");
+                            drawCard(true);
+                            window.starterBonusGiven = true;
+                        }
                         if (done) done();
                     }
                 });
@@ -1711,8 +1714,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Nehalem (G2) Ride Skill',
                 description: "เมื่อแวนการ์ดที่ติดชื่อ 'Overlord' ไรด์ทับ คอลการ์ดนี้ลง (RC)",
                 resolve: async (done) => {
-                    if (await vgConfirm("Nehalem: [AUTO] เมื่อ Overlord ไรด์ทับ คอล Nehalem ใบนี้ลง (RC)?")) {
-                        const nehalemIdx = soulPool.findIndex(c => c.dataset.name.toLowerCase().includes('nehalem'));
+                    // Mandatory [AUTO] (No cost)
+                    alert("Nehalem: เมื่อ Overlord ไรด์ทับ คอล Nehalem ใบนี้ลง (RC)");
+                    const nehalemIdx = soulPool.findIndex(c => c.dataset.name.toLowerCase().includes('nehalem'));
                         if (nehalemIdx !== -1) {
                             const nehalemCard = soulPool.splice(nehalemIdx, 1)[0];
                             alert("คลิกเลือกช่อง (RC) เพื่อคอล Nehalem");
@@ -1746,7 +1750,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             alert("ไม่พบ Nehalem ในโซล!");
                         }
-                    }
                     if (done) done();
                 }
             });
@@ -1762,14 +1765,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const greedonInRideDeck = rideDeckCards.some(c => (c.dataset.name || "").includes('Greedon'));
                     
                     if (greedonInRideDeck) {
-                        if (await vgConfirm("Gouman: Reveal 'Greedon' จาก Ride Deck และจั่วการ์ด 1 ใบ?")) {
-                            drawCard(true);
-                        }
+                        // Mandatory [AUTO] (No cost)
+                        alert("Gouman: Reveal 'Greedon' จาก Ride Deck และจั่วการ์ด 1 ใบ");
+                        drawCard(true);
                     } else {
-                        // Fallback
-                        if (await vgConfirm("Gouman: จั่วการ์ด 1 ใบ? (ถูก Boshokku ไรด์ทับ)")) {
-                            drawCard(true);
-                        }
+                        // Fallback mandatory
+                        alert("Gouman: จั่วการ์ด 1 ใบ (ถูก Boshokku ไรด์ทับ)");
+                        drawCard(true);
                     }
                     if (done) done();
                 }
@@ -1930,10 +1932,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'ความสามารถของ Rino (G1)',
                 description: "ค้นหา Trickstar 1 ใบจากกองการ์ดคอลลง (RC)",
                 resolve: async (done) => {
-                    const confirmSearch = await vgConfirm("Rino Skill: ค้นหา Trickstar 1 ใบจากกองคอลลง (RC)?");
-                    if (confirmSearch) {
-                        promptSearchAndCall('Trickstar');
-                    }
+                    // Mandatory [AUTO] (No cost)
+                    alert("Rino: ค้นหา Trickstar 1 ใบจากกองคอลลง (RC)");
+                    promptSearchAndCall('Trickstar');
                     done();
                 }
             });
@@ -1945,10 +1946,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'ความสามารถของ Reiyu (G2)',
                 description: "ดูการ์ด 7 ใบจากบนสุดของกอง เลือก <Prayer Dragon> 1 ใบขึ้นมือ",
                 resolve: async (done) => {
-                    const confirmLook = await vgConfirm("Reiyu Skill: ดูการ์ด 7 ใบ เลือก Prayer Dragon (Equip Dragon) ขึ้นมือ?");
-                    if (confirmLook) {
-                        promptLookTop7ForPrayerDragon();
-                    }
+                    // Mandatory [AUTO] (No cost)
+                    alert("Reiyu: ดูการ์ด 7 ใบ เลือก Prayer Dragon (Equip Dragon) ขึ้นมือ");
+                    promptLookTop7ForPrayerDragon();
                     done();
                 }
             });
@@ -1962,8 +1962,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve: async (done) => {
                     const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
                     if (hasSora) {
-                        if (await vgConfirm("Findanis: ค้นหาเกรด 1 Strategy ขึ้นมือ? (หากไม่เอา/ไม่เจอ จะได้คอลใบนี้ลง RC)")) {
-                            let found = false;
+                        // Mandatory [AUTO] (No cost)
+                        alert("Findanis: ค้นหาเกรด 1 Strategy ขึ้นมือ (หากไม่เอา/ไม่เจอ จะได้คอลใบนี้ลง RC)");
+                        let found = false;
                             const matches = deckPool.filter(c => c.name.includes("Strategy") && parseInt(c.grade) === 1);
                             if (matches.length > 0) {
                                 openViewer("Select 1 Grade 1 Strategy", matches);
@@ -1999,7 +2000,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             promptCallSpecificFromSoul(oldVanguard);
                         }
-                    }
                     done();
                 }
             });
@@ -2011,8 +2011,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve: async (done) => {
                     const hasSora = soulPool.some(c => c.dataset.name.includes('Sora Period'));
                     if (hasSora) {
-                        if (await vgConfirm("Stelvane: ค้นหาเกรด 2 Strategy ขึ้นมือ? (หากไม่เอา/ไม่เจอ จะได้คอลใบนี้ลง RC)")) {
-                            let found = false;
+                        // Mandatory [AUTO] (No cost)
+                        alert("Stelvane: ค้นหาเกรด 2 Strategy ขึ้นมือ (หากไม่เอา/ไม่เจอ จะได้คอลใบนี้ลง RC)");
+                        let found = false;
                             const matches = deckPool.filter(c => c.name.includes("Strategy") && parseInt(c.grade) === 2);
                             if (matches.length > 0) {
                                 openViewer("Select 1 Grade 2 Strategy", matches);
@@ -2048,7 +2049,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             promptCallSpecificFromSoul(oldVanguard);
                         }
-                    }
                     done();
                 }
             });
@@ -2229,11 +2229,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'ความสามารถของ Maron (G1)',
                 description: "ดูการ์ด 7 ใบจากบนสุดของกอง เลือกเกรด 2 ที่มีคำว่า 'Blaster' ขึ้นมือ หากไม่เจอคอล Wingul Brave จากโซล",
                 resolve: async (done) => {
-                    if (await vgConfirm("Maron Skill: ดูการ์ด 7 ใบ เลือกเกรด 2 'Blaster' ขึ้นมือ?")) {
-                        promptMajestyLookTop7(done);
-                    } else {
-                        if (done) done();
-                    }
+                    // Mandatory [AUTO] (No cost)
+                    alert("Maron: ดูการ์ด 7 ใบ เลือกเกรด 2 'Blaster' ขึ้นมือ");
+                    promptMajestyLookTop7(done);
+                    return; // done is handled inside prompt
                 }
             });
         }
@@ -2270,8 +2269,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    if (await vgConfirm("Magnolia Elder Skill: คอลการ์ด 1 ใบจากโซลลง (RC)?")) {
-                        viewerTitle.textContent = "เลือกการ์ด 1 ใบจากโซลเพื่อคอล";
+                    // Mandatory [AUTO] (No cost)
+                    alert("Magnolia Elder: คอลการ์ด 1 ใบจากโซลลง (RC)");
+                    viewerTitle.textContent = "เลือกการ์ด 1 ใบจากโซลเพื่อคอล";
                         viewerGrid.innerHTML = '';
                         zoneViewer.classList.remove('hidden');
 
@@ -2315,9 +2315,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             };
                             viewerGrid.appendChild(clone);
                         });
-                    } else {
-                        if (done) done();
-                    }
                 }
             });
         }
@@ -2746,8 +2743,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isDealingDamage = false;
     function dealDamage(checksLeft = 1) {
-        if (checksLeft <= 0 || isDealingDamage) return;
+        if (checksLeft <= 0 || isDealingDamage) {
+            if (checksLeft <= 0) isProcessingDamage = false; 
+            return;
+        }
         isDealingDamage = true;
+        isProcessingDamage = true;
         triggerShake();
 
         if (deckPool.length === 0) {
@@ -2830,6 +2831,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => dealDamage(checksLeft - 1), 800);
             } else {
                 isDealingDamage = false;
+                isProcessingDamage = false;
+                sendData({ type: 'damageFinished' });
             }
         }
     }
@@ -2990,9 +2993,8 @@ document.addEventListener('DOMContentLoaded', () => {
         attacker.dataset.guardRestrictCount = "0";
         document.body.classList.remove('guard-restricted');
 
-        // Ensure flags are reset AFTER battle resolution logic completes
         isWaitingForGuard = false;
-        currentAttackResolving = false;
+        if (isAIMode) currentAttackResolving = false;
         checkAllAttackersRested();
     }
 
@@ -3015,11 +3017,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 attackHitCheck(crit, isOpponentPG);
             }
-            // Reset resolve lock
-            setTimeout(() => {
-                currentAttackResolving = false;
-                isWaitingForGuard = false;
-            }, 500);
+            // Reset resolve lock - In Multiplayer, this is handled by damageFinished signal.
+            // In Solo/AI/Local, we need it immediately.
+            if (!isAIMode && (conn && conn.open)) {
+                 // For network, only reset isWaitingForGuard. 
+                 // currentAttackResolving stays true until damageFinished received.
+                 isWaitingForGuard = false; 
+            } else {
+                setTimeout(() => {
+                    currentAttackResolving = false;
+                    isWaitingForGuard = false;
+                    checkAllAttackersRested();
+                }, 500);
+            }
             return;
         }
 
@@ -5585,8 +5595,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Black Tears Husk Dragon [AUTO]: Placed on VC ---
         if (name.includes('Husk Dragon') && isVC) {
-            if (await vgConfirm("Black Tears Husk Dragon: [AUTO] เมื่อวางบน (VC) เลือกนำ Normal Order 1 ใบจากดรอปขึ้นมือ?")) {
-                const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
+            // Mandatory [AUTO] (No cost)
+            alert("Black Tears Husk Dragon: เลือกนำ Normal Order 1 ใบจากดรอปขึ้นมือ");
+            const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
                     const sk = (c.dataset.skill || '').toLowerCase();
                     return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
                 });
@@ -5623,8 +5634,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("ไม่พบ Normal Order ใน Drop Zone!");
                 }
             }
-        }
-
         const vg = document.querySelector('.my-side .circle.vc .card');
         const vgName = (vg && vg.dataset.name) ? vg.dataset.name : "";
         const hasBlueDeathsterOrAvant = vgName.includes('Blue Deathster') || vgName.includes('Avantgarda');
@@ -7623,7 +7632,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Auto advance to draw after 1 second
                 setTimeout(() => {
-                    if (currentPhaseIndex === 0 && isMyTurn) { // Still in stand and still my turn
+                    if (currentPhaseIndex === 0 && isMyTurn && !isProcessingDamage) { // Still in stand and still my turn
                         currentPhaseIndex++;
                         updatePhaseUI(true);
                     }
@@ -7637,7 +7646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Auto advance to ride after 1 second
                 setTimeout(() => {
-                    if (currentPhaseIndex === 1 && isMyTurn) { // Still in draw and still my turn
+                    if (currentPhaseIndex === 1 && isMyTurn && !isProcessingDamage) { // Still in draw and still my turn
                         currentPhaseIndex++;
                         updatePhaseUI(true);
                     }
@@ -8596,8 +8605,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     nextPhaseBtn.addEventListener('click', async () => {
-        if (document.body.classList.contains('targeting-mode')) {
-            alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
+        if (document.body.classList.contains('targeting-mode') || isProcessingDamage || currentAttackResolving) {
+            alert("กรุณารอให้การประมวลผลหรือเลือกเป้าหมายให้เสร็จก่อน!");
             return;
         }
         if (currentPhaseIndex < phases.length - 1) {
@@ -8607,8 +8616,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextTurnBtn.addEventListener('click', async () => {
-        if (document.body.classList.contains('targeting-mode')) {
-            alert("กรุณาเลือกเป้าหมายให้เสร็จก่อน!");
+        if (document.body.classList.contains('targeting-mode') || isProcessingDamage || currentAttackResolving) {
+            alert("กรุณารอให้การประมวลผลหรือเลือกเป้าหมายให้เสร็จก่อน!");
             return;
         }
 
@@ -9551,8 +9560,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMyCard && (isOnField || (inHand && hasHandAct) || (inDrop && hasDropAct)) && hasAct && isMyTurn && isMainPhase) {
                 activateBtn.classList.remove('hidden');
                 activateBtn.onclick = async () => {
-                    await activateCardSkill(effectiveCard);
                     skillViewer.classList.add('hidden');
+                    await activateCardSkill(effectiveCard);
                 };
             } else {
                 activateBtn.classList.add('hidden');
@@ -9574,8 +9583,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playOrderBtn.classList.remove('hidden');
                 playOrderBtn.textContent = isBlitz ? "ใช้งาน Blitz Order (ป้องกัน)" : "ใช้งานการ์ดออร์เดอร์";
                 playOrderBtn.onclick = async () => {
-                    await playOrder(effectiveCard);
                     skillViewer.classList.add('hidden');
+                    await playOrder(effectiveCard);
                 };
             } else {
                 playOrderBtn.classList.add('hidden');
@@ -9821,16 +9830,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- On-Place & Dresser Skills ---
         // Vils Vairina On-Place
         if (vairinaCard.dataset.name.includes('Vils Vairina')) {
-            if (await vgConfirm("Vils Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือกการ์ด X-overDress 1 ใบจากดรอบขึ้นมือ?")) {
-                promptAddFromDropToHand((c) => c.dataset.skill && c.dataset.skill.includes("X-overDress") && !c.dataset.name.includes("Vils Vairina"));
-            }
+            // Mandatory [AUTO] (No cost)
+            alert("Vils Vairina: เลือกการ์ด X-overDress 1 ใบจากดรอปขึ้นมือ");
+            promptAddFromDropToHand((c) => c.dataset.skill && c.dataset.skill.includes("X-overDress") && !c.dataset.name.includes("Vils Vairina"));
         }
 
         // Mirrors Vairina On-Place
         if (vairinaCard.dataset.name.includes('Mirrors Vairina')) {
-            if (await vgConfirm("Mirrors Vairina: [AUTO] เมื่อลงด้วย X-overDress เลือก 'Vairina' 2 ใบจากดรอบมาซ้อนใต้?")) {
-                promptDressMultipleFromDrop(vairinaCard, 2, (c) => c.dataset.name.includes("Vairina"));
-            }
+            // Mandatory [AUTO] (No cost)
+            alert("Mirrors Vairina: เลือก 'Vairina' 2 ใบจากดรอบมาซ้อนใต้");
+            promptDressMultipleFromDrop(vairinaCard, 2, (c) => c.dataset.name.includes("Vairina"));
         }
 
 
@@ -11923,8 +11932,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Masque of Hydragrum [Normal Order] ---
         if (name.includes('Masque of Hydragrum')) {
-            if (await vgConfirm("Masque of Hydragrum: ดู 5 ใบจากบนสุดกอง เลือก Dragontree/Masques 1 ใบขึ้นมือ?")) {
-                const top5 = deckPool.slice(0, 5);
+            // Mandatory once played (No cost)
+            alert("Masque of Hydragrum: ดู 5 ใบจากบนสุดกอง เลือก Dragontree/Masques 1 ใบขึ้นมือ");
+            const top5 = deckPool.slice(0, 5);
                 const targets = top5.filter(c => 
                     c.name.toLowerCase().includes('dragontree') || c.name.toLowerCase().includes('masques')
                 );
@@ -11957,7 +11967,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateDeckCounter();
                 }
                 return true;
-            } else return false;
         }
 
         // --- Mysterious Rain Spiritualist, Zorga [ACT](VC)[1/turn] ---
@@ -12152,7 +12161,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return true;
             } else return false;
         }
-
     }
 
     if (closeSkillBtn) {
@@ -12506,6 +12514,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Applying Next Turn: ${currentTurn}`);
                 await updatePhaseUI(true); // Broadcast back to confirm we entered the next turn
                 break;
+            case 'damageFinished':
+                isProcessingDamage = false;
+                currentAttackResolving = false;
+                break;
             case 'gameOver':
                 showGameOver('Win');
                 break;
@@ -12578,8 +12590,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 promptOpponentRetireRG(data.attackerName);
                 break;
             case 'announcePersona':
-                isOpponentPersonaRide = true;
-                alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
+                if (!isOpponentPersonaRide) {
+                    isOpponentPersonaRide = true;
+                    alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
+                }
                 updateAllStaticBonuses();
                 break;
             case 'forceRetire':
@@ -13037,8 +13051,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleGuardDecision(data) {
-        if (currentAttackResolving) return;
-
+        // Removed currentAttackResolving check as it's now set during the entire attack flow
         const decision = data.decision;
         const attackData = data.attackData;
         const statusText = document.getElementById('game-status-text');
@@ -13094,7 +13107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await sendData({ type: 'resolveAttack', attackData: { ...attackData, isHit: isHit } });
                 await handleEndOfBattle(attacker, attackData);
             }
-            currentAttackResolving = false;
+            if (isAIMode || !conn || !conn.open) currentAttackResolving = false;
             isWaitingForGuard = false;
             checkAllAttackersRested();
         } else if (decision === 'guard') {
@@ -13176,7 +13189,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 setTimeout(() => {
                     isWaitingForGuard = false;
-                    currentAttackResolving = false;
+                    // In Multiplayer, currentAttackResolving cleared by damageFinished
+                    if (isAIMode || !conn || !conn.open) currentAttackResolving = false;
                     checkAllAttackersRested();
                 }, 500);
             }
@@ -13305,8 +13319,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             resolve: async (done) => {
                                                 const myDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).map(node => node.dataset.name);
                                                 if (myDrop.length > 0) {
-                                                    if (await vgConfirm("Desire Devil, Xitto: [AUTO] เมื่อถูกนำเข้าโซลโดยแวนการ์ด เลือกการ์ด 1 ใบจากดรอปเพื่อนำเข้าโซล?")) {
-                                                        const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
+                                                    // Mandatory [AUTO] (No cost)
+                                                    alert("Desire Devil, Xitto: เลือกการ์ด 1 ใบจากดรอปเพื่อนำเข้าโซล");
+                                                    const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
                                                         const cardDataList = dropCards.map(c => ({ name: c.dataset.name, id: c.id }));
 
                                                         alert("เลือกการ์ดจาก drop zone เพื่อนำเข้าโซล");
@@ -13335,7 +13350,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                                             closeViewerBtn.onclick = () => { zoneViewer.classList.add('hidden'); resolveXitto(); };
                                                         });
                                                     }
-                                                }
                                                 if (done) done();
                                             }
                                         });
@@ -13349,9 +13363,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 const oppRGs = Array.from(document.querySelectorAll('.opponent-side .circle.rc .card'));
                                                 const valid = oppRGs.filter(c => !isCardResistant(c));
                                                 if (valid.length > 0) {
-                                                    if (await vgConfirm("Fuujo: [AUTO] เมื่อถูกนำเข้าโซลโดยแวนการ์ด Greedon เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์?")) {
-                                                        alert("เลือกเรียร์การ์ดคู่แข่งเพื่อรีไทร์");
-                                                        document.body.classList.add('targeting-mode');
+                                                    // Mandatory [AUTO] (No cost)
+                                                    alert("Fuujo: เลือกเรียร์การ์ดคู่แข่ง 1 ใบเพื่อรีไทร์");
+                                                    alert("คลิกเลือกเรียร์การ์ดคู่แข่งเพื่อรีไทร์");
+                                                    document.body.classList.add('targeting-mode');
                                                         await new Promise(res => {
                                                             const h = (ev) => {
                                                                 const t = ev.target.closest('.opponent-side .circle.rc .card');
@@ -13373,7 +13388,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                                             document.addEventListener('click', h, true);
                                                         });
                                                     }
-                                                }
                                                 if (done) done();
                                             }
                                         });
@@ -13770,6 +13784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attackData.isPG === true || attackData.isHit === false) {
             const reason = attackData.isPG ? "Perfect Guard" : "Power check";
             alert(`Attack blocked! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
+            sendData({ type: 'damageFinished' });
             return;
         }
 
@@ -13818,9 +13833,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error("Drop zone not found during retirement");
                         targetCard.remove();
                     }
+                    sendData({ type: 'damageFinished' });
                 }, 500);
             } else {
                 console.error("Target card not found for retirement settlement:", attackData);
+                sendData({ type: 'damageFinished' });
             }
         }
         window.currentIncomingAttack = null;
@@ -13997,12 +14014,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Announcement of opponent actions
-            if (mappedZone === 'vc') {
-                alert(`คู่แข่งทำการ ไรด์ (Ride): ${data.cardName}!`);
-            } else if (mappedZone.startsWith('rc') && !data.isImprisoned) {
-                alert(`คู่แข่งทำการ คอล (Call): ${data.cardName}!`);
-            } else if (mappedZone === 'order-zone' && !data.isImprisoned) {
-                alert(`คู่แข่งทำการ เล่นออเดอร์ (Play Order): ${data.cardName}!`);
+            if (card && card.parentElement !== targetZone) {
+                if (mappedZone === 'vc') {
+                    alert(`คู่แข่งทำการ ไรด์ (Ride): ${data.cardName}!`);
+                } else if (mappedZone.startsWith('rc') && !data.isImprisoned) {
+                    alert(`คู่แข่งทำการ คอล (Call): ${data.cardName}!`);
+                } else if (mappedZone === 'order-zone' && !data.isImprisoned) {
+                    alert(`คู่แข่งทำการ เล่นออเดอร์ (Play Order): ${data.cardName}!`);
+                }
             }
 
             if (card.parentElement !== targetZone) {
