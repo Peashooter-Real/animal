@@ -2838,7 +2838,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isAIMode) {
             target = document.querySelector(`.opponent-side .circle[data-zone="${currentAttackData.targetId}"] .card`);
         } else {
-            target = document.getElementById(currentAttackData.targetId) || document.querySelector(`.circle[data-zone="${currentAttackData.targetId}"] .card`);
+            // Target is always on the opponent's side for the attacker
+            target = document.getElementById('opp-' + currentAttackData.targetId) || 
+                     document.querySelector(`.opponent-side .circle[data-zone="${currentAttackData.targetId}"] .card`);
         }
 
         if (!attacker || !target) {
@@ -3986,7 +3988,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             alert("เลือกเรียร์การ์ด 1 ใบเพื่อรีไทร์ (คอสต์)");
                             document.body.classList.add('targeting-mode');
                             await new Promise(resolve => {
-                                const retH = (ev) => {
+                            const retH = (ev) => {
+                                    if (ev.type === 'targeting-timeout') {
+                                        document.removeEventListener('click', retH, true);
+                                        document.removeEventListener('targeting-timeout', retH);
+                                        resolve();
+                                        return;
+                                    }
                                     const tgt = ev.target.closest('.my-side .circle.rc .card');
                                     if (tgt && !tgt.classList.contains('opponent-card')) {
                                         ev.stopPropagation();
@@ -3998,10 +4006,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                         updateDropCount();
                                         document.body.classList.remove('targeting-mode');
                                         document.removeEventListener('click', retH, true);
+                                        document.removeEventListener('targeting-timeout', retH);
                                         resolve();
                                     }
                                 };
                                 document.addEventListener('click', retH, true);
+                                document.addEventListener('targeting-timeout', retH);
                             });
 
                             // Call Keel Severing to a RC with Dragontree marker
@@ -4077,6 +4087,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            currentAttackData = attackData;
             sendData({
                 type: 'declareAttack',
                 ...attackData
@@ -8576,6 +8587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetId: isVanguardTarget ? 'vc' : (window.aiCurrentAttackTarget || 'rc')
         };
 
+        currentAttackData = attackData;
         showGuardDecision(attackData);
     }
 
@@ -10567,6 +10579,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.classList.add('targeting-mode');
                     const rested = await new Promise(resolve => {
                         const restListener = (e) => {
+                            if (e.type === 'targeting-timeout') {
+                                document.removeEventListener('click', restListener, true);
+                                document.removeEventListener('targeting-timeout', restListener);
+                                resolve(false);
+                                return;
+                            }
                             const target = e.target.closest(`${sideClass} .circle .card`);
                             if (target && !target.classList.contains('rest')) {
                                 e.stopPropagation();
@@ -10574,10 +10592,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sendMoveData(target);
                                 document.body.classList.remove('targeting-mode');
                                 document.removeEventListener('click', restListener, true);
+                                document.removeEventListener('targeting-timeout', restListener);
                                 resolve(true);
                             }
                         };
                         document.addEventListener('click', restListener, true);
+                        document.addEventListener('targeting-timeout', restListener);
                     });
 
                     if (!rested) return false;
@@ -12191,7 +12211,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.body.classList.remove('targeting-mode');
                         sendData({ type: 'announce', msg: `ไม่มีการ์ดในมือให้ขัง!` });
                     } else {
+                    await new Promise(resolve => {
                         const imprisonListener = (e) => {
+                            if (e.type === 'targeting-timeout') {
+                                document.removeEventListener('click', imprisonListener, true);
+                                document.removeEventListener('targeting-timeout', imprisonListener);
+                                resolve();
+                                return;
+                            }
                             const target = e.target.closest('#player-hand .card');
                             if (target) {
                                 e.stopPropagation();
@@ -12202,6 +12229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (impCount >= data.max) {
                                     document.body.classList.remove('targeting-mode');
                                     document.removeEventListener('click', imprisonListener, true);
+                                    document.removeEventListener('targeting-timeout', imprisonListener);
                                     if (data.drawAfterMove) {
                                         drawCard(true);
                                         sendData({ type: 'announce', msg: `ลงคุกสำเร็จ คู่แข่งจั่วการ์ดชดเชย 1 ใบ!` });
@@ -12209,10 +12237,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                     } else {
                                         alert(`เลือกการ์ดขังครบแล้ว!`);
                                     }
+                                    resolve();
                                 }
                             }
                         };
                         document.addEventListener('click', imprisonListener, true);
+                        document.addEventListener('targeting-timeout', imprisonListener);
+                    });
                     }
                 } else if (data.fromZone === 'drop') {
                     alert(`แจ้งเตือน: คู่แข่งใช้งานสกิลขังการ์ด กรุณาเลือกการ์ดจาก 'ดรอปโซน' ${data.min} ใบเพื่อนำไปขังในคุกคู๋แข่ง`);
@@ -12950,7 +12981,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const attacker = document.getElementById(attackData.attackerId);
                 const target = isAIMode ? 
                     document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`) :
-                    (document.getElementById('opp-' + attackData.targetId) || document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
+                    (document.getElementById('opp-' + attackData.targetId) || 
+                     document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
                 
                 let isHit = false;
                 const attackerPower = parseInt(attackData.totalPower || "0");
@@ -13022,7 +13054,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Recalculate Rearguard attack hit immediately
                 const target = isAIMode ? 
                     document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`) :
-                    (document.getElementById('opp-' + attackData.targetId) || document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
+                    (document.getElementById('opp-' + attackData.targetId) || 
+                     document.querySelector(`.opponent-side .circle[data-zone="${attackData.targetId}"] .card`));
                 
                 let finalPower = attacker ? parseInt(attacker.dataset.power) + (attackData.boostPower || 0) : parseInt(attackData.totalPower || "0");
                 let isHit = false;
@@ -13666,10 +13699,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetId && targetId.startsWith('opp-')) {
             targetId = targetId.replace('opp-', '');
         }
-        const targetElement = document.getElementById(targetId);
+
+        // Fix: Use specific .my-side selector as opponent circles can have same data-zone values
+        let targetElement = document.getElementById(targetId);
+        if (!targetElement || !targetElement.classList.contains('circle')) {
+            targetElement = document.querySelector(`.my-side .circle[data-zone="${targetId}"]`);
+        }
+
         let targetCard = null;
         if (targetElement) {
-            targetCard = targetElement.classList.contains('circle') ? targetElement.querySelector('.card') : targetElement;
+            targetCard = targetElement.querySelector('.card:not(.opponent-card)') || targetElement.querySelector('.card');
+        } else {
+            // Fallback for cases where targetId might be the card ID itself
+            targetCard = document.getElementById(targetId);
         }
 
         if (attackData.isTargetVanguard) {
@@ -13686,14 +13728,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 setTimeout(() => {
                     const dropZone = document.querySelector('.my-side .drop-zone');
-                    dropZone.appendChild(targetCard);
-                    window.myRGRetiredThisTurn = true;
-                    targetCard.classList.remove('effect-retired', 'rest');
-                    targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-                    sendMoveData(targetCard);
-                    updateDropCount();
-                    updateAllStaticBonuses();
+                    if (dropZone) {
+                        dropZone.appendChild(targetCard);
+                        window.myRGRetiredThisTurn = true;
+                        targetCard.classList.remove('effect-retired', 'rest');
+                        targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                        sendMoveData(targetCard);
+                        updateDropCount();
+                        updateAllStaticBonuses();
+                    } else {
+                        console.error("Drop zone not found during retirement");
+                        targetCard.remove();
+                    }
                 }, 500);
+            } else {
+                console.error("Target card not found for retirement settlement:", attackData);
             }
         }
         window.currentIncomingAttack = null;
