@@ -1034,13 +1034,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const youthberkDeck = {
         rideDeck: [
-            { name: 'Youth Following in Footsteps, Youth', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: When this unit is rode upon, if you went second, draw a card.' },
-            { name: 'Determined to Break Away, Youth', grade: 1, power: 8000, shield: 5000, skill: '[CONT](VC/RC): During the battle this unit attacked, this unit gets [Power] +2000.\n[AUTO]: When this unit is rode upon by "Knight of Ardent Light, Youth", [COST][Soul-Blast 1], look at the top three cards of your deck, choose up to one card with "Youthberk" in its card name from among them and reveal it and put it into hand, or choose up to one grade 2 or less unit card from among them and call it to (RC), and put the rest on the bottom of the deck in any order.' },
-            { name: 'Knight of Ardent Light, Youth', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: When this unit is rode upon by a unit with the [RevolDress] ability, [COST][Counter-Blast 1], choose a grade 2 or greater card from your drop, and put it into hand.' },
-            { name: 'Youthberk "Skyfall Arms"', grade: 3, power: 13000, persona: true, skill: '[RevolDress]－[AUTO](VC): At the end of the battle this unit attacked, choose up to one card with "RevolForm" in its card name from your hand, ride it as [Stand], and it gets drive -2 until end of turn.\n[ACT](VC)[1/turn]: [COST][Discard a card from hand], look at the top three cards of your deck, choose up to one card with "RevolForm" in its card name from among them and reveal it and put it into your hand, or choose up to one grade 2 or less card from among them and call it to (RC), and put the rest on the bottom of your deck in any order.' }
+            { name: 'Youth Following in Footsteps, Youth', grade: 0, power: 6000, shield: 10000, skill: '[AUTO]: เมื่อถูกไรด์ทับ ถ้าคุณเริ่มเป็นคนที่สอง จั่วการ์ด 1 ใบ' },
+            { name: 'Determined to Break Away, Youth', grade: 1, power: 8000, shield: 5000, skill: '[CONT](VC/RC): ในแบตเทิลที่ยูนิทนี้โจมตี พลัง +2000\n[AUTO]: เมื่อถูกไรด์ทับโดย "Knight of Ardent Light, Youth" [COST][SB1] ดูการ์ด 3 ใบจากบนสุดของกอง เลือกการ์ดที่มีชื่อ "Youthberk" 1 ใบนำขึ้นมือ หรือเลือกยูนิทเกรด 2 หรือต่ำกว่า 1 ใบ คอลลง (RC) นำที่เหลือไว้ใต้กอง' },
+            { name: 'Knight of Ardent Light, Youth', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อถูกไรด์ทับโดยยูนิทที่มีความสามารถ [RevolDress] [COST][CB1] เลือกการ์ดเกรด 2 หรือสูงกว่า 1 ใบลงช่องดรอป 1 ใบนำขึ้นมือ' },
+            { name: 'Youthberk "Skyfall Arms"', grade: 3, power: 13000, persona: true, skill: '[RevolDress]－[AUTO](VC): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี เลือกการ์ดที่มีชื่อ "RevolForm" 1 ใบจากในมือ ไรด์ในสถานะ [Stand] และยูนิทนั้นไดร์ฟ -2 จนจบเทิร์น\n[ACT](VC)[1/turn]: [COST][ทิ้งการ์ด 1 ใบจากมือ] ดูการ์ด 3 ใบจากบนสุดของกอง เลือกการ์ดที่มีชื่อ "RevolForm" 1 ใบเปิดเผยแล้วนำขึ้นมือ หรือเลือกยูนิทเกรด 2 หรือต่ำกว่า 1 ใบ คอลลง (RC) นำที่เหลือไว้ใต้กอง' }
         ],
         mainDeck: [
-            ...Array(3).fill({ name: 'Youthberk "Skyfall Arms"', grade: 3, power: 13000, persona: true, skill: '[RevolDress]－[AUTO](VC): At the end of the battle this unit attacked, choose up to one card with "RevolForm" in its card name from your hand, ride it as [Stand], and it gets drive -2 until end of turn.\n[ACT](VC)[1/turn]: [COST][Discard a card from hand], look at the top three cards of your deck, choose up to one card with "RevolForm" in its card name from among them and reveal it and put it into your hand, or choose up to one grade 2 or less card from among them and call it to (RC), and put the rest on the bottom of your deck in any order.' }),
+            ...Array(3).fill({ name: 'Youthberk "Skyfall Arms"', grade: 3, power: 13000, persona: true, skill: '[RevolDress]－[AUTO](VC): เมื่อจบการต่อสู้ที่ยูนิทนี้โจมตี เลือกการ์ดที่มีชื่อ "RevolForm" 1 ใบจากในมือ ไรด์ในสถานะ [Stand] และยูนิทนั้นไดร์ฟ -2 จนจบเทิร์น\n[ACT](VC)[1/turn]: [COST][ทิ้งการ์ด 1 ใบจากมือ] ดูการ์ด 3 ใบจากบนสุดของกอง เลือกการ์ดที่มีชื่อ "RevolForm" 1 ใบเปิดเผยแล้วนำขึ้นมือ หรือเลือกยูนิทเกรด 2 หรือต่ำกว่า 1 ใบ คอลลง (RC) นำที่เหลือไว้ใต้กอง' }),
             ...Array(4).fill({ name: 'Youthberk "RevolForm: Tempest"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO](VC): เมื่อวางบน (VC) โดย [RevolDress], แถวหน้าทั้งหมดของคุณได้รับพลัง +5000 จนจบเทิร์น จากนั้น [CB1] เปิดการ์ด 2 ใบจากบนสุดของกอง เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้าใต้กอง, และนำการ์ดที่เปิดทั้งหมดขึ้นมือ\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Youthberk "RevolForm: Gust"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO]: เมื่อวางบน (VC) โดยความสามารถ [RevolDress] หากแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า [COST][ทิ้งมือ 1 ใบ] ยูนิทนี้ได้รับ [Power]+10000 และ [Drive]+1 จนจบเทิร์น\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Knight of Fracture, Schneizal', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 ที่มีชื่อ "Youthberk" 1 ใบขึ้นมือ สับกอง ยูนิทนี้พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตีแวนการ์ด หากแวนการ์ดของคุณถูกวางเทิร์นนี้โดยไรด์จาก G3 เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น' }),
@@ -6698,7 +6698,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof updateHandCount === 'function') updateHandCount();
         if (typeof updateDropCount === 'function') updateDropCount();
 
-        if (isWayward && isMyTurn && vgGrade >= 3 && soulPool.length > 0) {
+        // Condition: Grade 3 or riding from Grade 2 to Grade 3
+        const isRidingToG3 = vgGrade === 2 && phases[currentPhaseIndex] === 'ride';
+        if (isWayward && (vgGrade >= 3 || isRidingToG3) && soulPool.length > 0) {
             if (await vgConfirm("Wayward Therapy Angel: [AUTO] ถูกทิ้งจากมือ! [SB1] คอลลง แถวหลัง (RC)?")) {
                 if (await paySoulBlast(1)) {
                     // Remove from drop zone
@@ -10398,89 +10400,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Zorga [AUTO](VC): When you play a Normal Order ---
-        // Relaxed constraint: Includes base Zorga
-        const vgCard = document.querySelector('.my-side .circle.vc .card');
-        const vgName = vgCard ? (vgCard.dataset.name || "") : "";
-        if (vgName.includes('Zorga')) {
-            orderQueue.push({
-                name: 'Zorga Masques',
-                description: "[AUTO](VC) เมื่อเล่น Normal Order + Alchemagic → วาง Dragontree Marker และเก็บออเดอร์ชื่อเดียวกันจากดรอป",
-                resolve: async (done) => {
-                    // Part 1: Dragontree Marker
-                    alert("Zorga Masques: เลือกช่อง (RC) เพื่อวาง Dragontree Marker (กด Esc เพื่อยกเลิก)");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolveMarker => {
-                        const markerListener = (e) => {
-                            const circle = e.target.closest('.my-side .circle.rc');
-                            if (circle) {
-                                e.stopPropagation();
-                                circle.dataset.dragontreeMarker = "true";
-                                // UI indication
-                                circle.style.boxShadow = "inset 0 0 15px #f0f";
-                                
-                                sendData({ type: 'placeMarker', zone: circle.dataset.zone, markerType: 'dragontree' });
-                                updateAllStaticBonuses();
-                                
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', markerListener, true);
-                                document.removeEventListener('keydown', escH);
-                                alert("วาง Dragontree Marker สำเร็จ!");
-                                resolveMarker();
-                            }
-                        };
-                        const escH = (e) => {
-                            if (e.key === 'Escape') {
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', markerListener, true);
-                                document.removeEventListener('keydown', escH);
-                                resolveMarker();
-                            }
-                        };
-                        document.addEventListener('click', markerListener, true);
-                        document.addEventListener('keydown', escH);
-                    });
-
-                    // Part 2: Return same name Order from Drop
-                    const sameNameInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => 
-                        c.dataset.name === orderName && !c.classList.contains('opponent-card')
-                    );
-                    if (sameNameInDrop.length > 0) {
-                        openViewer("Zorga Masques: เลือก Order ขึ้นมือ 1 ใบ", sameNameInDrop.map(c => ({
-                            name: c.dataset.name, id: c.id, imageUrl: c.dataset.imageUrl || ""
-                        })));
-                        await new Promise(resolvePick => {
-                            const pickOrder = (e) => {
-                                const picked = e.target.closest('.card');
-                                if (picked && picked.parentElement === viewerGrid) {
-                                    const selectedId = picked.dataset.originalId || picked.id;
-                                    const actual = sameNameInDrop.find(c => c.id === selectedId);
-                                    if (actual) {
-                                        playerHand.appendChild(actual);
-                                        sendMoveData(actual);
-                                        updateHandSpacing();
-                                        updateDropCount();
-                                        alert(`นำ ${actual.dataset.name} กลับขึ้นมือสำเร็จ!`);
-                                    }
-                                    viewerGrid.removeEventListener('click', pickOrder);
-                                    zoneViewer.classList.add('hidden');
-                                    resolvePick();
-                                }
-                            };
-                            viewerGrid.addEventListener('click', pickOrder);
-                            closeViewerBtn.onclick = () => {
-                                viewerGrid.removeEventListener('click', pickOrder);
-                                zoneViewer.classList.add('hidden');
-                                resolvePick();
-                            };
-                        });
-                    } else {
-                        alert("ไม่พบออเดอร์ชื่อเดียวกันใน Drop Zone!");
-                    }
-                    if (done) done();
-                }
-            });
-        }
 
         if (orderQueue.length === 0) return;
 
@@ -11445,15 +11364,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                             actual.style.transform = 'none';
                                             sendMoveData(actual);
 
-                                            // Order Removed from Game (Exclude)
-                                            effectiveCard.remove();
-                                            sendMoveData(effectiveCard, 'remove');
+                                            // Move Masque Order to Soul
+                                            soulPool.push(effectiveCard);
+                                            sendMoveData(effectiveCard, 'soul');
+                                            updateSoulUI();
                                             updateDropCount();
 
                                             // Persona Ride Check
                                             const oppVG = document.querySelector('.opponent-side .circle.vc .card');
                                             const oppGrade = oppVG ? parseInt(oppVG.dataset.grade || "0") : 0;
-                                            if (oppGrade >= 3 && !hasRiddenThisTurn) {
+                                            if (oppGrade >= 3 && !personaRideActive) {
                                                 triggerPersonaRide();
                                             }
 
@@ -11764,32 +11684,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Youthberk "Skyfall Arms" (ACT) ---
-        if (name.includes('Skyfall Arms') && card.parentElement.classList.contains('vc')) {
+        if ((name.includes('Skyfall Arms') || name === 'Youthberk "Skyfall Arms"') && card.parentElement && card.parentElement.classList.contains('vc')) {
+            if (card.dataset.actUsed === "true") {
+                alert("ใช้ความสามารถ ACT ไปแล้วในเทิร์นนี้!");
+                return;
+            }
             if (await vgConfirm('Youthberk "Skyfall Arms": [ACT](VC) [ทิ้ง 1 ใบ] ดู 3 ใบจากบนสุดของกอง เลือก "RevolForm" เข้ามือ หรือ คอลเกรด 2 หรือต่ำกว่าลง (RC)?')) {
-                const handCards = Array.from(playerHand.querySelectorAll('.card'));
-                if (handCards.length === 0) {
-                    alert("ไม่มีการ์ดในมือเพื่อจ่ายคอสต์!");
-                } else {
-                    alert("เลือกการ์ด 1 ใบจากในมือเพื่อทิ้ง");
-                    document.body.classList.add('targeting-mode');
-                    await new Promise(resolveDiscard => {
-                        const discardListener = (e) => {
-                            const tgt = e.target.closest('.card');
-                            if (tgt && tgt.parentElement && tgt.parentElement.dataset.zone === 'hand') {
-                                e.stopPropagation();
-                                document.body.classList.remove('targeting-mode');
-                                document.removeEventListener('click', discardListener, true);
-
-                                const dropZone = document.querySelector('.my-side .drop-zone');
-                                dropZone.appendChild(tgt);
-                                sendMoveData(tgt);
-                                updateHandCount();
-                                updateDropCount();
-                                resolveDiscard();
-                            }
-                        };
-                        document.addEventListener('click', discardListener, true);
-                    });
+                if (await payDiscard(1)) {
 
                     if (deckPool.length < 3) { alert("การ์ดในกองไม่พอ!"); return; }
                     const top3 = deckPool.slice(0, 3);
@@ -14661,24 +14562,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isSelection = selectionKeywords.some(k => titleLower.includes(k));
                 
                 if (!isSelection && !document.body.classList.contains('targeting-mode')) {
-                    // --- Tap to Select for Movement from Viewer ---
+                    // Optimized for Mobile: Show skill modal on click if NOT selecting for a skill
+                    // We still allow "selectedCard" for movement, but we also show the modal
+                    const original = document.getElementById(node.dataset.originalId);
+                    const targetCard = original || node;
+                    
+                    e.stopPropagation();
+                    
                     if (isMyMyTurn()) {
-                        e.stopPropagation();
                         if (selectedCard) selectedCard.classList.remove('card-selected');
-                        
                         if (selectedCard === node) {
                             selectedCard = null;
                         } else {
                             selectedCard = node;
                             node.classList.add('card-selected');
                         }
-                        return;
                     }
 
-                    e.stopPropagation();
-                    const original = document.getElementById(node.dataset.originalId);
-                    if (original) openSkillViewer(original);
-                    else openSkillViewer(node);
+                    // On mobile, click is the primary way to interact. 
+                    // Show skill modal so user can click "Activate Skill" or "Play Order"
+                    openSkillViewer(targetCard);
                 }
             });
 
