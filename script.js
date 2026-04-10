@@ -4139,11 +4139,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!card || !zone) return false;
 
         const oldParent = card.parentElement;
-        const isFromHand = oldParent && oldParent.dataset.zone === 'hand';
+        const isFromHand = oldParent && (oldParent.dataset.zone === 'hand' || oldParent.classList.contains('hand-cards'));
         const isFromField = oldParent && oldParent.classList.contains('circle');
         const isFromVC = oldParent && oldParent.classList.contains('vc');
         const isFromGC = oldParent && (oldParent.dataset.zone === 'gc_player' || oldParent.id === 'shared-gc');
         const isHandZone = zone.dataset.zone === 'hand' || zone.id === 'player-hand' || zone.classList.contains('player-hand');
+
+        // Safety: Block drags from viewer or static zones if not in targeting mode
+        const isFromViewer = oldParent && (oldParent.id === 'viewer-grid' || oldParent.classList.contains('viewer-grid'));
+        const isFromStaticZone = oldParent && (oldParent.classList.contains('damage-zone') || oldParent.classList.contains('drop-zone') || oldParent.classList.contains('deck-zone') || oldParent.classList.contains('ride-deck-zone'));
+        
+        if ((isFromViewer || isFromStaticZone) && !document.body.classList.contains('targeting-mode')) {
+            alert("ไม่สามารถลากการ์ดจากโซนนี้ได้โดยตรง! โปรดใช้วิธีใช้งานสกิลหรือเงื่อนไขพิเศษตามกฎของเกม");
+            return false;
+        }
 
         // Allow returning cards from GC to Hand during defense
         if (isFromGC && isHandZone && isGuarding) {
@@ -4871,7 +4880,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Desire Devil, Saasyou [CONT](RC)/(GC) ---
-        if (name.includes('Saasyou') && (zone.startsWith('rc') || zone === 'gc')) {
+        if (name.includes('Saasyou') && (zone.startsWith('rc') || zone.startsWith('gc'))) {
             const desireDevils = soulPool.filter(c => (c.dataset.name || "").includes('Desire Devil')).length;
             if (desireDevils >= 3) {
                 if (card.dataset.saasyouBuffApplied !== "true") {
@@ -4879,14 +4888,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.dataset.shield = (parseInt(card.dataset.shield || "0") + 5000).toString();
                     card.dataset.saasyouBuffApplied = "true";
                     syncPowerDisplay(card);
-                    if(zone === 'gc') updateGCShield();
+                    if(zone.startsWith('gc')) updateGCShield();
                 }
             } else if (card.dataset.saasyouBuffApplied === "true") {
                 card.dataset.power = (parseInt(card.dataset.power || "0") - 5000).toString();
                 card.dataset.shield = (parseInt(card.dataset.shield || "0") - 5000).toString();
                 card.dataset.saasyouBuffApplied = "false";
                 syncPowerDisplay(card);
-                if(zone === 'gc') updateGCShield();
+                if(zone.startsWith('gc')) updateGCShield();
             }
         }
 
@@ -5004,15 +5013,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Jamil [CONT] Burst (+10000 Power / +5000 Shield) - Only for owner
         if (isFinalBurst && name.includes('Jamil')) {
             if (card.dataset.burstBonusApplied !== "true") {
-                card.dataset.power = parseInt(card.dataset.power) + 10000;
-                card.dataset.shield = parseInt(card.dataset.shield || "5000") + 5000;
+                card.dataset.power = (parseInt(card.dataset.power || "0") + 10000).toString();
+                card.dataset.shield = (parseInt(card.dataset.shield || "0") + 5000).toString();
                 card.dataset.burstBonusApplied = "true";
+                syncPowerDisplay(card);
+                if(zone && zone.startsWith('gc')) updateGCShield();
             }
         } else {
             if (card.dataset.burstBonusApplied === "true") {
-                card.dataset.power = parseInt(card.dataset.power) - 10000;
-                card.dataset.shield = parseInt(card.dataset.shield || "5000") - 5000;
+                card.dataset.power = (parseInt(card.dataset.power || "0") - 10000).toString();
+                card.dataset.shield = (parseInt(card.dataset.shield || "0") - 5000).toString();
                 card.dataset.burstBonusApplied = "false";
+                syncPowerDisplay(card);
+                if(zone && zone.startsWith('gc')) updateGCShield();
             }
         }
 
@@ -6401,7 +6414,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function updateAllStaticBonuses() {
-        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .my-side .guardian-circle .card:not(.opponent-card)').forEach(c => {
+        document.querySelectorAll('.my-side .circle .card:not(.opponent-card), .guardian-circle .card:not(.opponent-card)').forEach(c => {
             applyStaticBonuses(c);
             syncPowerDisplay(c); 
         });
@@ -12796,6 +12809,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isProcessingDamage = false;
                 currentAttackResolving = false;
                 resetBattleBuffs();
+                checkAllAttackersRested();
                 break;
             case 'gameOver':
                 showGameOver('Win');
@@ -13470,9 +13484,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 await handleEndOfBattle(attacker, attackData);
                 await sendData({ type: 'resolveAttack', attackData: { ...currentAttackData, isHit: isHit, isPG: data.isPG } });
 
-                isGuarding = false;
-                updateBattleHubUI();
-
                 setTimeout(() => {
                     isWaitingForGuard = false;
                     // In Multiplayer, currentAttackResolving cleared by damageFinished
@@ -13480,8 +13491,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     checkAllAttackersRested();
                 }, 500);
             }
-            currentAttackData = null;
         }
+        
+        // Final cleanup for all paths
+        isGuarding = false;
+        updateBattleHubUI();
+        currentAttackData = null;
     }
 
     async function handleEndOfBattle(attacker, attackData) {
@@ -14103,6 +14118,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const attackData = data.attackData;
         console.log("Receiving Remote Attack Settlement:", attackData);
 
+        const isTargetVanguard = attackData.isTargetVanguard;
+        let targetId = attackData.targetId;
+        if (targetId && targetId.startsWith('opp-')) {
+            targetId = targetId.replace('opp-', '');
+        }
+
+        // Safety: Only the player whose units are targeted should handle retirement/damage
+        const myTargetCircle = isTargetVanguard ? null : document.querySelector(`.my-side .circle[data-zone="${targetId}"], .my-side #circle-${targetId}, .my-side #${targetId}`);
+        
+        if (!isTargetVanguard && !myTargetCircle) {
+             console.log("Not my unit targeted. Resetting local locks only.");
+             currentAttackResolving = false;
+             isWaitingForGuard = false;
+             checkAllAttackersRested();
+             return;
+        }
+
         if (attackData.isPG === true || attackData.isHit === false) {
             const reason = attackData.isPG ? "Perfect Guard" : "Power check";
             alert(`Attack blocked! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
@@ -14111,26 +14143,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let targetId = attackData.targetId;
-        if (targetId && targetId.startsWith('opp-')) {
-            targetId = targetId.replace('opp-', '');
-        }
-
-        // Fix: Use specific .my-side selector as opponent circles can have same data-zone values
-        let targetElement = document.getElementById(targetId);
-        if (!targetElement || !targetElement.classList.contains('circle')) {
-            targetElement = document.querySelector(`.my-side .circle[data-zone="${targetId}"]`);
-        }
-
+        let targetElement = myTargetCircle;
         let targetCard = null;
         if (targetElement) {
             targetCard = targetElement.querySelector('.card:not(.opponent-card)') || targetElement.querySelector('.card');
-        } else {
+        } else if (!isTargetVanguard) {
             // Fallback for cases where targetId might be the card ID itself
             targetCard = document.getElementById(targetId);
         }
 
-        if (attackData.isTargetVanguard) {
+        if (isTargetVanguard) {
             let totalDmg = parseInt(attackData.totalCritical || "1");
             alert(`You are taking ${totalDmg} damage! (${attackData.attackerName} hit your Vanguard)`);
             dealDamage(totalDmg);
