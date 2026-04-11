@@ -5627,7 +5627,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve: async (done) => {
                     const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
                         const sk = (c.dataset.skill || '').toLowerCase();
-                        return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
+                        return sk.includes('[normal order]');
                     });
                     if (normalOrdersInDrop.length > 0) {
                         openViewer("นำ Normal Order 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
@@ -5953,9 +5953,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: "[CB1] เลือกว่าง Dragontree marker บนช่อง (RC)",
                 resolve: async (done) => {
                     const vg_Bist = document.querySelector('.my-side .circle.vc .card');
-                    const isZorgaOrDT = (vg_Bist?.dataset.name || "").includes("Zorga") || (vg_Bist?.dataset.name || "").includes("Dragontree");
-                    
-                    if (isZorgaOrDT && await vgConfirm("Bist Aiyatvas: [AUTO] เมื่อวางบน (RC) [CB1] เลือกว่าง Dragontree marker บนช่อง (RC)?")) {
+                    if (await vgConfirm("Bist Aiyatvas: [AUTO] เมื่อวางบน (RC) [CB1] เลือกว่าง Dragontree marker บนช่อง (RC)?")) {
                         if (payCounterBlast(1)) {
                             alert("เลือกช่อง (RC) ที่ยังไม่มี Dragontree Marker (กด Esc เพื่อยกเลิก)");
                             document.body.classList.add('targeting-mode');
@@ -5993,8 +5991,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 document.addEventListener('keydown', escH);
                             });
                         }
-                    } else if (!isZorgaOrDT) {
-                        alert("Bist Aiyatvas: ต้องมีแวนการ์ด Zorga หรือ Dragontree เพื่อใช้งานสกิลนี้!");
                     }
                     if (done) done();
                 }
@@ -6007,10 +6003,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Depth Iweleth',
                 description: "[CB1 & SB1] วาง Dragontree marker และค้นหา Masque of Hydragrum",
                 resolve: async (done) => {
-                    const vg_Depth = document.querySelector('.my-side .circle.vc .card');
-                    const isProperVG = (vg_Depth?.dataset.name || "").includes("Dragontree") || (vg_Depth?.dataset.name || "").includes("Masque");
-                    
-                    if (isProperVG && await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
+                    if (await vgConfirm("Depth Iweleth: [AUTO] เมื่อวางบน (RC) จ่าย [CB1 & SB1] เพื่อวาง Dragontree marker และค้นหา Masque of Hydragrum 1 ใบขึ้นมือ?")) {
                         let costPaid = false;
                         if (payCounterBlast(1)) {
                             if (await paySoulBlast(1)) {
@@ -9585,7 +9578,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Helper functions for Order detection ---
     function isOrderCard(card) {
         const skillLC = (card.dataset.skill || "").toLowerCase();
-        return skillLC.includes('order]');
+        // Stricter check: must contain the specific [Type Order] tag to avoid catching units that mention orders
+        return skillLC.includes('[normal order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]');
     }
 
     function isBlitzOrder(card) {
@@ -10123,7 +10117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dropCards = Array.from(document.querySelectorAll('.my-side .drop-zone .card'));
             const normalOrdersInDrop = dropCards.filter(c => {
                 const sk = (c.dataset.skill || '').toLowerCase();
-                const isNormalOrder = sk.includes('order') && !sk.includes('set order') && !sk.includes('blitz order');
+                const isNormalOrder = sk.includes('[normal order]');
                 const isDifferentName = c.dataset.name !== effectiveCard.dataset.name;
                 // Zorga Masques: can bind any normal order from drop
                 // Zorga (base): must bind a different-named normal order
@@ -11983,7 +11977,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Find order cards in hand
                 const ordersInHand = Array.from(playerHand.querySelectorAll('.card')).filter(c => {
                     const sk = (c.dataset.skill || '').toLowerCase();
-                    return sk.includes('order') && c !== effectiveCard;
+                    return isOrderCard(c) && c !== effectiveCard;
                 });
                 if (ordersInHand.length === 0) {
                     alert("ไม่มี Order บนมือเพื่อจ่ายคอสต์!");
@@ -11996,7 +11990,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const target = ev.target.closest('.card');
                         if (target && target.parentElement === playerHand && target !== effectiveCard) {
                             const sk = (target.dataset.skill || '').toLowerCase();
-                            if (sk.includes('order')) {
+                            if (isOrderCard(target)) {
                                 ev.stopPropagation();
                                 const dropZone = document.querySelector('.my-side .drop-zone');
                                 dropZone.appendChild(target);
@@ -12034,12 +12028,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const orderNames = new Set();
                     Array.from(document.querySelectorAll('.my-side .drop-zone .card')).forEach(c => {
                         const sk = (c.dataset.skill || '').toLowerCase();
-                        if (sk.includes('order')) orderNames.add(c.dataset.name);
+                        if (isOrderCard(c)) orderNames.add(c.dataset.name);
                     });
                     bindPool.forEach(c => {
-                        const sk = (c.dataset?.skill || c.skill || '').toLowerCase();
-                        const cName = c.dataset?.name || c.name || '';
-                        if (sk.includes('order')) orderNames.add(cName);
+                        if (isOrderCard(c)) orderNames.add(c.dataset?.name || c.name || '');
                     });
 
                     const buffAmount = orderNames.size * 5000;
@@ -12172,12 +12164,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else return false;
         }
 
-        // --- Dragontree Wretch, Bist Aiyatvas [ACT](RC)[1/turn] ---
         if (name.includes('Bist Aiyatvas') && isRC) {
-            const vgCard = document.querySelector('.my-side .circle.vc .card');
-            const vgGrade = vgCard ? parseInt(vgCard.dataset.grade || "0") : 0;
-            if (vgGrade >= 3) {
-                if (await vgConfirm("Bist Aiyatvas: [ACT](RC) [CB1 & SB1] นำนอร์มอลออเดอร์ 1 ใบจากดรอปขึ้นมือ?")) {
+            if (await vgConfirm("Bist Aiyatvas: [ACT](RC) [CB1 & SB1] นำนอร์มอลออเดอร์ 1 ใบจากดรอปขึ้นมือ?")) {
                     let costPaid = false;
                     if (payCounterBlast(1)) {
                         if (await paySoulBlast(1)) {
@@ -12190,7 +12178,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (costPaid) {
                         const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
                             const sk = (c.dataset.skill || '').toLowerCase();
-                            return sk.includes('order') && !sk.includes('blitz order') && !sk.includes('set order');
+                            // Fix: Use isOrderCard or specific tag check to avoid counting units
+                            return (sk.includes('[normal order]')) && !sk.includes('[blitz order]') && !sk.includes('[set order]');
                         });
                         if (normalOrdersInDrop.length > 0) {
                             openViewer("นำออเดอร์ 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
@@ -12228,7 +12217,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         return true;
                     } else return false;
                 } else return false;
-            }
         }
 
         // --- Teasing Spiritualist, Zorga Masques [ACT](VC)[1/turn] ---
