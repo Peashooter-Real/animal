@@ -2804,6 +2804,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 isDealingDamage = false; 
                 if (checksLeft > 1) {
                     setTimeout(() => dealDamage(checksLeft - 1), 800);
+                } else {
+                    isProcessingDamage = false;
+                    sendData({ type: 'damageFinished' });
                 }
                 return;
             }
@@ -4954,7 +4957,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Dragonic Overlord the End [CONT](VC): +5000 if "Dragonic Overlord" in soul ---
         if (name.toLowerCase().includes('the end') && zone === 'vc') {
-            const hasOverlordInSoul = soulPool.some(c => c.dataset.name === 'Dragonic Overlord');
+            const hasOverlordInSoul = soulPool.some(c => c.dataset.name && c.dataset.name.includes('Dragonic Overlord') && !c.dataset.name.includes('the End'));
             if (isMyTurn && hasOverlordInSoul) {
                 if (card.dataset.doteSoulBonusApplied !== "true") {
                     card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
@@ -9615,7 +9618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!skillViewer) return;
 
         const originalId = card.dataset.originalId;
-        const effectiveCard = originalId ? document.getElementById(originalId) : card;
+        const effectiveCard = (originalId ? document.getElementById(originalId) : null) || card;
 
         skillCardName.textContent = effectiveCard.dataset.name;
         skillCardGrade.textContent = `Grade: ${effectiveCard.dataset.grade}`;
@@ -11088,15 +11091,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vgCard && vgCard.dataset.name.includes('Overlord')) {
                 if (await vgConfirm("Nehalem: [ACT](RC) [SB1] แวนการ์ดและยูนิตนี้ พลัง +5000 จนจบเทิร์น?")) {
                     if (await paySoulBlast(1)) {
-                        card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
                         card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
                         card.dataset.turnEndBuffActive = "true";
+                        applyStaticBonuses(card);
                         syncPowerDisplay(card);
                         sendMoveData(card);
 
-                        vgCard.dataset.power = (parseInt(vgCard.dataset.power) + 5000).toString();
                         vgCard.dataset.turnEndBuffPower = (parseInt(vgCard.dataset.turnEndBuffPower || "0") + 5000).toString();
                         vgCard.dataset.turnEndBuffActive = "true";
+                        applyStaticBonuses(vgCard);
                         syncPowerDisplay(vgCard);
                         sendMoveData(vgCard);
 
@@ -14935,14 +14938,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function syncBindZone() {
-        const cardsData = bindPool.map(c => ({
-            name: c.dataset.name,
-            grade: c.dataset.grade,
-            power: c.dataset.power,
-            shield: c.dataset.shield,
-            skill: c.dataset.skill,
-            imageUrl: c.querySelector('img')?.src || ''
-        }));
+        const cardsData = bindPool.map(c => {
+            if (c instanceof HTMLElement) {
+                return {
+                    name: c.dataset.name,
+                    grade: c.dataset.grade,
+                    power: c.dataset.power,
+                    shield: c.dataset.shield,
+                    skill: c.dataset.skill,
+                    imageUrl: c.dataset.imageUrl || c.style.backgroundImage.slice(5, -2) || ''
+                };
+            } else {
+                return {
+                    name: c.name,
+                    grade: c.grade,
+                    power: c.power,
+                    shield: c.shield,
+                    skill: c.skill,
+                    imageUrl: c.imageUrl || ''
+                };
+            }
+        });
         sendData({ type: 'syncBindCount', count: bindPool.length, cards: cardsData });
     }
     async function checkRevolDressOnPlace(card) {
