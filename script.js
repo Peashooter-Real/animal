@@ -5882,7 +5882,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name.includes('Shadowcloak') && isRC && isFromHand) {
             if (await vgConfirm("Shadowcloak: [AUTO] เมื่อวางจากมือ → ค้นหา Order 1 ใบจากกอง เปิดเผย ถ้าดรอปไม่มีชื่อเดียวกันให้ทิ้ง สับกอง?")) {
                 const ordersInDeck = deckPool.filter(c => 
-                    c.skill && c.skill.toLowerCase().includes('order')
+                    c.skill && (
+                        c.skill.toLowerCase().includes('[normal order]') || 
+                        c.skill.toLowerCase().includes('[set order]') || 
+                        c.skill.toLowerCase().includes('[blitz order]') || 
+                        c.skill.toLowerCase().includes('[order]:')
+                    )
                 );
                 if (ordersInDeck.length > 0) {
                     openViewer("เลือก Order 1 ใบจากกอง", ordersInDeck);
@@ -7730,13 +7735,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Re-apply Final Rush bonuses if still active
             updateAllStaticBonuses();
 
-            pendingPowerIncrease = 0;
             pendingCriticalIncrease = 0;
             isWaitingForGuard = false;
             currentAttackResolving = false; // Reset resolution lock on turn start
             const statusText = document.getElementById('game-status-text');
             if (statusText) statusText.textContent = "Network Ready";
             document.body.classList.remove('targeting-mode');
+        } else {
+            // Even if not my turn, update static bonuses to clear "your turn" buffs
+            updateAllStaticBonuses();
         }
 
         // Update button interactivity
@@ -9227,9 +9234,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("AI Guarding against:", attackPower, "Critical:", attackCritical);
 
         const vg = document.querySelector('.opponent-side .circle.vc .card');
-        const vgPower = vg ? parseInt(vg.dataset.power) : 10000;
+        const targetId = attackData.targetId;
+        const targetNode = document.querySelector(`.opponent-side .circle[data-zone="${targetId}"] .card`) || document.getElementById('opp-' + targetId);
+        
+        const targetBasePower = targetNode ? parseInt(targetNode.dataset.power || "10000") : (vg ? parseInt(vg.dataset.power) : 10000);
+        const isVGTarget = targetId === 'vc';
 
-        let totalShieldNeeded = attackPower - vgPower;
+        let totalShieldNeeded = attackPower - targetBasePower;
         if (totalShieldNeeded < 0) totalShieldNeeded = 0;
         totalShieldNeeded += 5000;
 
@@ -9586,9 +9597,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Helper functions for Order detection ---
     function isOrderCard(card) {
+        if (!card) return false;
         const skillLC = (card.dataset.skill || "").toLowerCase();
         // Stricter check: must contain the specific [Type Order] tag to avoid catching units that mention orders
-        return skillLC.includes('[normal order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]') || skillLC.includes('[order]');
+        return skillLC.includes('[normal order]') || 
+               skillLC.includes('[set order]') || 
+               skillLC.includes('[blitz order]') || 
+               skillLC.includes('[order]:');
     }
 
     function isBlitzOrder(card) {
@@ -11384,7 +11399,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             }
 
                                             hasRiddenThisTurn = true;
+                                            applyStaticBonuses(actual);
                                             handleRideAbilities(actual);
+                                            updateAllStaticBonuses();
                                             updatePhaseUI(true);
                                             alert("Masque Ride สำเร็จ!");
                                             resolveRide();
@@ -11969,7 +11986,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (await vgConfirm("Clouded Miasma: [CB1] เลือกการ์ดเกรด 3 หรือต่ำกว่าจากดรอปโซน คอลลง (RC)?\n(Alchemagic: แวนการ์ดให้แถวหน้า +5000)")) {
                 if (payCounterBlast(1)) {
                     await promptCallFromDrop(1, (c) => {
-                        return parseInt(c.dataset.grade) <= 3 && !c.dataset.skill?.toLowerCase().includes('order');
+                        const s = (c.dataset.skill || "").toLowerCase();
+                        const isOrder = s.includes('[normal order]') || s.includes('[set order]') || s.includes('[blitz order]') || s.includes('[order]:');
+                        return parseInt(c.dataset.grade) <= 3 && !isOrder;
                     }, 0, () => {
                         // If part of Alchemagic, grant front row +5000
                         if (window.alchemagicUsedThisTurn) {
@@ -12299,7 +12318,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                             zoneViewer.classList.add('hidden');
 
                                             const skillTxt = (actual.dataset.skill || '').toLowerCase();
-                                            const isOrder = skillTxt.includes('order');
+                                            const isOrder = skillTxt.includes('[normal order]') || 
+                                                            skillTxt.includes('[set order]') || 
+                                                            skillTxt.includes('[blitz order]') || 
+                                                            skillTxt.includes('[order]:');
 
                                             if (isOrder) {
                                                 // Normal order → hand
@@ -14029,7 +14051,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Safety: Only the player whose units are targeted should handle retirement/damage
         const myTargetCircle = isTargetVanguard ? null : document.querySelector(`.my-side .circle[data-zone="${targetId}"], .my-side #circle-${targetId}, .my-side #${targetId}`);
         
-        if (!isTargetVanguard && !myTargetCircle) {
+        if (!isTargetVanguard && !myTargetCircle && !isAIMode) {
              console.log("Not my unit targeted. Resetting local locks only.");
              currentAttackResolving = false;
              isWaitingForGuard = false;
@@ -14039,45 +14061,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (attackData.isPG === true || attackData.isHit === false) {
             const reason = attackData.isPG ? "Perfect Guard" : "Power check";
-            alert(`Attack blocked! (${reason}) Opponent's ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit your ${attackData.targetName}.`);
+            alert(`Attack blocked! (${reason}) ${attackData.attackerName} (Power: ${attackData.totalPower}) did not hit ${attackData.targetName}.`);
             resetBattleBuffs();
             sendData({ type: 'damageFinished' });
             return;
         }
 
+        // Handle Retirement (Multiplayer + AI fallback)
         let targetElement = myTargetCircle;
+        if (!targetElement && isAIMode && !isTargetVanguard) {
+            targetElement = document.querySelector(`.opponent-side .circle[data-zone="${targetId}"]`);
+        }
+
         let targetCard = null;
         if (targetElement) {
             targetCard = targetElement.querySelector('.card:not(.opponent-card)') || targetElement.querySelector('.card');
         } else if (!isTargetVanguard) {
-            // Fallback for cases where targetId might be the card ID itself
-            targetCard = document.getElementById(targetId);
+            targetCard = document.getElementById(targetId) || document.getElementById('opp-' + targetId);
         }
 
         if (isTargetVanguard) {
             let totalDmg = parseInt(attackData.totalCritical || "1");
-            alert(`You are taking ${totalDmg} damage! (${attackData.attackerName} hit your Vanguard)`);
+            alert(`Vanguard hit! Taking ${totalDmg} damage.`);
             dealDamage(totalDmg);
         } else {
             if (targetCard) {
-                alert(`Your ${attackData.targetName} was retired!`);
+                alert(`${attackData.targetName} was retired!`);
                 triggerShake();
-
-                // Retired animation before moving to drop
                 targetCard.classList.add('effect-retired');
 
                 setTimeout(() => {
-                    const dropZone = document.querySelector('.my-side .drop-zone');
+                    const sideClass = targetCard.closest('.opponent-side') ? '.opponent-side' : '.my-side';
+                    const dropZone = document.querySelector(`${sideClass} .drop-zone`);
                     if (dropZone) {
                         dropZone.appendChild(targetCard);
-                        window.myRGRetiredThisTurn = true;
+                        if (sideClass === '.my-side') window.myRGRetiredThisTurn = true;
                         targetCard.classList.remove('effect-retired', 'rest');
                         targetCard.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
                         sendMoveData(targetCard);
                         updateDropCount();
                         updateAllStaticBonuses();
                     } else {
-                        console.error("Drop zone not found during retirement");
                         targetCard.remove();
                     }
                     resetBattleBuffs();
