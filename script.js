@@ -2520,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateHandCount();
         });
 
-        card.addEventListener('click', (e) => {
+        card.addEventListener('click', async (e) => {
             const currentTime = new Date().getTime();
             const tapGap = currentTime - lastClickTime;
 
@@ -2639,9 +2639,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     if (card !== attackingCard) {
-                        performAttack(attackingCard, card);
-                        attackingCard.classList.remove('attacking-glow');
-                        attackingCard = null;
+                        await performAttack(attackingCard, card);
+                        if (attackingCard) {
+                            attackingCard.classList.remove('attacking-glow');
+                            attackingCard = null;
+                        }
                     }
                 }
                 return;
@@ -4655,12 +4657,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const vgCard2 = document.querySelector('.my-side .circle.vc .card');
             const vgName = vgCard2 ? (vgCard2.dataset.name || '') : '';
             if (vgName.includes('Zorga Masques')) {
-                card.dataset.skillBonus_ZorgaMasquesPower = "10000";
-            } else {
-                delete card.dataset.skillBonus_ZorgaMasquesPower;
+                if (card.dataset.zorgaMasquePowerApplied !== "true") {
+                    card.dataset.power = (parseInt(card.dataset.power || "0") + 10000).toString();
+                    card.dataset.zorgaMasquePowerApplied = "true";
+                }
+            } else if (card.dataset.zorgaMasquePowerApplied === "true") {
+                card.dataset.power = (parseInt(card.dataset.power || "0") - 10000).toString();
+                card.dataset.zorgaMasquePowerApplied = "false";
             }
-        } else {
-            delete card.dataset.skillBonus_ZorgaMasquesPower;
+        } else if (card.dataset.zorgaMasquePowerApplied === "true") {
+            card.dataset.power = (parseInt(card.dataset.power || "0") - 10000).toString();
+            card.dataset.zorgaMasquePowerApplied = "false";
         }
 
         // --- Clouded Miasma Alchemagic Buff [CONT](VC): front row +5000 ---
@@ -5627,7 +5634,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve: async (done) => {
                     const normalOrdersInDrop = Array.from(document.querySelectorAll('.my-side .drop-zone .card')).filter(c => {
                         const sk = (c.dataset.skill || '').toLowerCase();
-                        return sk.includes('[normal order]');
+                        return isOrderCard(c);
                     });
                     if (normalOrdersInDrop.length > 0) {
                         openViewer("นำ Normal Order 1 ใบจากดรอปขึ้นมือ", normalOrdersInDrop.map(c => ({
@@ -8082,7 +8089,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // I'll stick to the createCardElement style for consistency.
 
         // --- NEW: Add listeners for Attacking and Skill Viewing in AI Mode ---
-        div.addEventListener('click', (e) => {
+        div.addEventListener('click', async (e) => {
             const currentTime = new Date().getTime();
             const tapGap = currentTime - (div.lastClickTime || 0);
             div.lastClickTime = currentTime;
@@ -8096,9 +8103,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Attacking Logic
             if (isMyTurn && phases[currentPhaseIndex] === 'battle' && attackingCard) {
                 if (attackingCard !== div) {
-                    performAttack(attackingCard, div);
-                    attackingCard.classList.remove('attacking-glow');
-                    attackingCard = null;
+                    await performAttack(attackingCard, div);
+                    if (attackingCard) {
+                        attackingCard.classList.remove('attacking-glow');
+                        attackingCard = null;
+                    }
                 }
             }
         });
@@ -9579,7 +9588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function isOrderCard(card) {
         const skillLC = (card.dataset.skill || "").toLowerCase();
         // Stricter check: must contain the specific [Type Order] tag to avoid catching units that mention orders
-        return skillLC.includes('[normal order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]');
+        return skillLC.includes('[normal order]') || skillLC.includes('[set order]') || skillLC.includes('[blitz order]') || skillLC.includes('[order]');
     }
 
     function isBlitzOrder(card) {
@@ -10433,16 +10442,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     roaming.style.transform = 'none';
 
                     if (isAlchemagic) {
-                        roaming.dataset.skillBonus_RoamingPrison = "10000";
-                        roaming.dataset.turnEndCritBuff = "true";
+                        roaming.dataset.power = (parseInt(roaming.dataset.power || "5000") + 10000).toString();
+                        roaming.dataset.critical = (parseInt(roaming.dataset.critical || "1") + 1).toString();
+                        roaming.dataset.roamingAlchBonus = "true";
                         alert(`Roaming Prison Dragon: Alchemagic! พลัง +10000 & Critical +1!`);
                     } else {
                         const choice = confirm("Roaming Prison Dragon:\nOK = พลัง +10000\nCancel = Critical +1");
                         if (choice) {
-                            roaming.dataset.skillBonus_RoamingPrison = "10000";
+                            roaming.dataset.power = (parseInt(roaming.dataset.power || "5000") + 10000).toString();
+                            roaming.dataset.roamingPowerOnlyBonus = "true";
                             alert("Roaming Prison Dragon: พลัง +10000!");
                         } else {
-                            roaming.dataset.turnEndCritBuff = "true";
+                            roaming.dataset.critical = (parseInt(roaming.dataset.critical || "1") + 1).toString();
+                            roaming.dataset.roamingCritOnlyBonus = "true";
                             alert("Roaming Prison Dragon: Critical +1!");
                         }
                     }
@@ -13305,6 +13317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleFinishGuard(data) {
+        isWaitingForGuard = false; // Fix: Stop hanging and allow player to interact
         const attackData = data.attackData;
         const totalShield = data.totalShield || 0;
         alert(`Opponent finished placing guards! (+${totalShield} Shield)`);
