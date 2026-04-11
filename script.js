@@ -3416,7 +3416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 soulPool.splice(idx, 1);
                                 bindPool.push(fuujoInSoul);
                                 updateSoulUI();
-                                updateCountsUI();
+                                syncCounts();
                                 attacker.dataset.guardRestrictCount = "2";
                                 sendData({ 
                                     type: 'moveCard', cardId: fuujoInSoul.id, zone: 'bind', side: 'my',
@@ -3452,7 +3452,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         e.stopPropagation();
                                         circle.appendChild(callCard);
                                         sendMoveData(callCard);
-                                        updateCountsUI();
+                                        syncCounts();
                                         document.body.classList.remove('targeting-mode');
                                         document.removeEventListener('click', callListener, true);
                                         document.removeEventListener('keydown', escH);
@@ -5739,48 +5739,67 @@ document.addEventListener('DOMContentLoaded', () => {
                     const revealed = deckPool.splice(0, Math.min(7, deckPool.length));
                     updateDeckCounter();
                     let cardFound = false;
+                    let bhResolved = false; // Guard to prevent double-resolve
 
-                    openViewer("เลือกการ์ด 'Overlord' 1 ใบขึ้นมือ", revealed);
-                    await new Promise(resolve => {
-                        const selListener = (ev) => {
-                            const clickedOption = ev.target.closest('.card');
-                            if (clickedOption && clickedOption.parentElement === viewerGrid) {
-                                const selectedName = clickedOption.dataset.name;
-                                if (selectedName.includes('Overlord')) {
-                                    cardFound = true;
-                                    const cData = revealed.find(r => r.name === selectedName);
-                                    if (cData) {
-                                        const newlyAdded = createCardElement(cData);
-                                        playerHand.appendChild(newlyAdded);
-                                        sendMoveData(newlyAdded);
-                                        updateHandSpacing();
-                                        alert(`Burning Horn: นำ ${selectedName} ขึ้นมือแล้ว!`);
+                    // Pre-check if any Overlord cards exist
+                    const hasOverlord = revealed.some(r => (r.name || "").includes('Overlord'));
+
+                    if (!hasOverlord) {
+                        // No Overlord found - skip viewer, auto CC1
+                        deckPool.push(...revealed);
+                        deckPool.sort(() => 0.5 - Math.random());
+                        updateDeckCounter();
+                        counterCharge(1);
+                        alert("Burning Horn: ดู 7 ใบแล้วไม่พบการ์ดที่ติดชื่อ 'Overlord' ทำการ [Counter-Charge 1]");
+                    } else {
+                        openViewer("เลือกการ์ด 'Overlord' 1 ใบขึ้นมือ", revealed);
+                        await new Promise(resolve => {
+                            const selListener = (ev) => {
+                                if (bhResolved) return;
+                                const clickedOption = ev.target.closest('.card');
+                                if (clickedOption && clickedOption.parentElement === viewerGrid) {
+                                    const selectedName = clickedOption.dataset.name;
+                                    if (selectedName.includes('Overlord')) {
+                                        cardFound = true;
+                                        const cData = revealed.find(r => r.name === selectedName);
+                                        if (cData) {
+                                            const newlyAdded = createCardElement(cData);
+                                            playerHand.appendChild(newlyAdded);
+                                            sendMoveData(newlyAdded);
+                                            updateHandSpacing();
+                                            alert(`Burning Horn: นำ ${selectedName} ขึ้นมือแล้ว!`);
+                                        }
+                                        revealed.splice(revealed.indexOf(cData), 1);
+                                        viewerGrid.removeEventListener('click', selListener);
+                                        closeAndCleanup();
+                                    } else {
+                                        alert("ต้องเลือกการ์ดที่ติดชื่อ 'Overlord' เท่านั้น!");
                                     }
-                                    revealed.splice(revealed.indexOf(cData), 1);
-                                    viewerGrid.removeEventListener('click', selListener);
-                                    closeAndCleanup();
-                                } else {
-                                    alert("ต้องเลือกการ์ดที่ติดชื่อ 'Overlord' เท่านั้น!");
                                 }
-                            }
-                        };
-                        const closeAndCleanup = () => {
-                            zoneViewer.classList.add('hidden');
-                            deckPool.push(...revealed);
-                            deckPool.sort(() => 0.5 - Math.random());
-                            updateDeckCounter();
-                            if (!cardFound) {
-                                counterCharge(1);
-                                alert("Burning Horn: ไม่พบการ์ดเป้าหมาย ทำการ [Counter-Charge 1]");
-                            }
-                            resolve();
-                        };
-                        viewerGrid.addEventListener('click', selListener);
-                        closeViewerBtn.onclick = () => {
-                            viewerGrid.removeEventListener('click', selListener);
-                            closeAndCleanup();
-                        };
-                    });
+                            };
+                            const closeAndCleanup = () => {
+                                if (bhResolved) return; // Prevent double-fire
+                                bhResolved = true;
+                                zoneViewer.classList.add('hidden');
+                                deckPool.push(...revealed);
+                                revealed.length = 0; // Clear array to prevent duplicate push
+                                deckPool.sort(() => 0.5 - Math.random());
+                                updateDeckCounter();
+                                if (!cardFound) {
+                                    counterCharge(1);
+                                    alert("Burning Horn: ไม่พบการ์ดเป้าหมาย ทำการ [Counter-Charge 1]");
+                                }
+                                // Clean up stale onclick handler to prevent CC leak
+                                closeViewerBtn.onclick = null;
+                                resolve();
+                            };
+                            viewerGrid.addEventListener('click', selListener);
+                            closeViewerBtn.onclick = () => {
+                                viewerGrid.removeEventListener('click', selListener);
+                                closeAndCleanup();
+                            };
+                        });
+                    }
                 }
             }
         }
@@ -7200,7 +7219,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'mousheenImmune', 'saasyouBuffApplied', 'dragontreeBuffApplied', 'cleanSweepUsedThisTurn',
                 'seraphBuffApplied', 'purelightBuffApplied', 'penetrateBuffApplied', 'lifleBuffApplied', 'munaBuffApplied',
                 'zorgaMasquesFrontBuff', 'cloudedMiasmaBuff', 'turnEndCritBuff', 'headhunterBonusApplied', 'asagiBonusApplied',
-                'triggerPower', 'triggerCrit', 'orderPower', 'orderCrit', 'skillPower', 'skillCrit'
+                'triggerPower', 'triggerCrit', 'orderPower', 'orderCrit', 'skillPower', 'skillCrit',
+                'greedonSoulBonusApplied', 'greedonStandUsedThisAttack'
             ];
             flags.forEach(flag => delete c.dataset[flag]);
 
@@ -10733,7 +10753,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             aiOrderZone.appendChild(target);
                             target.classList.add('imprisoned-card');
                         }
-                        updateCountsUI();
+                        syncCounts();
                         updateAllStaticBonuses();
                         return true;
                     }
@@ -10768,7 +10788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                      myOrderZone.appendChild(target);
                                      target.classList.add('imprisoned-card');
                                 }
-                                updateCountsUI();
+                                syncCounts();
                                 updateAllStaticBonuses();
                                 imprisoned++;
                                 if (imprisoned >= maxTargets) {
@@ -13326,6 +13346,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         }, 500);
                     }
                     triggerIvankaOnHitRC(attackData);
+                    // --- Brachioforce On-Hit ---
+                    if (attackData.attackerName && attackData.attackerName.includes('Brachioforce')) {
+                        await handleBrachioforceEffect(attacker, attackData);
+                    }
                 } else {
                     alert("Rearguard attack missed.");
                 }
@@ -13568,7 +13592,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                                         realCard.remove();
                                                                         sendMoveData(realCard, 'soul');
                                                                         updateSoulUI();
-                                                                        updateCountsUI();
+                                                                        syncCounts();
                                                                         alert(`นำ ${realCard.dataset.name} เข้าโซลแล้ว!`);
                                                                     }
                                                                     resolveXitto();
@@ -13594,7 +13618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     soulPool.splice(soulPool.indexOf(fuujoCard), 1);
                                                     bindPool.push(fuujoCard);
                                                     updateSoulUI();
-                                                    updateCountsUI();
+                                                    syncCounts();
                                                     syncBindZone();
                                                     alert("Fuujo: Bind ตัวเองเพื่อเปิดใช้งานสกิลรีไทร์");
 
