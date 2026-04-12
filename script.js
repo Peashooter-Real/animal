@@ -276,8 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
             orderZone.classList.remove('prison-active');
         }
 
-        // Broadcast prison count to opponent for real-time sync
-        if (side === 'my' && (conn || isAIMode)) {
+        // Broadcast prison count to opponent for real-time sync (skip in AI mode to prevent infinite recursion)
+        if (side === 'my' && conn && !isAIMode) {
             sendData({ type: 'prisonSync', count: actualImprisoned, side: 'opponent' });
         }
     }
@@ -1044,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...Array(4).fill({ name: 'Youthberk "RevolForm: Tempest"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO](VC): เมื่อวางบน (VC) โดย [RevolDress], แถวหน้าทั้งหมดของคุณได้รับพลัง +5000 จนจบเทิร์น จากนั้น [CB1] เปิดการ์ด 2 ใบจากบนสุดของกอง เลือกเรียร์การ์ดคู่แข่ง 1 ใบที่เกรดตรงกับ 1 ในนั้น นำกลับเข้าใต้กอง, และนำการ์ดที่เปิดทั้งหมดขึ้นมือ\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Youthberk "RevolForm: Gust"', grade: 3, power: 13000, persona: true, skill: 'RevolDress\n[AUTO]: เมื่อวางบน (VC) โดยความสามารถ [RevolDress] หากแวนการ์ดคู่แข่งเป็นเกรด 3 หรือสูงกว่า [COST][ทิ้งมือ 1 ใบ] ยูนิทนี้ได้รับ [Power]+10000 และ [Drive]+1 จนจบเทิร์น\n[AUTO](VC): เมื่อจบเทิร์นของคุณ เลือกการ์ดที่มีความสามารถ [RevolDress] จากโซลแล้วไรด์ในสภาพ [Rest]' }),
             ...Array(3).fill({ name: 'Knight of Fracture, Schneizal', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1] ดู 5 ใบจากบนสุดของกอง เลือก G3 ที่มีชื่อ "Youthberk" 1 ใบขึ้นมือ สับกอง ยูนิทนี้พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตีแวนการ์ด หากแวนการ์ดของคุณถูกวางเทิร์นนี้โดยไรด์จาก G3 เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น' }),
-            ...Array(1).fill({ name: 'Galaxy Central Prison, Galactolus', grade: 1, type: 'Set Order', skill: '[Set Order] Prison: [COST][[Rest] 1 unit] to play!\n[AUTO]: When played, [SC3].\n[CONT]: คู่แข่งสามารถดึงการ์ดออกจากคุกใน Main Phase: [SB1] เรียก 1 ใบ หรือ [CB1] เรียก 2 ใบ' }),
+
             ...Array(3).fill({ name: 'Knight of Plowing, Dolbraig', grade: 2, power: 10000, shield: 5000, skill: '[AUTO](แถวหน้า RC): เมื่อแวนการ์ดถูกวางโดย [RevolDress] เลือกแวนการ์ด 1 ใบ พลัง +5000 จนจบเทิร์น\n[AUTO](RC): เมื่อยูนิทนี้โจมตียูนิท G3 หรือสูงกว่า [COST][SB1 การ์ดที่มี RevolForm ในชื่อ] ยูนิทนี้พลัง +10000 จนจบแบทเทิล' }),
             ...Array(2).fill({ name: 'Knight of Rendering Flash, Cairbre', grade: 2, power: 10000, shield: 5000, skill: '[AUTO]: เมื่อวางบน (RC) [COST][CB1 & SB1] ดู 3 ใบจากบนสุดของกอง เลือก 1 ใบ หากเป็นยูนิท G2 หรือต่ำกว่า คอลลง (RC) หากไม่ใช่ นำขึ้นมือ สับกอง' }),
             ...Array(4).fill({ name: 'Witch of Accumulation, Sequana', grade: 1, power: 8000, shield: 5000, skill: '[CONT](RC): เทิร์นเรา หากแวนการ์ดมีชื่อ "Youthberk" ยูนิทนี้พลัง +2000\n[AUTO](RC): เมื่อยูนิทถูกวางบน (VC) โดย [RevolDress] [COST][นำยูนิทนี้เข้าโซล] เลือกแวนการ์ด 1 ใบ ปรับ Drive เป็น 1 จนจบเทิร์น' }),
