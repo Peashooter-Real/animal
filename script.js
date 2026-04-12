@@ -3652,6 +3652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     vgCard.dataset.power = (parseInt(vgCard.dataset.power) + 5000).toString();
                     vgCard.dataset.turnEndBuffPower = (parseInt(vgCard.dataset.turnEndBuffPower || "0") + 5000).toString();
                     vgCard.dataset.turnEndBuffActive = "true";
+                    vgCard.dataset.turnEndBuffApplied = "true";
                     syncPowerDisplay(vgCard);
                     sendMoveData(vgCard);
                     alert("Schneizal: [AUTO](RC) แวนการ์ดถูกไรด์จาก G3 เทิร์นนี้! VG พลัง +5000!");
@@ -6262,6 +6263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.dataset.power = (parseInt(card.dataset.power) + 5000).toString();
                     card.dataset.turnEndBuffPower = (parseInt(card.dataset.turnEndBuffPower || "0") + 5000).toString();
                     card.dataset.turnEndBuffActive = "true";
+                    card.dataset.turnEndBuffApplied = "true";
                     syncPowerDisplay(card);
                     sendMoveData(card);
                     alert("Schneizal: พลัง +5000!");
