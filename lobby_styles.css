@@ -336,3 +336,700 @@ body {
     .nation-card { width: 100%; }
     .peer-id-text { font-size: 1rem; }
 }
+
+/* ==========================================================================
+   PREMIUM DECK BUILDER MODAL STYLES (GLASSMORPHISM & NEON)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(8, 8, 12, 0.85);
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 1.5rem;
+}
+
+.db-modal-container {
+    width: 95vw;
+    max-width: 1400px;
+    height: 90vh;
+    background: rgba(18, 18, 28, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(5, 217, 232, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.db-modal-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #ff007f, #05d9e8, #39ff14, #ffbf00, #bd00ff);
+}
+
+.db-modal-header {
+    padding: 1.2rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.db-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.db-header-icon {
+    font-size: 1.8rem;
+    text-shadow: 0 0 10px rgba(5, 217, 232, 0.5);
+}
+
+.db-header-left h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #fff, #bbb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.db-header-left p {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 2px 0 0 0;
+}
+
+.db-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.db-mini-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.db-mini-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.db-close-x-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.5rem;
+    transition: color 0.2s;
+}
+
+.db-close-x-btn:hover {
+    color: #ff007f;
+}
+
+/* Validation Dashboard */
+.db-dashboard {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    overflow-x: auto;
+}
+
+.db-dash-item {
+    flex: 1;
+    min-width: 120px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.db-dash-item.valid {
+    border-color: rgba(57, 255, 20, 0.3);
+    background: rgba(57, 255, 20, 0.03);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.05);
+}
+
+.db-dash-item.invalid {
+    border-color: rgba(255, 0, 127, 0.3);
+    background: rgba(255, 0, 127, 0.02);
+}
+
+.dash-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.dash-val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: monospace;
+}
+
+.db-dash-item.valid .dash-val {
+    color: #39ff14;
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);
+}
+
+/* Workspace Panels */
+.db-workspace {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    overflow: hidden;
+}
+
+.db-database-panel {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.db-panel-header {
+    padding: 1.2rem 2rem;
+    background: rgba(255, 255, 255, 0.01);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.db-panel-header h3 {
+    margin: 0 0 0.8rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.db-search-box {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.db-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.7rem 2.5rem 0.7rem 1rem;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.db-search-input:focus {
+    border-color: rgba(5, 217, 232, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 15px rgba(5, 217, 232, 0.15);
+}
+
+.db-clear-btn {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.db-clear-btn:hover {
+    color: white;
+}
+
+.db-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.db-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    min-width: 50px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.filter-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+}
+
+.filter-btn.active {
+    background: rgba(5, 217, 232, 0.15);
+    border-color: #05d9e8;
+    color: #05d9e8;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(5, 217, 232, 0.1);
+}
+
+.db-card-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
+
+/* Card Builder Item */
+.db-card-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.db-card-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+}
+
+.db-card-item.selected-in-deck {
+    border-color: rgba(5, 217, 232, 0.3);
+    background: rgba(5, 217, 232, 0.02);
+}
+
+.db-card-badge-qty {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #05d9e8;
+    color: #000;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(5, 217, 232, 0.5);
+    z-index: 5;
+}
+
+.db-card-grade-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.db-card-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 1.2rem 0 0.3rem 0;
+    line-height: 1.3;
+    color: #fff;
+}
+
+.db-card-stats {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.6rem;
+    display: flex;
+    gap: 8px;
+}
+
+.db-card-type-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.db-card-type-tag.trigger-crit { background: #b71c1c; color: #ffcdd2; }
+.db-card-type-tag.trigger-draw { background: #1b5e20; color: #c8e6c9; }
+.db-card-type-tag.trigger-front { background: #f57f17; color: #fff9c4; }
+.db-card-type-tag.trigger-heal { background: #0d47a1; color: #bbdefb; }
+.db-card-type-tag.trigger-over { background: #ff6f00; color: #ffe082; }
+
+.db-card-skill-preview {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.db-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.db-card-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.4rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.db-card-btn:hover {
+    background: rgba(5, 217, 232, 0.15);
+    border-color: #05d9e8;
+    color: #05d9e8;
+}
+
+.db-card-btn.add-ride:hover {
+    background: rgba(255, 0, 127, 0.15);
+    border-color: #ff007f;
+    color: #ff007f;
+}
+
+/* Right Panel: Active Decklist */
+.db-decklist-panel {
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.db-deck-section {
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    padding: 1.2rem;
+}
+
+.db-section-header {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding-bottom: 0.6rem;
+}
+
+.db-section-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sec-badge {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.sec-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 4px 0 0 0;
+}
+
+.db-ride-list, .db-main-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 60px;
+}
+
+.db-list-empty-msg {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 1rem;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+/* Active Decklist Card Rows */
+.db-row-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+}
+
+.db-row-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.db-row-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.db-row-grade {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db-row-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.db-row-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    text-align: left;
+}
+
+.db-row-subtext {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+    text-align: left;
+}
+
+.db-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.db-qty-controls {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.db-qty-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.db-qty-btn:hover {
+    color: white;
+}
+
+.db-qty-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: monospace;
+    width: 20px;
+    text-align: center;
+    color: #05d9e8;
+}
+
+.db-row-delete-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.db-row-delete-btn:hover {
+    color: #ff007f;
+}
+
+/* Footer & Validation Text */
+.db-modal-footer {
+    padding: 1.2rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.db-validation-summary {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ff007f;
+    letter-spacing: 0.2px;
+}
+
+.db-validation-summary.success {
+    color: #39ff14;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+}
+
+.db-footer-buttons {
+    display: flex;
+    gap: 0.8rem;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Scrollbar customizations */
+.db-card-grid::-webkit-scrollbar,
+.db-decklist-panel::-webkit-scrollbar,
+.db-dashboard::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.db-card-grid::-webkit-scrollbar-track,
+.db-decklist-panel::-webkit-scrollbar-track,
+.db-dashboard::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.db-card-grid::-webkit-scrollbar-thumb,
+.db-decklist-panel::-webkit-scrollbar-thumb,
+.db-dashboard::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+}
+
+.db-card-grid::-webkit-scrollbar-thumb:hover,
+.db-decklist-panel::-webkit-scrollbar-thumb:hover,
+.db-dashboard::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Responsive constraints */
+@media screen and (max-width: 1200px) {
+    .db-workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+    .db-database-panel {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .db-modal-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    .modal-overlay {
+        padding: 0;
+    }
+    .db-dashboard {
+        padding: 0.6rem 1rem;
+    }
+    .db-panel-header {
+        padding: 1rem;
+    }
+    .db-card-grid {
+        padding: 1rem;
+    }
+    .db-decklist-panel {
+        padding: 1rem;
+    }
+}
+

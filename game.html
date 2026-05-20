@@ -349,7 +349,7 @@
                     <button onclick="document.getElementById('view-drop-btn').click()" class="quick-btn drop">Drop (<span id="quick-drop-num">0</span>)</button>
                     <button onclick="document.getElementById('view-damage-btn').click()" class="quick-btn damage">Damage (<span id="quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('my')" class="quick-btn order">Order (<span id="quick-order-num">0</span>)</button>
-                    <button class="quick-btn bind">ไบนด์ (<span id="quick-bind-num">0</span>)</button>
+                    <button onclick="viewBindZone('my')" class="quick-btn bind">ไบนด์ (<span id="quick-bind-num">0</span>)</button>
                     <button onclick="viewPrisonZone('my')" class="quick-btn prison hidden" id="quick-prison-btn">🔒 Prison (<span id="quick-prison-num">0</span>)</button>
                 </div>
                 <div class="quick-group">
@@ -357,7 +357,7 @@
                     <button onclick="document.getElementById('opp-view-drop-btn').click()" class="quick-btn drop">Drop (<span id="opp-quick-drop-num">0</span>)</button>
                     <button onclick="document.getElementById('opp-view-damage-btn').click()" class="quick-btn damage">Damage (<span id="opp-quick-damage-num">0</span>)</button>
                     <button onclick="viewOrderZone('opp')" class="quick-btn order">Order (<span id="opp-quick-order-num">0</span>)</button>
-                    <button class="quick-btn bind">ไบนด์ (<span id="opp-quick-bind-num">0</span>)</button>
+                    <button onclick="viewBindZone('opp')" class="quick-btn bind">ไบนด์ (<span id="opp-quick-bind-num">0</span>)</button>
                     <button onclick="viewPrisonZone('opp')" class="quick-btn prison hidden" id="opp-quick-prison-btn">🔒 Prison (<span id="opp-quick-prison-num">0</span>)</button>
                 </div>
             </div>
@@ -458,6 +458,7 @@
     </div>
 
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="cards_db.js"></script>
     <script src="script.js"></script>
 </body>
 

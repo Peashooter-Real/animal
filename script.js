@@ -104,6 +104,183 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
+
+    // --- Web Audio SFX Synthesis Engine ---
+    const sfxEngine = {
+        ctx: null,
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        },
+        playDraw() {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } catch (e) { console.error(e); }
+        },
+        playAttack() {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) { console.error(e); }
+        },
+        playGuard() {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(220, now);
+                osc1.frequency.linearRampToValueAtTime(440, now + 0.2);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(225, now);
+                osc2.frequency.linearRampToValueAtTime(445, now + 0.2);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.25);
+                osc2.stop(now + 0.25);
+            } catch (e) { console.error(e); }
+        },
+        playTrigger(type) {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const lowerType = (type || "").toLowerCase();
+                if (lowerType === 'critical') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1600, now + 0.5);
+                    gain.gain.setValueAtTime(0.25, now);
+                } else if (lowerType === 'heal') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.6);
+                    gain.gain.setValueAtTime(0.2, now);
+                } else if (lowerType === 'draw') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(500, now);
+                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.3);
+                    gain.gain.setValueAtTime(0.18, now);
+                } else if (lowerType === 'front') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(1000, now + 0.4);
+                    gain.gain.setValueAtTime(0.2, now);
+                } else if (lowerType === 'over') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(1800, now + 0.8);
+                    gain.gain.setValueAtTime(0.3, now);
+                } else {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, now);
+                    osc.frequency.exponentialRampToValueAtTime(1000, now + 0.4);
+                    gain.gain.setValueAtTime(0.15, now);
+                }
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } catch (e) { console.error(e); }
+        },
+        playPersona() {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                const now = ctx.currentTime;
+                const frequencies = [261.63, 329.63, 392.00, 523.25];
+                frequencies.forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now + i * 0.08);
+                    osc.frequency.linearRampToValueAtTime(f * 2, now + i * 0.08 + 0.4);
+                    gain.gain.setValueAtTime(0.0, now);
+                    gain.gain.linearRampToValueAtTime(0.12, now + i * 0.08 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.45);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.5);
+                });
+            } catch (e) { console.error(e); }
+        }
+    };
+
+    // --- Neon Flash Animation helper ---
+    function flashTriggerNeon(triggerType) {
+        const colors = {
+            'critical': 'rgba(255, 215, 0, 0.4)',
+            'heal': 'rgba(0, 230, 118, 0.4)',
+            'draw': 'rgba(0, 229, 255, 0.4)',
+            'front': 'rgba(255, 109, 0, 0.4)',
+            'over': 'rgba(213, 0, 249, 0.5)'
+        };
+        const color = colors[triggerType ? triggerType.toLowerCase() : ''] || 'rgba(255, 255, 255, 0.2)';
+        const flash = document.createElement('div');
+        flash.id = 'trigger-neon-flash';
+        flash.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, transparent 20%, ${color} 100%);
+            box-shadow: inset 0 0 100px ${color};
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        `;
+        document.body.appendChild(flash);
+        void flash.offsetWidth;
+        flash.style.opacity = '1';
+        setTimeout(() => {
+            flash.style.transition = 'opacity 0.6s ease-in';
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 600);
+        }, 300);
+    }
     /* --- Prison Zone Management System --- */
     
     // Initialize prison zones visibility based on decks in play
@@ -2722,11 +2899,13 @@ document.addEventListener('DOMContentLoaded', () => {
             isOD: card.dataset.isOverDress === "true",
             isXOD: card.dataset.isXoverDress === "true"
         });
+        saveGameState();
     }
 
     function sendRemoveData(card) {
         if (!card) return;
         sendData({ type: 'removeCard', cardId: card.id });
+        saveGameState();
     }
 
     function drawCard(isInitial = false) {
@@ -2743,6 +2922,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playerHand.appendChild(newCard);
         updateHandSpacing();
         updateDeckCounter();
+        sfxEngine.playDraw();
 
         // Sync hand count AND the card itself if it's hand (optional: Vanguard usually hides hand)
         // For this request, we'll sync the move so it appears in opponent's hand zone
@@ -3134,6 +3314,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let triggerType = cardData.trigger;
         let powerIncrease = triggerType === 'Over' ? 100000000 : 10000;
 
+        if (triggerType) {
+            sfxEngine.playTrigger(triggerType.toLowerCase());
+            flashTriggerNeon(triggerType);
+        }
+
         alert(`Trigger! ${triggerType} effect activating...`);
 
         if (triggerType === 'Front') {
@@ -3407,8 +3592,9 @@ document.addEventListener('DOMContentLoaded', () => {
             attacker.classList.remove('attacking-glow');
             attackingCard = null;
             return;
-
         }
+
+        sfxEngine.playAttack();
 
         // --- Majesty Lord Blaster Attack Skill ---
         if (attacker.dataset.name.includes('Majesty Lord Blaster') && attackerParentCircle.classList.contains('vc') && targetParent.classList.contains('vc')) {
@@ -4358,6 +4544,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             // Move card and cleanup
+            sfxEngine.playGuard();
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
@@ -6467,6 +6654,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function triggerPersonaRide() {
         personaRideActive = true;
+        sfxEngine.playPersona();
 
         // 1. Alert and Broadcast
         alert("PERSONA RIDE! ยูนิทแถวหน้าทั้งหมดได้รับพลัง +10000 สำหรับตาคุณ และจั่วการ์ด 1 ใบ!");
@@ -7907,6 +8095,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isAIMode && !isMyTurn && !aiThinking) {
             runAITurn();
         }
+        
+        saveGameState();
     }
 
     async function aiWait(ms = 1500) {
@@ -8967,12 +9157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             conn.on('data', waitForJoin);
 
-            conn.on('close', () => {
-                if (gameStarted) {
-                    alert('Lost connection to rival.');
-                    window.location.href = 'lobby.html';
-                }
-            });
+            conn.on('close', handleConnectionLost);
 
             if (gameStatusText) gameStatusText.textContent = 'Rival attempting to join...';
         });
@@ -8985,6 +9170,537 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function saveGameState() {
+        if (!gameStarted) return;
+        
+        const serializeCardEl = (el) => {
+            if (!el) return null;
+            return {
+                id: el.id,
+                className: el.className,
+                dataset: { ...el.dataset }
+            };
+        };
+
+        const serializeZone = (selector) => {
+            const container = document.querySelector(selector);
+            if (!container) return [];
+            return Array.from(container.children)
+                .filter(child => child.classList.contains('card'))
+                .map(serializeCardEl);
+        };
+
+        const serializeCircle = (selector) => {
+            const circle = document.querySelector(selector);
+            if (!circle) return null;
+            const card = circle.querySelector('.card');
+            return card ? serializeCardEl(card) : null;
+        };
+
+        const state = {
+            mode,
+            role,
+            friendId,
+            deckChoice,
+            aiDeckChoice,
+            difficultyChoice,
+            customId,
+            
+            isAIMode,
+            aiDifficulty,
+            aiDeckType,
+            gameStarted,
+            isHost,
+            isFirstPlayer,
+            isMyTurn,
+            currentTurn,
+            currentPhaseIndex,
+            hasRiddenThisTurn,
+            hasDiscardedThisTurn,
+            hasDrawnThisTurn,
+            regalisPieceUsed: window.regalisPieceUsed,
+
+            deckPool,
+            soulPool,
+            bindPool,
+            oppBindPool: window.oppBindPool,
+
+            aiRideDeck,
+            aiDeck,
+            aiHand,
+            aiSoul,
+            aiDamage,
+            aiDrop,
+
+            myHand: serializeZone('.my-side .hand-cards'),
+            myRideDeck: serializeZone('.my-side #ride-deck'),
+            myDrop: serializeZone('.my-side .drop-zone'),
+            myDamage: serializeZone('.my-side .damage-zone'),
+            myOrder: serializeZone('.my-side .order-zone'),
+            
+            myVC: serializeCircle('.my-side .circle.vc'),
+            myRC1: serializeCircle('.my-side .circle.rc[data-zone="rc_front_left"]'),
+            myRC2: serializeCircle('.my-side .circle.rc[data-zone="rc_front_right"]'),
+            myRC3: serializeCircle('.my-side .circle.rc[data-zone="rc_back_left"]'),
+            myRC4: serializeCircle('.my-side .circle.rc[data-zone="rc_back_center"]'),
+            myRC5: serializeCircle('.my-side .circle.rc[data-zone="rc_back_right"]'),
+            
+            oppVC: serializeCircle('.opponent-side .circle.vc'),
+            oppRC1: serializeCircle('.opponent-side .circle.rc[data-zone="rc_front_left"]'),
+            oppRC2: serializeCircle('.opponent-side .circle.rc[data-zone="rc_front_right"]'),
+            oppRC3: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_left"]'),
+            oppRC4: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_center"]'),
+            oppRC5: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_right"]'),
+
+            oppHandCount: document.querySelectorAll('.opponent-side .hand-cards .card').length,
+            oppDrop: serializeZone('.opponent-side .drop-zone'),
+            oppDamage: serializeZone('.opponent-side .damage-zone'),
+            oppOrder: serializeZone('.opponent-side .order-zone'),
+            
+            myPrison: serializeZone('#my-prison-zone'),
+            oppPrison: serializeZone('#opp-prison-zone')
+        };
+
+        localStorage.setItem('vanguard_match_backup', JSON.stringify(state));
+    }
+
+    function restoreGameState() {
+        const saved = localStorage.getItem('vanguard_match_backup');
+        if (!saved) return false;
+        try {
+            const state = JSON.parse(saved);
+            if (!state || !state.gameStarted) return false;
+
+            if (state.mode !== mode || state.role !== role || state.friendId !== friendId || state.deckChoice !== deckChoice) {
+                return false;
+            }
+
+            console.log("Restoring saved game state...");
+
+            isAIMode = state.isAIMode;
+            aiDifficulty = state.aiDifficulty;
+            aiDeckType = state.aiDeckType;
+            gameStarted = state.gameStarted;
+            isHost = state.isHost;
+            isFirstPlayer = state.isFirstPlayer;
+            window.isFirstPlayer = state.isFirstPlayer;
+            isMyTurn = state.isMyTurn;
+            currentTurn = state.currentTurn;
+            currentPhaseIndex = state.currentPhaseIndex;
+            hasRiddenThisTurn = state.hasRiddenThisTurn;
+            hasDiscardedThisTurn = state.hasDiscardedThisTurn;
+            hasDrawnThisTurn = state.hasDrawnThisTurn;
+            window.regalisPieceUsed = state.regalisPieceUsed;
+
+            deckPool = state.deckPool || [];
+            soulPool = state.soulPool || [];
+            bindPool = state.bindPool || [];
+            window.oppBindPool = state.oppBindPool || [];
+
+            aiRideDeck = state.aiRideDeck || [];
+            aiDeck = state.aiDeck || [];
+            aiHand = state.aiHand || [];
+            aiSoul = state.aiSoul || [];
+            aiDamage = state.aiDamage || [];
+            aiDrop = state.aiDrop || [];
+
+            document.querySelectorAll('.my-side .hand-cards, .my-side #ride-deck, .my-side .drop-zone, .my-side .damage-zone, .my-side .order-zone, .opponent-side .drop-zone, .opponent-side .damage-zone, .opponent-side .order-zone, #my-prison-zone, #opp-prison-zone')
+                .forEach(zone => {
+                    const label = zone.querySelector('.zone-label');
+                    zone.innerHTML = '';
+                    if (label) zone.appendChild(label);
+                });
+
+            document.querySelectorAll('.circle.vc, .circle.rc').forEach(circle => {
+                circle.innerHTML = '';
+            });
+
+            const deserializeCard = (cardData) => {
+                if (!cardData) return null;
+                const card = document.createElement('div');
+                card.id = cardData.id;
+                card.className = cardData.className;
+                Object.keys(cardData.dataset).forEach(key => {
+                    card.dataset[key] = cardData.dataset[key];
+                });
+                setupCardEvents(card);
+                return card;
+            };
+
+            const restoreZone = (cards, selector, labelText) => {
+                const container = document.querySelector(selector);
+                if (!container) return;
+                if (labelText) {
+                    container.innerHTML = `<span class="zone-label">${labelText}</span>`;
+                }
+                cards.forEach(c => {
+                    const el = deserializeCard(c);
+                    if (el) container.appendChild(el);
+                });
+            };
+
+            restoreZone(state.myHand || [], '.my-side .hand-cards');
+            restoreZone(state.myRideDeck || [], '.my-side #ride-deck', 'Ride Deck');
+            restoreZone(state.myDrop || [], '.my-side .drop-zone', 'Drop');
+            restoreZone(state.myDamage || [], '.my-side .damage-zone', 'Damage');
+            restoreZone(state.myOrder || [], '.my-side .order-zone', 'Order');
+
+            restoreZone(state.oppDrop || [], '.opponent-side .drop-zone', 'Drop');
+            restoreZone(state.oppDamage || [], '.opponent-side .damage-zone', 'Damage');
+            restoreZone(state.oppOrder || [], '.opponent-side .order-zone', 'Order');
+
+            restoreZone(state.myPrison || [], '#my-prison-zone', 'My Prison');
+            restoreZone(state.oppPrison || [], '#opp-prison-zone', 'Opp Prison');
+
+            const restoreCircle = (cardData, selector) => {
+                const circle = document.querySelector(selector);
+                if (!circle) return;
+                const el = deserializeCard(cardData);
+                if (el) circle.appendChild(el);
+            };
+
+            restoreCircle(state.myVC, '.my-side .circle.vc');
+            restoreCircle(state.myRC1, '.my-side .circle.rc[data-zone="rc_front_left"]');
+            restoreCircle(state.myRC2, '.my-side .circle.rc[data-zone="rc_front_right"]');
+            restoreCircle(state.myRC3, '.my-side .circle.rc[data-zone="rc_back_left"]');
+            restoreCircle(state.myRC4, '.my-side .circle.rc[data-zone="rc_back_center"]');
+            restoreCircle(state.myRC5, '.my-side .circle.rc[data-zone="rc_back_right"]');
+
+            restoreCircle(state.oppVC, '.opponent-side .circle.vc');
+            restoreCircle(state.oppRC1, '.opponent-side .circle.rc[data-zone="rc_front_left"]');
+            restoreCircle(state.oppRC2, '.opponent-side .circle.rc[data-zone="rc_front_right"]');
+            restoreCircle(state.oppRC3, '.opponent-side .circle.rc[data-zone="rc_back_left"]');
+            restoreCircle(state.oppRC4, '.opponent-side .circle.rc[data-zone="rc_back_center"]');
+            restoreCircle(state.oppRC5, '.opponent-side .circle.rc[data-zone="rc_back_right"]');
+
+            const oppHandContainer = document.querySelector('.opponent-side .hand-cards');
+            if (oppHandContainer) {
+                oppHandContainer.innerHTML = '';
+                for (let i = 0; i < state.oppHandCount; i++) {
+                    const cardBack = document.createElement('div');
+                    cardBack.className = 'card face-down';
+                    oppHandContainer.appendChild(cardBack);
+                }
+            }
+
+            updateDeckCounter();
+            updateSoulCounter();
+            updateBindCounter();
+            updateTurnIndicator();
+
+            if (matchmakingOverlay) matchmakingOverlay.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+
+            console.log("Game state successfully restored!");
+            return true;
+        } catch (e) {
+            console.error("Failed to restore game state:", e);
+            return false;
+        }
+    }
+
+    let reconnectOverlay = null;
+    function showReconnectOverlay(message) {
+        if (reconnectOverlay) {
+            const msgEl = reconnectOverlay.querySelector('.reconnect-message');
+            if (msgEl) msgEl.textContent = message;
+            return;
+        }
+        reconnectOverlay = document.createElement('div');
+        reconnectOverlay.id = 'reconnect-overlay';
+        reconnectOverlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 12, 18, 0.85); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10000; color: #fff; font-family: 'Outfit', sans-serif;
+        `;
+
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px; padding: 40px; text-align: center; max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); animation: pulse-glow 2s infinite alternate;
+        `;
+
+        const spinner = document.createElement('div');
+        spinner.style.cssText = `
+            width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #00E5FF; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 20px auto;
+        `;
+
+        const title = document.createElement('h3');
+        title.textContent = 'การเชื่อมต่อขัดข้อง';
+        title.style.cssText = `
+            margin: 0 0 10px 0; font-size: 1.5rem;
+            background: linear-gradient(135deg, #00E5FF, #9D4EDD);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        `;
+
+        const text = document.createElement('p');
+        text.className = 'reconnect-message';
+        text.textContent = message;
+        text.style.cssText = `margin: 0 0 20px 0; color: #ccc;`;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'กลับสู่หน้าล็อบบี้';
+        btn.style.cssText = `
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.3s;
+        `;
+        btn.onmouseover = () => btn.style.background = 'rgba(255, 255, 255, 0.2)';
+        btn.onmouseout = () => btn.style.background = 'rgba(255, 255, 255, 0.1)';
+        btn.onclick = () => {
+            window.location.href = 'lobby.html';
+        };
+
+        card.appendChild(spinner);
+        card.appendChild(title);
+        card.appendChild(text);
+        card.appendChild(btn);
+        reconnectOverlay.appendChild(card);
+        document.body.appendChild(reconnectOverlay);
+
+        if (!document.getElementById('reconnect-keyframes')) {
+            const style = document.createElement('style');
+            style.id = 'reconnect-keyframes';
+            style.textContent = `
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                @keyframes pulse-glow { 0% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); } 100% { box-shadow: 0 0 30px rgba(157, 78, 221, 0.4); } }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    function hideReconnectOverlay() {
+        if (reconnectOverlay) {
+            reconnectOverlay.remove();
+            reconnectOverlay = null;
+        }
+    }
+
+    let isReconnecting = false;
+    let reconnectInterval = null;
+
+    function handleConnectionLost() {
+        if (!gameStarted) return;
+        console.warn("Connection lost!");
+        if (isHost) {
+            showReconnectOverlay("คู่แข่งขาดการเชื่อมต่อ กำลังรอการเชื่อมต่อใหม่...");
+        } else {
+            startReconnectingProcess();
+        }
+    }
+
+    function startReconnectingProcess() {
+        if (isReconnecting) return;
+        isReconnecting = true;
+        showReconnectOverlay("พยายามเชื่อมต่อกับโฮสต์ใหม่...");
+
+        let retryCount = 0;
+        reconnectInterval = setInterval(() => {
+            if (!isHost && friendId) {
+                console.log(`Reconnection attempt #${++retryCount}...`);
+                if (!peer || peer.destroyed || peer.disconnected) {
+                    initPeer();
+                }
+
+                const checkPeerAndConnect = setInterval(() => {
+                    if (peer && peer.id && !peer.destroyed) {
+                        clearInterval(checkPeerAndConnect);
+                        console.log("Peer ready, connecting for state recovery:", friendId);
+                        conn = peer.connect(friendId, { reliable: true });
+                        setupReconnectConnectionGuest();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+
+    function setupReconnectConnectionGuest() {
+        conn.on('open', () => {
+            clearInterval(reconnectInterval);
+            isReconnecting = false;
+            console.log("Reconnected! Requesting sync...");
+            showReconnectOverlay("เชื่อมต่อสำเร็จ กำลังกู้คืนสถานะเกม...");
+            setupConnection();
+            sendData({ type: 'guestReconnect' });
+        });
+    }
+
+    function sendReconnectState() {
+        if (!conn) return;
+        
+        const serializeCardEl = (el) => {
+            if (!el) return null;
+            return {
+                id: el.id,
+                className: el.className,
+                dataset: { ...el.dataset }
+            };
+        };
+
+        const serializeZone = (selector) => {
+            const container = document.querySelector(selector);
+            if (!container) return [];
+            return Array.from(container.children)
+                .filter(child => child.classList.contains('card'))
+                .map(serializeCardEl);
+        };
+
+        const serializeCircle = (selector) => {
+            const circle = document.querySelector(selector);
+            if (!circle) return null;
+            const card = circle.querySelector('.card');
+            return card ? serializeCardEl(card) : null;
+        };
+
+        const hostState = {
+            currentTurn,
+            currentPhaseIndex,
+            isMyTurn,
+            regalisPieceUsed: window.regalisPieceUsed,
+            deckPool,
+            soulPool,
+            bindPool,
+            oppBindPool: window.oppBindPool,
+            hostHand: serializeZone('.my-side .hand-cards'),
+            hostRideDeck: serializeZone('.my-side #ride-deck'),
+            hostDrop: serializeZone('.my-side .drop-zone'),
+            hostDamage: serializeZone('.my-side .damage-zone'),
+            hostOrder: serializeZone('.my-side .order-zone'),
+            hostVC: serializeCircle('.my-side .circle.vc'),
+            hostRC1: serializeCircle('.my-side .circle.rc[data-zone="rc_front_left"]'),
+            hostRC2: serializeCircle('.my-side .circle.rc[data-zone="rc_front_right"]'),
+            hostRC3: serializeCircle('.my-side .circle.rc[data-zone="rc_back_left"]'),
+            hostRC4: serializeCircle('.my-side .circle.rc[data-zone="rc_back_center"]'),
+            hostRC5: serializeCircle('.my-side .circle.rc[data-zone="rc_back_right"]'),
+            guestHandCount: serializeZone('.opponent-side .hand-cards').length,
+            guestDrop: serializeZone('.opponent-side .drop-zone'),
+            guestDamage: serializeZone('.opponent-side .damage-zone'),
+            guestOrder: serializeZone('.opponent-side .order-zone'),
+            guestVC: serializeCircle('.opponent-side .circle.vc'),
+            guestRC1: serializeCircle('.opponent-side .circle.rc[data-zone="rc_front_left"]'),
+            guestRC2: serializeCircle('.opponent-side .circle.rc[data-zone="rc_front_right"]'),
+            guestRC3: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_left"]'),
+            guestRC4: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_center"]'),
+            guestRC5: serializeCircle('.opponent-side .circle.rc[data-zone="rc_back_right"]'),
+            myPrison: serializeZone('#my-prison-zone'),
+            oppPrison: serializeZone('#opp-prison-zone')
+        };
+
+        sendData({ type: 'reconnectState', hostState });
+    }
+
+    function applyReconnectState(hostState) {
+        console.log("Applying reconnect state from Host...");
+        document.querySelectorAll('.my-side .hand-cards, .my-side #ride-deck, .my-side .drop-zone, .my-side .damage-zone, .my-side .order-zone, .opponent-side .drop-zone, .opponent-side .damage-zone, .opponent-side .order-zone, #my-prison-zone, #opp-prison-zone')
+            .forEach(zone => {
+                const label = zone.querySelector('.zone-label');
+                zone.innerHTML = '';
+                if (label) zone.appendChild(label);
+            });
+
+        document.querySelectorAll('.circle.vc, .circle.rc').forEach(circle => {
+            circle.innerHTML = '';
+        });
+
+        const deserializeCard = (cardData) => {
+            if (!cardData) return null;
+            const card = document.createElement('div');
+            card.id = cardData.id;
+            card.className = cardData.className;
+            Object.keys(cardData.dataset).forEach(key => {
+                card.dataset[key] = cardData.dataset[key];
+            });
+            setupCardEvents(card);
+            return card;
+        };
+
+        const restoreZone = (cards, selector, labelText) => {
+            const container = document.querySelector(selector);
+            if (!container) return;
+            if (labelText) {
+                container.innerHTML = `<span class="zone-label">${labelText}</span>`;
+            }
+            cards.forEach(c => {
+                const el = deserializeCard(c);
+                if (el) container.appendChild(el);
+            });
+        };
+
+        const restoreCircle = (cardData, selector) => {
+            const circle = document.querySelector(selector);
+            if (!circle) return;
+            const el = deserializeCard(cardData);
+            if (el) circle.appendChild(el);
+        };
+
+        currentTurn = hostState.currentTurn;
+        currentPhaseIndex = hostState.currentPhaseIndex;
+        isMyTurn = !hostState.isMyTurn;
+        window.regalisPieceUsed = hostState.regalisPieceUsed;
+
+        bindPool = hostState.oppBindPool || [];
+        window.oppBindPool = hostState.bindPool || [];
+
+        restoreZone(hostState.guestDrop || [], '.my-side .drop-zone', 'Drop');
+        restoreZone(hostState.guestDamage || [], '.my-side .damage-zone', 'Damage');
+        restoreZone(hostState.guestOrder || [], '.my-side .order-zone', 'Order');
+
+        restoreCircle(hostState.guestVC, '.my-side .circle.vc');
+        restoreCircle(hostState.guestRC1, '.my-side #my-rc-1');
+        restoreCircle(hostState.guestRC2, '.my-side #my-rc-2');
+        restoreCircle(hostState.guestRC3, '.my-side #my-rc-3');
+        restoreCircle(hostState.guestRC4, '.my-side #my-rc-4');
+        restoreCircle(hostState.guestRC5, '.my-side #my-rc-5');
+
+        restoreZone(hostState.hostDrop || [], '.opponent-side .drop-zone', 'Drop');
+        restoreZone(hostState.hostDamage || [], '.opponent-side .damage-zone', 'Damage');
+        restoreZone(hostState.hostOrder || [], '.opponent-side .order-zone', 'Order');
+
+        restoreCircle(hostState.hostVC, '.opponent-side .circle.vc');
+        restoreCircle(hostState.hostRC1, '.opponent-side #opp-rc-1');
+        restoreCircle(hostState.hostRC2, '.opponent-side #opp-rc-2');
+        restoreCircle(hostState.hostRC3, '.opponent-side #opp-rc-3');
+        restoreCircle(hostState.hostRC4, '.opponent-side #opp-rc-4');
+        restoreCircle(hostState.hostRC5, '.opponent-side #opp-rc-5');
+
+        restoreZone(hostState.myPrison || [], '#opp-prison-zone', 'Opp Prison');
+        restoreZone(hostState.oppPrison || [], '#my-prison-zone', 'My Prison');
+
+        const saved = localStorage.getItem('vanguard_match_backup');
+        if (saved) {
+            try {
+                const localState = JSON.parse(saved);
+                deckPool = localState.deckPool || [];
+                soulPool = localState.soulPool || [];
+                restoreZone(localState.myHand || [], '.my-side .hand-cards');
+                restoreZone(localState.myRideDeck || [], '.my-side #ride-deck', 'Ride Deck');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        const hostHandContainer = document.querySelector('.opponent-side .hand-cards');
+        if (hostHandContainer) {
+            hostHandContainer.innerHTML = '';
+            for (let i = 0; i < (hostState.hostHand ? hostState.hostHand.length : 0); i++) {
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card face-down';
+                hostHandContainer.appendChild(cardBack);
+            }
+        }
+
+        updateDeckCounter();
+        updateSoulCounter();
+        updateBindCounter();
+        updateTurnIndicator();
+
+        hideReconnectOverlay();
+        saveGameState();
+    }
+
     function setupConnection() {
         console.log("Activating Game UI and listeners...");
         gameStarted = true;
@@ -8994,17 +9710,24 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => matchmakingOverlay.classList.add('hidden'), 800);
         }
         gameContainer.classList.remove('hidden');
-        gameContainer.classList.add('page-enter'); // Add smooth page enter animation
+        gameContainer.classList.add('page-enter');
 
         if (isHost) {
             networkInfo.textContent = 'Online (Host)';
         } else {
             networkInfo.textContent = 'Online (Guest)';
         }
-        initGame();
+        
+        const vgOnBoard = document.querySelector('.my-side .circle.vc .card');
+        if (!vgOnBoard) {
+            initGame();
+        }
 
-        // Primary game data listener
         conn.on('data', handleIncomingData);
+        conn.on('close', handleConnectionLost);
+        conn.on('error', handleConnectionLost);
+
+        saveGameState();
     }
 
     function startAIGame(pDeckKey, aDeckKey, diff) {
@@ -9029,6 +9752,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (pDeckKey === 'greedon') currentDeck = greedonDeck;
         else if (pDeckKey === 'seraph') currentDeck = seraphDeck;
         else if (pDeckKey === 'zorga') currentDeck = zorgaMasquesDeck;
+
+        checkAndLoadCustomDeck(pDeckKey);
 
         // Initialize AI state
         let aiFullDeck;
@@ -9536,6 +10261,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resolveAITrigger(cardData, isDamageCheck = false) {
         const type = cardData.trigger;
+        if (type) {
+            sfxEngine.playTrigger(type.toLowerCase());
+            flashTriggerNeon(type);
+        }
         alert(`AI ${type} Trigger Resolving...`);
 
         // Smart Power Distribution
@@ -12859,6 +13588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 promptOpponentRetireRG(data.attackerName);
                 break;
             case 'announcePersona':
+                sfxEngine.playPersona();
                 if (!isOpponentPersonaRide) {
                     isOpponentPersonaRide = true;
                     alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
@@ -12899,7 +13629,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'emptyHack':
                 break;
+            case 'guestReconnect':
+                console.log("Guest reconnected! Sending state...");
+                hideReconnectOverlay();
+                sendReconnectState();
+                break;
+            case 'reconnectState':
+                applyReconnectState(data.hostState);
+                break;
         }
+        saveGameState();
     }
 
     function promptOpponentRetireRG(attackerName) {
@@ -13037,6 +13776,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showOpponentDriveCheck(data) {
         const cardData = data.cardData;
+        if (cardData && cardData.trigger) {
+            sfxEngine.playTrigger(cardData.trigger.toLowerCase());
+            flashTriggerNeon(cardData.trigger);
+        }
         const checkCard = createCardElement(cardData);
         checkCard.classList.add('opponent-card');
         checkCard.style.position = 'absolute';
@@ -14449,6 +15192,37 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => initPrisonZones(), 500);
     }
 
+    function checkAndLoadCustomDeck(deckKey) {
+        if (!window.VANGUARD_CARDS_DB || !window.VANGUARD_CARDS_DB.cards) {
+            console.error("Vanguard Cards DB not loaded!");
+            return;
+        }
+        const saved = localStorage.getItem(`vanguard_custom_deck_${deckKey}`);
+        if (!saved) return;
+        try {
+            const data = JSON.parse(saved);
+            if (!data || !Array.isArray(data.rideDeck) || !Array.isArray(data.mainDeck)) return;
+            
+            const cardMap = {};
+            window.VANGUARD_CARDS_DB.cards.forEach(c => {
+                cardMap[c.id] = c;
+            });
+
+            const loadedRide = data.rideDeck.map(id => cardMap[id] ? { ...cardMap[id] } : null).filter(Boolean);
+            const loadedMain = data.mainDeck.map(id => cardMap[id] ? { ...cardMap[id] } : null).filter(Boolean);
+
+            if (loadedRide.length === 4 && loadedMain.length === 46) {
+                console.log(`Successfully loaded custom deck for ${deckKey}`);
+                currentDeck = {
+                    rideDeck: loadedRide,
+                    mainDeck: loadedMain
+                };
+            }
+        } catch (e) {
+            console.error("Failed to load custom deck:", e);
+        }
+    }
+
     // --- URL Parameters Orchestration ---
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
@@ -14460,8 +15234,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const customId = urlParams.get('customId');
 
     if (mode === 'ai') {
-        startAIGame(deckChoice, aiDeckChoice, difficultyChoice || 'hard');
+        const restored = restoreGameState();
+        if (!restored) {
+            startAIGame(deckChoice, aiDeckChoice, difficultyChoice || 'hard');
+        }
     } else {
+        const restored = restoreGameState();
+
         if (deckChoice === 'bruce') currentDeck = bruceDeck;
         else if (deckChoice === 'magnolia') currentDeck = magnoliaDeck;
         else if (deckChoice === 'nirvana') currentDeck = nirvanaJhevaDeck;
@@ -14472,6 +15251,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (deckChoice === 'greedon') currentDeck = greedonDeck;
         else if (deckChoice === 'seraph') currentDeck = seraphDeck;
         else if (deckChoice === 'zorga') currentDeck = zorgaMasquesDeck;
+
+        checkAndLoadCustomDeck(deckChoice);
 
         if (role === 'host') {
             initPeer(customId);

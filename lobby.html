@@ -128,6 +128,12 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Deck Customization Toolbar -->
+                <div class="deck-actions-container" style="display: flex; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="open-deck-builder-btn" class="action-btn host-btn" style="max-width: 340px; font-size: 1.1rem; letter-spacing: 0.5px; border: 1px solid var(--secondary); background: rgba(5, 217, 232, 0.1); color: var(--secondary);">🔧 ปรับแต่งเด็คที่เลือก (Customize Deck)</button>
+                    <button id="reset-custom-deck-btn" class="action-btn join-btn" style="max-width: 300px; font-size: 1.1rem; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.15);">🔄 รีเซ็ตเด็คแต่งใหม่ทั้งหมด</button>
+                </div>
             </section>
 
             <!-- Matchmaking Actions -->
@@ -160,7 +166,131 @@
         </main>
     </div>
 
+    <!-- Deck Builder Modal -->
+    <div id="deck-builder-modal" class="modal-overlay hidden">
+        <div class="db-modal-container">
+            <div class="db-modal-header">
+                <div class="db-header-left">
+                    <span class="db-header-icon">🔧</span>
+                    <div>
+                        <h2 id="db-title-text">DECK BUILDER</h2>
+                        <p id="db-subtitle-text">ปรับแต่งเด็คสำหรับการแข่งขัน</p>
+                    </div>
+                </div>
+                <div class="db-header-actions">
+                    <button id="db-export-btn" class="db-mini-btn" title="ส่งออกไฟล์เด็ค .json">📤 Export</button>
+                    <button id="db-import-btn" class="db-mini-btn" title="นำเข้าไฟล์เด็ค .json">📥 Import</button>
+                    <input type="file" id="db-import-file" style="display: none;" accept=".json">
+                    <button id="db-close-btn" class="db-close-x-btn">&times;</button>
+                </div>
+            </div>
+
+            <!-- Validation Dashboard -->
+            <div class="db-dashboard">
+                <div class="db-dash-item" id="dash-total">
+                    <span class="dash-label">ขนาดเด็ค</span>
+                    <span class="dash-val">0 / 50</span>
+                </div>
+                <div class="db-dash-item" id="dash-ride">
+                    <span class="dash-label">ไรด์เด็ค (G0-G3)</span>
+                    <span class="dash-val">0 / 4</span>
+                </div>
+                <div class="db-dash-item" id="dash-main">
+                    <span class="dash-label">เมนเด็ค</span>
+                    <span class="dash-val">0 / 46</span>
+                </div>
+                <div class="db-dash-item" id="dash-trigger">
+                    <span class="dash-label">ทริกเกอร์</span>
+                    <span class="dash-val">0 / 16</span>
+                </div>
+                <div class="db-dash-item" id="dash-heal">
+                    <span class="dash-label">ฮีลทริกเกอร์</span>
+                    <span class="dash-val">0 / 4</span>
+                </div>
+                <div class="db-dash-item" id="dash-over">
+                    <span class="dash-label">โอเวอร์ทริกเกอร์</span>
+                    <span class="dash-val">0 / 1</span>
+                </div>
+                <div class="db-dash-item" id="dash-pg">
+                    <span class="dash-label">เซนติเนล (PG)</span>
+                    <span class="dash-val">0 / 4</span>
+                </div>
+            </div>
+
+            <div class="db-workspace">
+                <!-- Left: Card Database Search/Filters and Cards Grid -->
+                <div class="db-database-panel">
+                    <div class="db-panel-header">
+                        <h3>คลังการ์ดพันธมิตร</h3>
+                        <div class="db-search-box">
+                            <input type="text" id="db-search-input" placeholder="ค้นหาชื่อการ์ดหรือเอฟเฟกต์...">
+                            <button id="db-clear-search" class="db-clear-btn">&times;</button>
+                        </div>
+                        <div class="db-filter-bar">
+                            <div class="db-filter-group">
+                                <span class="filter-label">เกรด:</span>
+                                <button class="filter-btn active" data-grade="all">All</button>
+                                <button class="filter-btn" data-grade="0">0</button>
+                                <button class="filter-btn" data-grade="1">1</button>
+                                <button class="filter-btn" data-grade="2">2</button>
+                                <button class="filter-btn" data-grade="3">3</button>
+                                <button class="filter-btn" data-grade="4">4</button>
+                            </div>
+                            <div class="db-filter-group">
+                                <span class="filter-label">ประเภท:</span>
+                                <button class="filter-btn active" data-type="all">All</button>
+                                <button class="filter-btn" data-type="unit">Unit</button>
+                                <button class="filter-btn" data-type="trigger">Trigger</button>
+                                <button class="filter-btn" data-type="order">Order</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="db-card-grid" id="db-card-grid-container">
+                        <!-- Cards injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Active Deck (Ride + Main) -->
+                <div class="db-decklist-panel">
+                    <!-- Ride Deck Section -->
+                    <div class="db-deck-section">
+                        <div class="db-section-header">
+                            <h4>Ride Deck (ไรด์เด็ค 4 ใบ) <span id="sec-ride-count" class="sec-badge">0/4</span></h4>
+                            <p class="sec-desc">ต้องมีเกรด 0, 1, 2, 3 อย่างละ 1 ใบพอดี</p>
+                        </div>
+                        <div class="db-ride-list" id="db-ride-list-container">
+                            <!-- Ride deck cards -->
+                        </div>
+                    </div>
+
+                    <!-- Main Deck Section -->
+                    <div class="db-deck-section">
+                        <div class="db-section-header">
+                            <h4>Main Deck (เมนเด็ค 46 ใบ) <span id="sec-main-count" class="sec-badge">0/46</span></h4>
+                            <p class="sec-desc">ทริกเกอร์รวม 16 ใบ (ฮีล &lt;= 4, โอเวอร์ &lt;= 1)</p>
+                        </div>
+                        <div class="db-main-list" id="db-main-list-container">
+                            <!-- Main deck cards -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="db-modal-footer">
+                <div class="db-validation-summary" id="db-validation-text">
+                    ⚠️ เด็คยังไม่สมบูรณ์: กรุณาใส่การ์ดให้ครบ 50 ใบ
+                </div>
+                <div class="db-footer-buttons">
+                    <button id="db-reset-btn" class="glass-btn secondary-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">ล้างทั้งหมด (Reset)</button>
+                    <button id="db-save-btn" class="glass-btn highlight-btn" style="padding: 0.8rem 2rem; font-size: 1.1rem;" disabled>💾 บันทึกเด็ค (Save)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="cards_db.js"></script>
     <script src="lobby.js"></script>
 </body>
 </html>

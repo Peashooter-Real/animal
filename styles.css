@@ -522,6 +522,22 @@ body {
   perspective: 1000px;
 }
 
+.hand-cards .card {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  flex-shrink: 0;
+  margin: 0 !important;
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s ease, z-index 0.2s ease !important;
+}
+
+.hand-cards .card:hover {
+  transform: translateY(-20px) scale(1.08) !important;
+  z-index: 1000 !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7), 0 0 15px var(--accent-cyan) !important;
+}
+
 /* Card Element */
 .card {
   width: var(--card-width);
@@ -1735,7 +1751,22 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
   }
 
   .hand-cards {
-    gap: -20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: -15px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    padding: 10px 20px;
+    scrollbar-width: thin;
+  }
+  .hand-cards::-webkit-scrollbar {
+    height: 4px;
+  }
+  .hand-cards::-webkit-scrollbar-thumb {
+    background: rgba(0, 229, 255, 0.3);
+    border-radius: 4px;
   }
 
   /* Lobby Mobile Fixes */
