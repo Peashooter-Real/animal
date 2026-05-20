@@ -2604,7 +2604,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If a card is already selected and we tap a card ON THE FIELD, assume we want to place it in that circle, 
                 // so don't steal the selection. Let it bubble to the zone listener.
                 if (selectedCard && selectedCard !== card && card.parentElement && card.parentElement.classList.contains('circle')) {
-                    return; // Let the event bubble to the circle listener
+                    const getCol = (z) => {
+                        if (!z) return 'none';
+                        if (z.includes('left')) return 'left';
+                        if (z.includes('right')) return 'right';
+                        if (z.includes('center') || z === 'vc') return 'center';
+                        return 'none';
+                    };
+                    const oldParent = selectedCard.parentElement;
+                    const oldZone = oldParent ? (oldParent.dataset.zone || "") : "";
+                    const newZone = card.parentElement.dataset.zone || "";
+                    const isFromField = oldParent && oldParent.classList.contains('circle');
+
+                    if (isFromField && (getCol(oldZone) !== getCol(newZone) || newZone === 'vc' || oldZone === 'vc')) {
+                        // Different columns or invalid swap, change selection to this card instead of bubbling
+                    } else {
+                        return; // Let the event bubble to the circle listener for valid move/swap
+                    }
                 }
 
                 if (selectedCard) selectedCard.classList.remove('card-selected');
@@ -8639,8 +8655,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (isHit && !isVanguardTarget) {
                 alert(`AI destroyed your Rear-guard ${target.dataset.name}!`);
                 const dropZone = document.querySelector('.my-side .drop-zone');
-                if (dropZone) dropZone.appendChild(target);
-                sendMoveData(target);
+                if (dropZone) {
+                    dropZone.appendChild(target);
+                    window.myRGRetiredThisTurn = true;
+                    target.classList.remove('rest', 'attacking-glow');
+                    target.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    sendMoveData(target);
+                    updateDropCount();
+                    updateAllStaticBonuses();
+                }
             }
         }
         
@@ -9102,9 +9125,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 targetNode.style.position = ""; // Reset any positioning
                                 targetNode.style.top = "";
                                 targetNode.style.left = "";
-                                targetNode.style.transform = "";
+                                targetNode.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
                             }
                             updateDropCount();
+                            updateAllStaticBonuses();
                         }
                     }
                 }
@@ -14075,6 +14099,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let targetId = attackData.targetId;
         if (targetId && targetId.startsWith('opp-')) {
             targetId = targetId.replace('opp-', '');
+        }
+
+        // Map target zone ID for correct local retirement lookup (multiplayer mirroring)
+        const zoneMap = {
+            'rc_front_left': 'rc_front_right',
+            'rc_front_right': 'rc_front_left',
+            'rc_back_left': 'rc_back_right',
+            'rc_back_right': 'rc_back_left',
+            'rc_back_center': 'rc_back_center',
+            'vc': 'vc'
+        };
+        if (!isAIMode && targetId && zoneMap[targetId]) {
+            targetId = zoneMap[targetId];
         }
 
         // Safety: Only the player whose units are targeted should handle retirement/damage
