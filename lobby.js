@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ...Array(3).fill("de_galondight"),
                 ...Array(4).fill("de_mirrors"),
                 ...Array(2).fill("de_garou"),
-                ...Array(1).fill("de_baur"),
+                ...Array(2).fill("de_baur"),
                 ...Array(2).fill("de_arcs"),
                 ...Array(3).fill("de_jheva"),
                 ...Array(7).fill("de_trig_crit"),
@@ -546,6 +546,14 @@ document.addEventListener('DOMContentLoaded', () => {
         editingRideDeck.forEach(id => {
             if (getCardName(id) === name) count++;
         });
+        editingMainDeck.forEach(id => {
+            if (getCardName(id) === name) count++;
+        });
+        return count;
+    }
+
+    function getMainQtyByName(name) {
+        let count = 0;
         editingMainDeck.forEach(id => {
             if (getCardName(id) === name) count++;
         });
@@ -723,8 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             cardItem.querySelector('.add-main').addEventListener('click', () => {
-                const totalQty = getQtyByName(card.name);
-                if (totalQty >= 4) {
+                const totalQty = getMainQtyByName(card.name);
+                if (!card.trigger && totalQty >= 4) {
                     alert("คุณใส่การ์ดใบนี้ครบ 4 ใบแล้ว (ไม่สามารถใส่ซ้ำได้เกิน 4 ใบรวมทั้งไรด์เด็คและเมนเด็ค)");
                     return;
                 }
@@ -747,8 +755,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert(`ไรด์เด็คมีเกรด ${card.grade} อยู่แล้ว (ต้องมีเกรด 0, 1, 2, 3 อย่างละ 1 ใบพอดี)`);
                         return;
                     }
-                    const totalQty = getQtyByName(card.name);
-                    if (totalQty >= 4) {
+                    const totalQty = 0;
+                    if (!card.trigger && totalQty >= 4) {
                         alert("คุณใส่การ์ดใบนี้ครบ 4 ใบแล้ว (ไม่สามารถใส่ซ้ำได้เกิน 4 ใบรวมทั้งไรด์เด็คและเมนเด็ค)");
                         return;
                     }
@@ -858,8 +866,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     row.querySelector('.qty-plus').addEventListener('click', () => {
-                        const totalQty = getQtyByName(card.name);
-                        if (totalQty >= 4) {
+                        const totalQty = getMainQtyByName(card.name);
+                        if (!card.trigger && totalQty >= 4) {
                             alert("คุณใส่การ์ดใบนี้ครบ 4 ใบแล้ว (ไม่สามารถใส่ซ้ำได้เกิน 4 ใบรวมทั้งไรด์เด็คและเมนเด็ค)");
                             return;
                         }
@@ -959,9 +967,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let dupLimitExceeded = false;
         const nameCounts = {};
-        [...editingRideDeck, ...editingMainDeck].forEach(id => {
-            const name = getCardName(id);
-            if (name) {
+        editingMainDeck.forEach(id => {
+            const c = window.VANGUARD_CARDS_DB.cards.find(x => x.id === id);
+            const name = c ? c.name : "";
+            if (name && !c.trigger) {
                 nameCounts[name] = (nameCounts[name] || 0) + 1;
                 if (nameCounts[name] > 4) dupLimitExceeded = true;
             }
