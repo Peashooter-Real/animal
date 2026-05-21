@@ -300,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (soundName === 'trigger') sfxEngine.playTrigger(...args);
                 else if (soundName === 'persona') sfxEngine.playPersona();
                 else if (soundName === 'shuffle') sfxEngine.playShuffle();
+                else if (soundName === 'card') sfxEngine.playDraw();
             } catch (e) {
                 console.error(e);
             }
@@ -345,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(entry);
         container.scrollTop = container.scrollHeight;
 
-        if (shouldSync) {
+        if (shouldSync && !isAIMode) {
             sendData({
                 type: 'combatLog',
                 msg: msg,
@@ -3085,7 +3086,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playerHand.appendChild(newCard);
         updateHandSpacing();
         updateDeckCounter();
-        sfxEngine.playDraw();
+        SoundManager.play('draw');
 
         // Sync hand count AND the card itself if it's hand (optional: Vanguard usually hides hand)
         // For this request, we'll sync the move so it appears in opponent's hand zone
@@ -3131,12 +3132,14 @@ document.addEventListener('DOMContentLoaded', () => {
         checkCard.classList.add('effect-trigger');
         document.body.appendChild(checkCard);
 
-        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false });
+        sendData({ type: 'revealDrive', cardData: cardData, isFirst: false, isDamageCheck: true });
 
         setTimeout(() => {
             if (cardData.trigger) {
+                addCombatLog(`Damage Check: ${cardData.name} (${cardData.trigger} Trigger)`, 'trigger');
                 resolveTrigger(cardData, true);
             } else {
+                addCombatLog(`Damage Check: ${cardData.name}`, 'system');
                 pendingPowerIncrease = 0;
                 pendingCriticalIncrease = 0;
                 document.body.classList.remove('targeting-mode');
@@ -3255,6 +3258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hasPG || isOpponentPG) {
             alert("Perfect Guard activated! Attack is nullified.");
+            addCombatLog(`${attacker.dataset.name} attack was stopped by Perfect Guard`, 'system');
             await sendData({
                 type: 'resolveAttack',
                 attackData: {
@@ -3268,8 +3272,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (isHit) {
                 alert(`Attack hit! ${finalPower} Power vs ${targetDefendingPower} Def. Resolving damage...`);
+                addCombatLog(`${attacker.dataset.name} hit ${target.dataset.name} (${finalPower} vs ${targetDefendingPower})`, 'player');
             } else {
                 alert(`Attack missed! ${finalPower} Power is not enough to hit ${targetDefendingPower} Power (Base + Shield: ${opponentShield}).`);
+                addCombatLog(`${attacker.dataset.name} missed ${target.dataset.name} (${finalPower} vs ${targetDefendingPower})`, 'system');
             }
 
             await sendData({
@@ -3422,8 +3428,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             if (cardData.trigger) {
+                addCombatLog(`Drive Check: ${cardData.name} (${cardData.trigger} Trigger)`, 'trigger');
                 resolveTrigger(cardData);
             } else {
+                addCombatLog(`Drive Check: ${cardData.name}`, 'system');
                 pendingPowerIncrease = 0;
                 pendingCriticalIncrease = 0;
                 document.body.classList.remove('targeting-mode');
@@ -3478,10 +3486,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let powerIncrease = triggerType === 'Over' ? 100000000 : 10000;
 
         if (triggerType) {
-            sfxEngine.playTrigger(triggerType.toLowerCase());
-            flashTriggerNeon(triggerType);
+            triggerVFXAlert(triggerType);
         }
 
+        addCombatLog(`${triggerType} Trigger activated: ${cardData.name}`, 'trigger');
         alert(`Trigger! ${triggerType} effect activating...`);
 
         if (triggerType === 'Front') {
@@ -3757,7 +3765,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        sfxEngine.playAttack();
+        SoundManager.play('attack');
+        addCombatLog(`${attacker.dataset.name} attacks ${target.dataset.name}`, 'player');
 
         // --- Majesty Lord Blaster Attack Skill ---
         if (attacker.dataset.name.includes('Majesty Lord Blaster') && attackerParentCircle.classList.contains('vc') && targetParent.classList.contains('vc')) {
@@ -4707,7 +4716,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             // Move card and cleanup
-            sfxEngine.playGuard();
+            SoundManager.play('guard');
+            addCombatLog(`Guard: ${card.dataset.name}`, 'player');
             zone.appendChild(card);
             card.classList.remove('rest');
             card.style.transform = 'none';
@@ -4783,6 +4793,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 zone.innerHTML = '';
                 zone.appendChild(card);
                 hasRiddenThisTurn = true;
+                SoundManager.play('card');
+                addCombatLog(`Ride: ${card.dataset.name}`, 'player');
                 // Track if rode from G3 (for Schneizal 2nd ability)
                 if (vanguardGrade >= 3) {
                     window.rodeFromG3ThisTurn = true;
@@ -4894,6 +4906,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.dataset.fromHand = "true";
                 zone.appendChild(card);
                 updateDropCount();
+                SoundManager.play('card');
+                addCombatLog(`Call: ${card.dataset.name}`, 'player');
 
                 applyStaticBonuses(card);
                 await checkOnPlaceAbilities(card);
@@ -4944,6 +4958,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             sendMoveData(nextRideCard);
                             handleRideAbilities(nextRideCard, discardedCard);
                             checkOnPlaceAbilities(nextRideCard); // Ensure [AUTO] on VC triggers correctly
+                            SoundManager.play('card');
+                            addCombatLog(`Ride Deck Ride: ${nextRideCard.dataset.name}`, 'player');
                             alert(`Auto-Ride: ${nextRideCard.dataset.name}!`);
 
                             // Move to Main Phase after ride
@@ -6817,7 +6833,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function triggerPersonaRide() {
         personaRideActive = true;
-        sfxEngine.playPersona();
+        SoundManager.play('persona');
+        addCombatLog('Persona Ride activated', 'player');
 
         // 1. Alert and Broadcast
         alert("PERSONA RIDE! ยูนิทแถวหน้าทั้งหมดได้รับพลัง +10000 สำหรับตาคุณ และจั่วการ์ด 1 ใบ!");
@@ -7996,6 +8013,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw initial 5
         // Use existing deckPool to preserve unique IDs assigned in initGame
         deckPool.sort(() => 0.5 - Math.random());
+        SoundManager.play('shuffle');
+        addCombatLog('Deck shuffled for opening hand', 'system');
         const initialHand = deckPool.splice(0, 5);
 
         initialHand.forEach(cardData => {
@@ -8015,6 +8034,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 deckPool.push(JSON.parse(node.dataset.cardData));
             });
             deckPool.sort(() => 0.5 - Math.random());
+            if (toReturn.length > 0) {
+                SoundManager.play('shuffle');
+                addCombatLog(`Mulligan: returned ${toReturn.length} card(s) and shuffled`, 'system');
+            } else {
+                addCombatLog('Mulligan: kept opening hand', 'system');
+            }
             updateDeckCounter();
 
             // Clear hand area and grid
@@ -9281,6 +9306,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         alert(`AI โจมตี ${target === 'vc' ? 'แวนการ์ด' : 'เรียร์การ์ด'} ด้วย ${unit.dataset.name} (พลังรวม: ${totalPower})!`);
+        SoundManager.play('attack');
+        addCombatLog(`AI attacks ${target === 'vc' ? 'your vanguard' : target} with ${unit.dataset.name}`, 'opponent', false);
         await aiWait(1000);
 
         window.aiCurrentAttackTarget = target;
@@ -10596,6 +10623,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert(`AI ไดรฟ์เช็ค: ${cardData.name}${displayTrigger}`);
 
+        addCombatLog(`AI Drive Check: ${cardData.name}${cardData.trigger ? ` (${cardData.trigger} Trigger)` : ''}`, cardData.trigger ? 'trigger' : 'opponent', false);
+
         if (cardData.trigger) {
             resolveAITrigger(cardData);
         }
@@ -10647,6 +10676,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(cardNode);
 
         alert(`AI ดาเมจเช็ค: ${cardData.name}${displayTrigger}`);
+        addCombatLog(`AI Damage Check: ${cardData.name}${cardData.trigger ? ` (${cardData.trigger} Trigger)` : ''}`, cardData.trigger ? 'trigger' : 'opponent', false);
         await aiWait(1200);
 
         if (cardData.trigger) {
@@ -10695,9 +10725,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function resolveAITrigger(cardData, isDamageCheck = false) {
         const type = cardData.trigger;
         if (type) {
-            sfxEngine.playTrigger(type.toLowerCase());
-            flashTriggerNeon(type);
+            triggerVFXAlert(type);
         }
+        addCombatLog(`AI ${type} Trigger activated: ${cardData.name}`, 'trigger', false);
         alert(`AI ${type} Trigger Resolving...`);
 
         // Smart Power Distribution
@@ -14050,7 +14080,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 promptOpponentRetireRG(data.attackerName);
                 break;
             case 'announcePersona':
-                sfxEngine.playPersona();
+                SoundManager.play('persona');
+                addCombatLog('Rival Persona Ride activated', 'opponent', false);
                 if (!isOpponentPersonaRide) {
                     isOpponentPersonaRide = true;
                     alert("RIVAL ACTIVE: PERSONA RIDE! Their front row units gain +10000 Power!");
@@ -14238,9 +14269,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showOpponentDriveCheck(data) {
         const cardData = data.cardData;
+        const checkLabel = data.isDamageCheck ? 'Damage Check' : 'Drive Check';
         if (cardData && cardData.trigger) {
-            sfxEngine.playTrigger(cardData.trigger.toLowerCase());
-            flashTriggerNeon(cardData.trigger);
+            triggerVFXAlert(cardData.trigger);
+            addCombatLog(`Opponent ${checkLabel}: ${cardData.name} (${cardData.trigger} Trigger)`, 'trigger', false);
+        } else if (cardData) {
+            addCombatLog(`Opponent ${checkLabel}: ${cardData.name}`, 'opponent', false);
         }
         const checkCard = createCardElement(cardData);
         checkCard.classList.add('opponent-card');
@@ -15633,6 +15667,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ...c, 
             id: `p-main-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}` 
         }));
+        SoundManager.play('shuffle');
+        addCombatLog('Game setup: deck prepared', 'system');
         window.regalisPieceUsed = false;
         updateDeckCounter();
         const rideDeckZone = document.getElementById('ride-deck');
