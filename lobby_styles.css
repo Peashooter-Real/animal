@@ -410,6 +410,7 @@ body {
     letter-spacing: 0.5px;
     background: linear-gradient(90deg, #fff, #bbb);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -729,6 +730,7 @@ body {
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
@@ -1153,6 +1155,7 @@ body {
     }
     .db-card-skill-preview {
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         font-size: 0.68rem;
     }
     .db-card-actions {
