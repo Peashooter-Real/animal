@@ -104,7 +104,13 @@
             <header class="header">
                 <h1 class="logo">Vanguard <span class="highlight">overDress</span> Arena</h1>
 
-                <div class="game-info" style="display: flex; align-items: center;">
+                <div class="game-info" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="sound-toggle-btn" class="glass-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                        <span>🔊</span> <span id="sound-status-text">Sound ON</span>
+                    </button>
+                    <button id="log-toggle-btn" class="glass-btn highlight-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                        <span>📜</span> <span>Log</span>
+                    </button>
                     <div id="connection-badge" class="connection badge">
                         <span class="dot online"></span>
                         <span id="network-info">Online (Host)</span>
@@ -457,7 +463,29 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <!-- Slide-out Combat Log Panel -->
+    <div id="combat-log-panel" class="combat-log-panel hidden">
+        <div class="combat-log-header">
+            <h3>📜 Combat Log</h3>
+            <button id="close-log-btn" class="close-btn">&times;</button>
+        </div>
+        <div id="combat-log-content" class="combat-log-content">
+            <div class="log-entry system">Welcome to Cardfight Vanguard Arena!</div>
+        </div>
+    </div>
+
+    <!-- Trigger Check VFX Overlay -->
+    <div id="trigger-vfx-overlay" class="trigger-vfx-overlay hidden">
+        <div class="trigger-vfx-content">
+            <div class="trigger-vfx-glow"></div>
+            <div class="trigger-vfx-title">TRIGGER CHECK</div>
+            <div id="trigger-vfx-name" class="trigger-vfx-name">CRITICAL TRIGGER</div>
+            <div id="trigger-vfx-icon" class="trigger-vfx-icon">🌟</div>
+            <div class="trigger-vfx-desc">Power +10000!</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="cards_db.js"></script>
     <script src="script.js"></script>
 </body>

@@ -3465,3 +3465,290 @@ body.targeting-mode::after {
   width: 100%;
   transition: width 1s linear;
 }
+
+/* Combat Log & Trigger VFX Premium Features */
+.combat-log-panel {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  width: 350px;
+  height: calc(100vh - 70px);
+  background: var(--bg-panel);
+  border-left: 2px solid var(--accent-blue);
+  box-shadow: -5px 0 20px rgba(0, 229, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(15px);
+}
+
+.combat-log-panel.hidden {
+  transform: translateX(100%);
+  display: flex !important; /* overrides display: none to allow smooth sliding */
+  pointer-events: none;
+}
+
+.combat-log-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.combat-log-header h3 {
+  font-family: var(--font-cyber);
+  font-size: 1rem;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 5px var(--accent-cyan);
+}
+
+.combat-log-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-family: 'Outfit', sans-serif;
+  scroll-behavior: smooth;
+}
+
+.combat-log-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.combat-log-content::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 3px;
+}
+
+.log-entry {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  word-wrap: break-word;
+}
+
+.log-entry.system {
+  color: #e0e0f0;
+  border-left-color: #ffd700;
+  background: rgba(255, 215, 0, 0.03);
+}
+
+.log-entry.player {
+  color: #fff;
+  border-left-color: var(--accent-cyan);
+  background: rgba(5, 217, 232, 0.03);
+}
+
+.log-entry.opponent {
+  color: #e0e0f0;
+  border-left-color: var(--accent-vanguard);
+  background: rgba(255, 42, 109, 0.03);
+}
+
+.log-entry.trigger {
+  color: #fff;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+}
+
+/* Trigger VFX Overlay */
+.trigger-vfx-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 1, 3, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  animation: overlay-fade-in 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.trigger-vfx-overlay.hidden {
+  display: none !important;
+}
+
+.trigger-vfx-content {
+  text-align: center;
+  position: relative;
+  padding: 3rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 5, 15, 0.9);
+  max-width: 90vw;
+  width: 450px;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+}
+
+.trigger-vfx-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  filter: blur(30px);
+  z-index: 0;
+  pointer-events: none;
+  animation: glow-pulse 1.5s infinite alternate;
+}
+
+.trigger-vfx-title {
+  font-family: var(--font-cyber);
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 1.5rem;
+  z-index: 1;
+  position: relative;
+}
+
+.trigger-vfx-name {
+  font-family: var(--font-cyber);
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  z-index: 1;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.trigger-vfx-icon {
+  font-size: 5rem;
+  margin: 1.5rem 0;
+  z-index: 1;
+  position: relative;
+  animation: icon-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.trigger-vfx-desc {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  z-index: 1;
+  position: relative;
+  letter-spacing: 1px;
+}
+
+/* Trigger Styles */
+.trigger-vfx-overlay.critical .trigger-vfx-name {
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+.trigger-vfx-overlay.critical .trigger-vfx-glow {
+  background: #ffd700;
+}
+.trigger-vfx-overlay.critical .trigger-vfx-content {
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.trigger-vfx-overlay.heal .trigger-vfx-name {
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+}
+.trigger-vfx-overlay.heal .trigger-vfx-glow {
+  background: #00ff88;
+}
+.trigger-vfx-overlay.heal .trigger-vfx-content {
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.trigger-vfx-overlay.draw .trigger-vfx-name {
+  color: #ff3b30;
+  text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);
+}
+.trigger-vfx-overlay.draw .trigger-vfx-glow {
+  background: #ff3b30;
+}
+.trigger-vfx-overlay.draw .trigger-vfx-content {
+  border-color: rgba(255, 59, 48, 0.3);
+}
+
+.trigger-vfx-overlay.front .trigger-vfx-name {
+  color: #ff9500;
+  text-shadow: 0 0 20px rgba(255, 149, 0, 0.6);
+}
+.trigger-vfx-overlay.front .trigger-vfx-glow {
+  background: #ff9500;
+}
+.trigger-vfx-overlay.front .trigger-vfx-content {
+  border-color: rgba(255, 149, 0, 0.3);
+}
+
+.trigger-vfx-overlay.over .trigger-vfx-name {
+  color: #af52de;
+  text-shadow: 0 0 25px rgba(175, 82, 222, 0.8);
+  animation: rainbow-text-shadow 3s infinite linear;
+}
+.trigger-vfx-overlay.over .trigger-vfx-glow {
+  background: linear-gradient(45deg, #af52de, #05d9e8, #ffd700);
+}
+.trigger-vfx-overlay.over .trigger-vfx-content {
+  border-color: rgba(175, 82, 222, 0.5);
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes icon-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes glow-pulse {
+  from { opacity: 0.1; transform: scale(0.9); }
+  to { opacity: 0.25; transform: scale(1.1); }
+}
+
+@keyframes rainbow-text-shadow {
+  0% { text-shadow: 0 0 20px rgba(175, 82, 222, 0.8); }
+  33% { text-shadow: 0 0 20px rgba(5, 217, 232, 0.8); }
+  66% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+  100% { text-shadow: 0 0 20px rgba(175, 82, 222, 0.8); }
+}
+
+/* Adjustments for Board layout to accommodate sidebar */
+body.log-panel-open .board-area {
+  margin-right: 350px;
+}
+body.log-panel-open .hand-area {
+  margin-right: 350px;
+}
+body.log-panel-open .quick-access-panel {
+  margin-right: 350px;
+}
+
+@media screen and (max-width: 900px) {
+  .combat-log-panel {
+    width: 280px;
+  }
+  body.log-panel-open .board-area,
+  body.log-panel-open .hand-area,
+  body.log-panel-open .quick-access-panel {
+    margin-right: 280px;
+  }
+}
+@media screen and (max-width: 600px) {
+  .combat-log-panel {
+    width: 220px;
+    font-size: 0.8rem;
+  }
+  body.log-panel-open .board-area,
+  body.log-panel-open .hand-area,
+  body.log-panel-open .quick-access-panel {
+    margin-right: 0; /* do not push layout on small screens */
+  }
+}
+

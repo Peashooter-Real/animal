@@ -246,8 +246,169 @@ document.addEventListener('DOMContentLoaded', () => {
                     osc.stop(now + i * 0.08 + 0.5);
                 });
             } catch (e) { console.error(e); }
+        },
+        playShuffle() {
+            try {
+                this.init();
+                const ctx = this.ctx;
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                // Play 6 rapid small clicks over 0.3s
+                for (let i = 0; i < 6; i++) {
+                    const clickTime = now + i * 0.05;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(1000 - i * 100, clickTime);
+                    gain.gain.setValueAtTime(0.08, clickTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, clickTime + 0.03);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(clickTime);
+                    osc.stop(clickTime + 0.03);
+                }
+            } catch (e) { console.error(e); }
         }
     };
+
+    // --- SoundManager ---
+    const SoundManager = {
+        isMuted: false,
+        init() {
+            const btn = document.getElementById('sound-toggle-btn');
+            const txt = document.getElementById('sound-status-text');
+            if (btn && txt) {
+                btn.addEventListener('click', () => {
+                    this.isMuted = !this.isMuted;
+                    txt.textContent = this.isMuted ? 'Sound OFF' : 'Sound ON';
+                    btn.querySelector('span').textContent = this.isMuted ? '🔇' : '🔊';
+                    if (this.isMuted) {
+                        btn.classList.add('muted');
+                    } else {
+                        btn.classList.remove('muted');
+                        sfxEngine.init();
+                    }
+                });
+            }
+        },
+        play(soundName, ...args) {
+            if (this.isMuted) return;
+            try {
+                if (soundName === 'draw') sfxEngine.playDraw();
+                else if (soundName === 'attack') sfxEngine.playAttack();
+                else if (soundName === 'guard') sfxEngine.playGuard();
+                else if (soundName === 'trigger') sfxEngine.playTrigger(...args);
+                else if (soundName === 'persona') sfxEngine.playPersona();
+                else if (soundName === 'shuffle') sfxEngine.playShuffle();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+
+    SoundManager.init();
+
+    // --- Combat Log Panel UI Handlers ---
+    const logToggleBtn = document.getElementById('log-toggle-btn');
+    const closeLogBtn = document.getElementById('close-log-btn');
+    const logPanel = document.getElementById('combat-log-panel');
+    
+    function toggleLogPanel() {
+        if (logPanel) {
+            logPanel.classList.toggle('hidden');
+            if (logPanel.classList.contains('hidden')) {
+                document.body.classList.remove('log-panel-open');
+            } else {
+                document.body.classList.add('log-panel-open');
+                const container = document.getElementById('combat-log-content');
+                if (container) container.scrollTop = container.scrollHeight;
+            }
+        }
+    }
+
+    if (logToggleBtn) logToggleBtn.addEventListener('click', toggleLogPanel);
+    if (closeLogBtn) closeLogBtn.addEventListener('click', toggleLogPanel);
+
+    function addCombatLog(msg, type = 'system', shouldSync = true) {
+        const container = document.getElementById('combat-log-content');
+        if (!container) return;
+
+        let displayType = type;
+        if (!shouldSync) { // came from remote side
+            if (type === 'player') displayType = 'opponent';
+            else if (type === 'opponent') displayType = 'player';
+        }
+
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${displayType}`;
+        entry.textContent = msg;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+
+        if (shouldSync) {
+            sendData({
+                type: 'combatLog',
+                msg: msg,
+                logType: type
+            });
+        }
+    }
+
+    function triggerVFXAlert(triggerType) {
+        const overlay = document.getElementById('trigger-vfx-overlay');
+        if (!overlay) return;
+
+        const nameEl = document.getElementById('trigger-vfx-name');
+        const iconEl = document.getElementById('trigger-vfx-icon');
+        const descEl = overlay.querySelector('.trigger-vfx-desc');
+
+        overlay.classList.remove('critical', 'heal', 'draw', 'front', 'over');
+        
+        const typeNormalized = (triggerType || "").toLowerCase();
+        let name = "TRIGGER CHECK";
+        let icon = "⭐";
+        let desc = "Power +10000!";
+
+        if (typeNormalized === 'critical' || typeNormalized === 'crit') {
+            overlay.classList.add('critical');
+            name = "CRITICAL TRIGGER";
+            icon = "🌟";
+            desc = "พลังโจมตี +10000! (Critical +1)";
+        } else if (typeNormalized === 'heal') {
+            overlay.classList.add('heal');
+            name = "HEAL TRIGGER";
+            icon = "💚";
+            desc = "พลังโจมตี +10000! (ฟื้นฟูดาเมจ 1 ใบ)";
+        } else if (typeNormalized === 'draw') {
+            overlay.classList.add('draw');
+            name = "DRAW TRIGGER";
+            icon = "🍎";
+            desc = "พลังโจมตี +10000! (จั่วการ์ด 1 ใบ)";
+        } else if (typeNormalized === 'front') {
+            overlay.classList.add('front');
+            name = "FRONT TRIGGER";
+            icon = "💥";
+            desc = "พลังโจมตี +10000 ให้การ์ดแถวหน้าทั้งหมด!";
+        } else if (typeNormalized === 'over') {
+            overlay.classList.add('over');
+            name = "OVER TRIGGER";
+            icon = "🌈";
+            desc = "พลังโจมตี +100,000,000! (จั่ว 1, คริ+1, และใช้งานสกิล Over Effect!)";
+        }
+
+        if (nameEl) nameEl.textContent = name;
+        if (iconEl) iconEl.textContent = icon;
+        if (descEl) descEl.textContent = desc;
+
+        SoundManager.play('trigger', triggerType);
+        flashTriggerNeon(triggerType);
+
+        overlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 1800);
+    }
 
     // --- Neon Flash Animation helper ---
     function flashTriggerNeon(triggerType) {
@@ -13472,6 +13633,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const oppSide = document.querySelector('.opponent-side');
 
         switch (data.type) {
+            case 'combatLog':
+                addCombatLog(data.msg, data.logType, false);
+                break;
             case 'alchemagicAnim':
                 {
                     // Play fusion animation for the opponent's action
