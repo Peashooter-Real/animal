@@ -515,7 +515,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: -30px;
   /* Overlap cards slightly */
   flex: 1;
   position: relative;
@@ -528,8 +527,12 @@ body {
   left: auto !important;
   transform: none !important;
   flex-shrink: 0;
-  margin: 0 !important;
+  margin: 0 0 0 -25px !important;
   transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s ease, z-index 0.2s ease !important;
+}
+
+.hand-cards .card:first-child {
+  margin-left: 0 !important;
 }
 
 .hand-cards .card:hover {
@@ -1754,12 +1757,17 @@ body.targeting-mode .my-side .circle:not(.opponent-card) {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: -15px;
     overflow-x: auto;
     overflow-y: hidden;
     width: 100%;
     padding: 10px 20px;
     scrollbar-width: thin;
+  }
+  .hand-cards .card {
+    margin-left: -20px !important;
+  }
+  .hand-cards .card:first-child {
+    margin-left: 0 !important;
   }
   .hand-cards::-webkit-scrollbar {
     height: 4px;

@@ -9118,8 +9118,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Incoming connection from:", newConn.peer);
 
             if (gameStarted) {
-                console.log("Game already in progress. Ignoring.");
-                newConn.close();
+                console.log("Game already in progress. Checking for reconnect attempt...");
+                const checkReconnect = (data) => {
+                    if (data && data.type === 'guestReconnect') {
+                        console.log("Guest reconnection verified!");
+                        newConn.off('data', checkReconnect);
+                        conn = newConn;
+                        hideReconnectOverlay();
+                        setupConnection();
+                        sendReconnectState();
+                    } else {
+                        console.log("Received non-reconnect message during active game. Closing.");
+                        newConn.close();
+                    }
+                };
+                newConn.on('data', checkReconnect);
+                setTimeout(() => {
+                    newConn.off('data', checkReconnect);
+                }, 5000);
                 return;
             }
 
@@ -9492,6 +9508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let isCheckingPeer = false;
     function startReconnectingProcess() {
         if (isReconnecting) return;
         isReconnecting = true;
@@ -9502,12 +9519,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isHost && friendId) {
                 console.log(`Reconnection attempt #${++retryCount}...`);
                 if (!peer || peer.destroyed || peer.disconnected) {
-                    initPeer();
+                    if (peer && peer.disconnected && !peer.destroyed) {
+                        peer.reconnect();
+                    } else {
+                        initPeer();
+                    }
                 }
 
+                if (isCheckingPeer) return;
+                isCheckingPeer = true;
                 const checkPeerAndConnect = setInterval(() => {
-                    if (peer && peer.id && !peer.destroyed) {
+                    if (peer && peer.id && !peer.destroyed && !peer.disconnected) {
                         clearInterval(checkPeerAndConnect);
+                        isCheckingPeer = false;
                         console.log("Peer ready, connecting for state recovery:", friendId);
                         conn = peer.connect(friendId, { reliable: true });
                         setupReconnectConnectionGuest();
@@ -9525,6 +9549,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showReconnectOverlay("เชื่อมต่อสำเร็จ กำลังกู้คืนสถานะเกม...");
             setupConnection();
             sendData({ type: 'guestReconnect' });
+        });
+        conn.on('error', (err) => {
+            console.error("Reconnection guest conn error:", err);
         });
     }
 
@@ -9797,11 +9824,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateStatusUI();
         syncAIStateToUI();
+        saveGameState();
     }
 
     async function sendData(data) {
         if (isAIMode) {
             await handleAILocalData(data);
+            saveGameState();
             return;
         }
         if (conn && conn.open) {
@@ -9812,6 +9841,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("การเชื่อมต่อขัดข้อง: ไม่สามารถส่งข้อมูลสถานะเกมได้ กรุณาทดลองเช็คอินเทอร์เน็ต");
             }
         }
+        saveGameState();
     }
 
     async function handleAILocalData(data) {
@@ -14925,6 +14955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showGameOver(result) {
+        localStorage.removeItem('vanguard_match_backup');
         if (result === 'Lose') {
             sendData({ type: 'gameOver' });
         }
