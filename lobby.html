@@ -137,7 +137,7 @@
             </section>
 
             <!-- Matchmaking Actions -->
-            <div class="lobby-interaction-grid">
+            <div class="lobby-interaction-grid hidden">
                 <div class="entry-card host-card">
                     <div class="card-badges"><span class="badge blue">STEP 1</span></div>
                     <h3>HOST ARENA</h3>
@@ -217,6 +217,12 @@
                 </div>
             </div>
 
+            <!-- Mobile Workspace Tabs -->
+            <div class="db-mobile-tabs">
+                <button class="db-tab-btn active" data-tab="database">🔍 คลังการ์ด</button>
+                <button class="db-tab-btn" data-tab="decklist">📋 เด็คของฉัน</button>
+            </div>
+
             <div class="db-workspace">
                 <!-- Left: Card Database Search/Filters and Cards Grid -->
                 <div class="db-database-panel">
@@ -289,7 +295,6 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="cards_db.js"></script>
     <script src="lobby.js"></script>
 </body>

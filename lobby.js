@@ -1,3 +1,5 @@
+window.VANGUARD_CARDS_DB = window.VANGUARD_CARDS_DB || (typeof VANGUARD_CARDS_DB !== 'undefined' ? VANGUARD_CARDS_DB : null);
+
 document.addEventListener('DOMContentLoaded', () => {
     const nationSelectionScreen = document.getElementById('nation-selection-screen');
     const deckSelectionScreen = document.getElementById('deck-selection-screen');
@@ -9,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const joinGameBtn = document.getElementById('join-game-btn');
     const startGameBtn = document.getElementById('start-game-btn');
     const joinPeerIdInput = document.getElementById('join-peer-id-input');
+    const lobbyInteractionGrid = document.querySelector('.lobby-interaction-grid');
 
     let selectedDeck = 'bruce';
 
@@ -47,12 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sub-screen switch
             nationSelectionScreen.classList.add('hidden');
             deckSelectionScreen.classList.remove('hidden');
+            if (lobbyInteractionGrid) lobbyInteractionGrid.classList.remove('hidden');
         });
     });
 
     backToNationsBtn.addEventListener('click', () => {
         deckSelectionScreen.classList.add('hidden');
         nationSelectionScreen.classList.remove('hidden');
+        if (lobbyInteractionGrid) lobbyInteractionGrid.classList.add('hidden');
     });
 
     // Deck Selection
@@ -124,18 +129,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
             const id = document.getElementById('my-peer-id').textContent;
-            navigator.clipboard.writeText(id).then(() => {
-                copyBtn.textContent = "✅";
-                setTimeout(() => copyBtn.textContent = "📋", 2000);
-                alert('Copied ID: ' + id);
+            const inviteUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            navigator.clipboard.writeText(inviteUrl).then(() => {
+                copyBtn.textContent = "✅ Link";
+                setTimeout(() => copyBtn.textContent = "📋 Copy Link", 2000);
+                alert('คัดลอกลิงก์ชวนเล่นเกมเรียบร้อยแล้ว! ส่งให้เพื่อนกดเข้าห้องได้ทันที');
             }).catch(() => {
-                alert('Gonna need manual copy.');
+                navigator.clipboard.writeText(id).then(() => {
+                    copyBtn.textContent = "✅ ID";
+                    setTimeout(() => copyBtn.textContent = "📋 Copy ID", 2000);
+                    alert('คัดลอกรหัสห้อง: ' + id);
+                }).catch(() => {
+                    alert('กรุณาคัดลอกรหัสห้องด้วยตนเอง: ' + id);
+                });
             });
         });
     }
 
     const joinStatus = document.getElementById('join-status');
     let lobbyPeer = null;
+
+    let isJoining = false;
+    let joinAttempts = 0;
+    const maxJoinAttempts = 8;
+    let joinTimeoutTimer = null;
+    let retryTimer = null;
 
     function initLobbyPeer(callback) {
         if (lobbyPeer && lobbyPeer.open) {
@@ -166,11 +184,77 @@ document.addEventListener('DOMContentLoaded', () => {
         lobbyPeer.on('error', (err) => {
             console.error("Lobby Peer Error:", err.type);
             if (err.type === 'peer-unavailable') {
-                onRoomNotFound();
+                if (isJoining) {
+                    clearTimeout(joinTimeoutTimer);
+                    handleJoinFailure(joinPeerIdInput.value.trim().toUpperCase());
+                } else {
+                    onRoomNotFound();
+                }
             } else {
                 joinStatus.textContent = "⚠️ Connection Error. Please refresh.";
             }
         });
+    }
+
+    function attemptConnection(friendId) {
+        joinGameBtn.disabled = true;
+        joinGameBtn.textContent = "🔍 Connecting...";
+        joinStatus.textContent = `🔍 เชื่อมต่อห้อง: ${friendId} (ครั้งที่ ${joinAttempts}/${maxJoinAttempts})...`;
+        joinStatus.className = "join-status-msg status-searching";
+
+        if (lobbyPeer) {
+            lobbyPeer.destroy();
+            lobbyPeer = null;
+        }
+
+        initLobbyPeer(() => {
+            if (!isJoining) return;
+            console.log(`[Attempt ${joinAttempts}] Connecting to:`, friendId);
+            const checkConn = lobbyPeer.connect(friendId, { reliable: true });
+
+            let connectionOpened = false;
+
+            joinTimeoutTimer = setTimeout(() => {
+                if (!connectionOpened && isJoining) {
+                    console.log(`[Attempt ${joinAttempts}] Connection timeout`);
+                    checkConn.close();
+                    handleJoinFailure(friendId);
+                }
+            }, 3000); // 3 seconds timeout per attempt
+
+            checkConn.on('open', () => {
+                connectionOpened = true;
+                clearTimeout(joinTimeoutTimer);
+                console.log("Room found!");
+                isJoining = false;
+                setTimeout(() => {
+                    checkConn.close();
+                    onRoomFound(friendId);
+                }, 500);
+            });
+
+            checkConn.on('error', (err) => {
+                if (connectionOpened) return;
+                connectionOpened = true;
+                clearTimeout(joinTimeoutTimer);
+                console.log(`[Attempt ${joinAttempts}] Connection object error:`, err);
+                handleJoinFailure(friendId);
+            });
+        });
+    }
+
+    function handleJoinFailure(friendId) {
+        if (!isJoining) return;
+        
+        if (joinAttempts < maxJoinAttempts) {
+            joinAttempts++;
+            retryTimer = setTimeout(() => {
+                attemptConnection(friendId);
+            }, 1500); // Wait 1.5 seconds before retrying
+        } else {
+            isJoining = false;
+            onRoomNotFound();
+        }
     }
 
     // Join Action
@@ -182,41 +266,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        joinGameBtn.disabled = true;
-        joinGameBtn.textContent = "🔍 Searching...";
-        joinStatus.textContent = `🔍 Looking for room: ${friendId}...`;
-        joinStatus.className = "join-status-msg status-searching";
+        // Cancel any pending join retry sequence
+        isJoining = false;
+        clearTimeout(joinTimeoutTimer);
+        clearTimeout(retryTimer);
 
-        initLobbyPeer(() => {
-            console.log("Attempting to connect to:", friendId);
-            const checkConn = lobbyPeer.connect(friendId, { reliable: true });
-
-            let found = false;
-            const timeout = setTimeout(() => {
-                if (!found) {
-                    checkConn.close();
-                    onRoomNotFound();
-                }
-            }, 15000); // Increase to 15s for mobile networks
-
-            checkConn.on('open', () => {
-                found = true;
-                clearTimeout(timeout);
-                console.log("Room found!");
-                // Keep connection open for a split second to ensure data-transfer could happen if needed, then close and move
-                setTimeout(() => {
-                    checkConn.close();
-                    onRoomFound(friendId);
-                }, 500);
-            });
-
-            checkConn.on('error', (err) => {
-                found = true;
-                clearTimeout(timeout);
-                onRoomNotFound();
-            });
-        });
+        startJoinSequence(friendId);
     });
+
+    function startJoinSequence(friendId) {
+        isJoining = true;
+        joinAttempts = 1;
+        attemptConnection(friendId);
+    }
 
     function onRoomNotFound() {
         joinGameBtn.disabled = false;
@@ -521,6 +583,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!window.VANGUARD_CARDS_DB) {
                 alert("❌ เกิดข้อผิดพลาด: ไม่พบฐานข้อมูลการ์ด กรุณารีเฟรชหน้าเว็บ");
                 return;
+            }
+            // Reset mobile tabs
+            const firstTab = document.querySelector('.db-tab-btn[data-tab="database"]');
+            if (firstTab) {
+                document.querySelectorAll('.db-tab-btn').forEach(t => t.classList.remove('active'));
+                firstTab.classList.add('active');
+                const workspace = document.querySelector('.db-workspace');
+                if (workspace) workspace.classList.remove('show-decklist');
             }
             loadDeckToEdit(selectedDeck);
             // Reset filters
@@ -917,7 +987,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 valText.style.color = "#05d9e8";
                 if (saveBtn) saveBtn.disabled = false;
             } else {
-                valText.innerHTML = "⚠️ " + errors.join(" | ");
+                valText.innerHTML = `<div class="validation-errors-list">` + 
+                    errors.map(err => `<div>❌ ${err}</div>`).join("") + 
+                    `</div>`;
                 valText.style.color = "#ff007f";
                 if (saveBtn) saveBtn.disabled = true;
             }
@@ -1024,5 +1096,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             reader.readAsText(file);
         });
+        // Mobile Tab switching for Deck Builder
+        const dbTabs = document.querySelectorAll('.db-tab-btn');
+        const dbWorkspace = document.querySelector('.db-workspace');
+        if (dbTabs && dbWorkspace) {
+            dbTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    dbTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    if (tab.dataset.tab === 'decklist') {
+                        dbWorkspace.classList.add('show-decklist');
+                    } else {
+                        dbWorkspace.classList.remove('show-decklist');
+                    }
+                });
+            });
+        }
     }
 });

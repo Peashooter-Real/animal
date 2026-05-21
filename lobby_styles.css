@@ -998,6 +998,49 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
+/* Mobile Workspace Tabs and List Error styles */
+.db-mobile-tabs {
+    display: none;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.db-tab-btn {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Outfit', sans-serif;
+}
+
+.db-tab-btn.active {
+    color: #05d9e8;
+    border-bottom-color: #05d9e8;
+    background: rgba(5, 217, 232, 0.05);
+}
+
+.validation-errors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    text-align: left;
+    max-height: 80px;
+    overflow-y: auto;
+    padding: 0.2rem 0;
+}
+
+.validation-errors-list div {
+    font-size: 0.85rem;
+    color: #ff007f;
+    line-height: 1.2;
+}
+
 /* Responsive constraints */
 @media screen and (max-width: 1200px) {
     .db-workspace {
@@ -1030,6 +1073,29 @@ body {
     }
     .db-decklist-panel {
         padding: 1rem;
+    }
+
+    /* Tab Layout Activation */
+    .db-mobile-tabs {
+        display: flex;
+    }
+    .db-workspace {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr !important;
+    }
+    .db-database-panel {
+        display: flex !important;
+        border-bottom: none;
+    }
+    .db-decklist-panel {
+        display: none !important;
+    }
+    /* Dynamic tab switches */
+    .db-workspace.show-decklist .db-database-panel {
+        display: none !important;
+    }
+    .db-workspace.show-decklist .db-decklist-panel {
+        display: flex !important;
     }
 }
 

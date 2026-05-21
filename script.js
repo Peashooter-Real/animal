@@ -1,3 +1,5 @@
+window.VANGUARD_CARDS_DB = window.VANGUARD_CARDS_DB || (typeof VANGUARD_CARDS_DB !== 'undefined' ? VANGUARD_CARDS_DB : null);
+
 document.addEventListener('DOMContentLoaded', () => {
     window.isForcedTargeting = false; // Flag for auto-select on timeout
     window.bailoutPendingCount = 0;
